@@ -1,3 +1,4 @@
+using System.IO;
 using XINSkan.Core.Permissions;
 using XINSkan.Platform.Windows;
 using XINSkan.Security;

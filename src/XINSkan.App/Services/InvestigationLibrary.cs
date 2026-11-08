@@ -1,3 +1,4 @@
+using System.IO;
 using XINSkan.Core.Pipeline;
 using XINSkan.Models;
 using XINSkan.Security;
@@ -84,7 +85,7 @@ public static class InvestigationLibrary
             var modules = reader.ReadModuleResults();
 
             IntegrityState state;
-            IReadOnlyList<string> problems = [];
+            List<string> problems = [];
             if (!Path.Exists(Path.Combine(folder, IntegrityManifest.DefaultName)))
             {
                 state = IntegrityState.NotClosed;
