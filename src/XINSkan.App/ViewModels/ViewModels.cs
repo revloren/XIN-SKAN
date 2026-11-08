@@ -175,14 +175,14 @@ public sealed class InvestigationViewModel : ObservableObject
     private string _progressText = string.Empty;
     private string _resultText = string.Empty;
     private bool _resultIsProblem;
-    private CancellationTokenSource? _cts;
+    private Action? _cancel;
 
     public InvestigationViewModel(AppEnvironment env)
     {
         _env = env;
         RefreshCommand = new AsyncCommand(RefreshAsync);
         StartCommand = new AsyncCommand(StartAsync, () => CanStart && !IsRunning);
-        CancelCommand = new RelayCommand(() => _cts?.Cancel(), () => IsRunning);
+        CancelCommand = new RelayCommand(() => _cancel?.Invoke(), () => IsRunning);
         env.Changed += (_, _) => RefreshCommand.Execute(null);
         RefreshCommand.Execute(null);
     }
@@ -260,12 +260,13 @@ public sealed class InvestigationViewModel : ObservableObject
         IsRunning = true;
         ResultText = string.Empty;
         ProgressText = "Подготовка…";
-        _cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
+        _cancel = cts.Cancel;
         try
         {
             // Progress<T> created here posts back to the interface thread.
             var progress = new Progress<ModuleProgress>(p => ProgressText = p.Message ?? $"{ModuleName(p.ModuleId)}: {StateText(p.State)}");
-            var outcome = await InvestigationLauncher.RunAsync(_env.OutputRoot, OperatorName, progress, _cts.Token);
+            var outcome = await InvestigationLauncher.RunAsync(_env.OutputRoot, OperatorName, progress, cts.Token);
             Describe(outcome);
         }
         catch (InvestigationSinkException ex)
@@ -280,8 +281,7 @@ public sealed class InvestigationViewModel : ObservableObject
         }
         finally
         {
-            _cts.Dispose();
-            _cts = null;
+            _cancel = null;
             ProgressText = string.Empty;
             IsRunning = false;
             _env.NotifyInvestigationsChanged();

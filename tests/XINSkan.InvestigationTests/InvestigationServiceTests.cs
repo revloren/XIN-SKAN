@@ -39,7 +39,7 @@ public sealed class InvestigationServiceTests : IDisposable
     private static PlatformServices Platform(IFileSource? files = null) =>
         new(SystemDirectoryLister.Instance, files ?? new TestFileSource(), NoSignatureVerifier.Instance, new FixedProbe(), "read, share read/write/delete");
 
-    private InvestigationService Service(StoreFactory factory, IFileSource? files = null) =>
+    private static InvestigationService Service(StoreFactory factory, IFileSource? files = null) =>
         new(Platform(files), factory, TimeProvider.System, "test-1.0");
 
     [Fact]
