@@ -1,0 +1,26 @@
+<Project>
+  <!-- Shared build settings for every project under src/ and tests/.
+       tools/ has its own Directory.Build.props and does not inherit these. -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <Deterministic>true</Deterministic>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <SatelliteResourceLanguages>en;ru</SatelliteResourceLanguages>
+    <Company>XIN SKAN</Company>
+    <Product>XIN SKAN</Product>
+    <Version>0.1.0</Version>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <!-- XinOffline=true is only for sandboxed development without NuGet access
+       (see tools/offline-tests). CI never sets it, so analyzers always run there. -->
+  <PropertyGroup Condition="'$(XinOffline)' == 'true'">
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  windows:
+    name: Build and test (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: SDK info
+        run: dotnet --info
+
+      - name: Restore
+        run: dotnet restore XINSkan.slnx
+
+      - name: Build (warnings are errors)
+        run: dotnet build XINSkan.slnx -c Release --no-restore
+
+      - name: Test
+        run: dotnet test XINSkan.slnx -c Release --no-build --logger "trx;LogFileName=results.trx" --logger "console;verbosity=normal" --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-windows
+          path: TestResults
+
+  parser-packages:
+    # Open item from docs/LIBRARY_REVIEW.md: which versions of the reviewed parsers are actually published.
+    name: Published parser versions
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Query nuget.org
+        run: |
+          for p in MFT Prefetch JumpList Lnk OleCf ExtensionBlocks GuidMapping; do
+            echo "== $p"
+            dotnet package search "$p" --exact-match --source https://api.nuget.org/v3/index.json --format json \
+              | python3 -c "import sys,json; d=json.load(sys.stdin); v=[p['version'] for r in d.get('searchResult',[]) for p in r.get('packages',[])]; print('versions:', ', '.join(v[-5:]) if v else 'not found')"
+          done

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Local, NuGet-free runner for tests/XINSkan.UnitTests. Not part of the solution or CI.
+       Build with: dotnet run -p:XinOffline=true -project tools/offline-tests -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>XINSkan.UnitTests</AssemblyName>
+    <RootNamespace>XINSkan.UnitTests</RootNamespace>
+    <XinOffline>true</XinOffline>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>$(NoWarn);CA1707;CA1515;CA1852;CA1822;CA1031;CA2000;CA1062;CA1716;CA1720;CA1030;CA1819;CA1861;IDE0005;CA1305;CA1307;CA1310;CA1309;CA2201;CA1847;CA1866;CA1865;CA1806</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="*.cs" />
+    <Compile Include="../../tests/XINSkan.UnitTests/**/*.cs" Exclude="../../tests/XINSkan.UnitTests/obj/**;../../tests/XINSkan.UnitTests/bin/**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/XINSkan.Models/XINSkan.Models.csproj" />
+    <ProjectReference Include="../../src/XINSkan.Core/XINSkan.Core.csproj" />
+  </ItemGroup>
+</Project>

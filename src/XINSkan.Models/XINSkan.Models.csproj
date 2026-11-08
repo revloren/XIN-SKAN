@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>XINSkan.Models</RootNamespace>
+    <Description>Evidence schema shared by every XIN SKAN layer. No dependencies.</Description>
+  </PropertyGroup>
+</Project>

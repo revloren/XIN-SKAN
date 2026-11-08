@@ -1,0 +1,38 @@
+# XIN SKAN
+
+Windows-приложение для исследования цифровых следов Minecraft-читов: существующих файлов, истории файловой системы, свидетельств запуска и связей между ними. Принцип — **Read-Only by Design**: исследуемая система только читается.
+
+## Состояние
+
+Проект на ранней стадии. Готово только то, что перечислено в [docs/PROGRESS.md](docs/PROGRESS.md) с пройденными тестами. Ни один анализатор пока не подключён; приложение ещё ничего не проверяет.
+
+| Этап | Состояние |
+| --- | --- |
+| Проверка сторонних разборщиков | Готово — [docs/LIBRARY_REVIEW.md](docs/LIBRARY_REVIEW.md) |
+| 1. Core и модели | Готово |
+| 2. Read-Only Security | Не начат |
+| 3. Storage (SQLite) | Не начат |
+| 4. File Hunter | Не начат |
+| 5. History Engine | Не начат |
+| 6. Execution Engine | Не начат |
+| 7. Evidence Correlation | Не начат |
+
+## Структура
+
+```
+src/XINSkan.Models   схема Evidence v1 (без зависимостей)
+src/XINSkan.Core     конвейер проверки, разрешения и согласия, нормализация путей
+tests/               модульные тесты (xUnit)
+tools/               инструменты разработки, не входят в поставку
+docs/                документация
+```
+
+## Сборка
+
+См. [docs/BUILD.md](docs/BUILD.md). Кратко: .NET 10 SDK, затем `dotnet test XINSkan.slnx`.
+
+## Документация
+
+- [docs/EVIDENCE_SCHEMA.md](docs/EVIDENCE_SCHEMA.md) — схема свидетельства и её правила
+- [docs/LIBRARY_REVIEW.md](docs/LIBRARY_REVIEW.md) — проверка библиотек MFT, Prefetch, Jump Lists
+- [docs/PROGRESS.md](docs/PROGRESS.md) — отчёты по этапам
