@@ -37,5 +37,6 @@ docs/                документация
 
 - [docs/EVIDENCE_SCHEMA.md](docs/EVIDENCE_SCHEMA.md) — схема свидетельства и её правила
 - [docs/SECURITY.md](docs/SECURITY.md) — как устроен и проверяется Read-Only
+- [docs/STORAGE.md](docs/STORAGE.md) — хранилище проверки
 - [docs/LIBRARY_REVIEW.md](docs/LIBRARY_REVIEW.md) — проверка библиотек MFT, Prefetch, Jump Lists
 - [docs/PROGRESS.md](docs/PROGRESS.md) — отчёты по этапам

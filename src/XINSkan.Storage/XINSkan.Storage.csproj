@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>XINSkan.Storage</RootNamespace>
+    <Description>One SQLite database per investigation, inside the investigation folder. Evidence is append-only.</Description>
+    <!-- Writes XIN SKAN's own database (a file claimed through OutputSink), so the read-only ban does not apply.
+         StorageTests check that nothing is written outside the investigation folder. -->
+    <XinEnforceReadOnly>false</XinEnforceReadOnly>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XINSkan.Models\XINSkan.Models.csproj" />
+    <ProjectReference Include="..\XINSkan.Core\XINSkan.Core.csproj" />
+    <ProjectReference Include="..\XINSkan.Security\XINSkan.Security.csproj" />
+  </ItemGroup>
+</Project>

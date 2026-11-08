@@ -66,6 +66,20 @@ public sealed class OutputSink
         return stream;
     }
 
+    /// <summary>
+    /// Claims a new, empty file for a component that must open the file itself (the SQLite database).
+    /// The claim is atomic (CreateNew), so an existing file is never taken over.
+    /// </summary>
+    /// <returns>Absolute path of the claimed file.</returns>
+    public string ReserveNewFile(string relativePath)
+    {
+        using (CreateNew(relativePath))
+        {
+        }
+
+        return Resolve(relativePath);
+    }
+
     public void WriteNew(string relativePath, ReadOnlySpan<byte> content)
     {
         using var s = CreateNew(relativePath);
