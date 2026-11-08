@@ -17,9 +17,13 @@ public sealed record NavItem(string Title, Geometry Icon, ObservableObject Page)
 /// <summary>A capability as the operator should read it.</summary>
 public sealed record CapabilityRow(string Name, bool Available, string Reason)
 {
-    public static CapabilityRow From(CapabilityState s) => new(Name(s.Capability), s.Available, s.Reason);
+    public static CapabilityRow From(CapabilityState s)
+    {
+        ArgumentNullException.ThrowIfNull(s);
+        return new(DisplayName(s.Capability), s.Available, s.Reason);
+    }
 
-    private static string Name(Capability c) => c switch
+    private static string DisplayName(Capability c) => c switch
     {
         Capability.Administrator => "Права администратора",
         Capability.RawVolumeRead => "Чтение тома напрямую (MFT)",

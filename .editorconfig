@@ -33,3 +33,5 @@ dotnet_diagnostic.CA1861.severity = none
 [src/XINSkan.App/**.cs]
 # The desktop app is an executable; its public view models and converters are bound from XAML.
 dotnet_diagnostic.CA1515.severity = none
+# XAML binds to instance properties only; a property that reads static data must stay an instance member.
+dotnet_diagnostic.CA1822.severity = none

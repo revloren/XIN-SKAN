@@ -56,7 +56,11 @@ public static class Icons
 
     private static Geometry Freeze(Geometry g)
     {
-        g.Freeze();
+        if (!g.IsFrozen)
+        {
+            g.Freeze();
+        }
+
         return g;
     }
 }
