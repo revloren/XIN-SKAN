@@ -28,6 +28,9 @@ public sealed class AppEnvironment
         }
     }
 
+    /// <summary>Tells the screens that read the output folder that a new investigation was written there.</summary>
+    public void NotifyInvestigationsChanged() => Changed?.Invoke(this, EventArgs.Empty);
+
     public string SystemDrive { get; } = (Environment.GetEnvironmentVariable("SystemDrive") ?? "C:")[..2];
 
     /// <summary>Where results would go, in the operator's language. The policy itself lives in XINSkan.Security.</summary>

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <XinEnforceReadOnly>false</XinEnforceReadOnly>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Xunit.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\XINSkan.Models\XINSkan.Models.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Core\XINSkan.Core.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Security\XINSkan.Security.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Storage\XINSkan.Storage.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Analyzers.FileHunter\XINSkan.Analyzers.FileHunter.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Investigation\XINSkan.Investigation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Reuses the File Hunter player-profile fixture. -->
+    <Compile Include="..\XINSkan.FileHunterTests\Support\Fixtures.cs" Link="Support\Fixtures.cs" />
+  </ItemGroup>
+</Project>

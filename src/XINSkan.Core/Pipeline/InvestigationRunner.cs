@@ -99,7 +99,22 @@ public sealed partial class InvestigationRunner
         try
         {
             await analyzer.RunAsync(context, cancellationToken).ConfigureAwait(false);
+            if (writer.SinkFailure is { } swallowed)
+            {
+                throw swallowed;
+            }
+
             state = writer.Errors.Count > 0 ? ModuleState.CompletedWithErrors : ModuleState.Completed;
+        }
+        catch (InvestigationSinkException)
+        {
+            // The store failed: not a module error. Stop the investigation (see the class remarks).
+            throw;
+        }
+        catch (OperationCanceledException) when (writer.SinkFailure is not null)
+        {
+            // The analyzer turned the store failure into its own cancellation; the store failure is what happened.
+            throw writer.SinkFailure;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

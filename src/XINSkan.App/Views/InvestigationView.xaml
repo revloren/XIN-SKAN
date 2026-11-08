@@ -6,8 +6,30 @@
       <TextBlock Text="Новая проверка" Style="{StaticResource PageTitle}" />
       <TextBlock Text="{Binding StartHint}" Style="{StaticResource Body}" Margin="0,10,0,0" MaxWidth="720" HorizontalAlignment="Left" />
 
-      <Button Content="Начать проверку" Style="{StaticResource EmberButton}" Command="{Binding StartCommand}"
-              HorizontalAlignment="Left" Margin="0,22,0,0" />
+      <StackPanel Orientation="Horizontal" Margin="0,22,0,0">
+        <TextBox Style="{StaticResource Field}" Width="280" Text="{Binding OperatorName, UpdateSourceTrigger=PropertyChanged}"
+                 AutomationProperties.Name="Кто проводит проверку" ToolTip="Кто проводит проверку — сохраняется в проверке как введено" />
+      </StackPanel>
+      <TextBlock Text="Кто проводит проверку (необязательно)" Style="{StaticResource Muted}" Margin="0,6,0,0" />
+
+      <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
+        <Button Content="Начать проверку" Style="{StaticResource EmberButton}" Command="{Binding StartCommand}" />
+        <Button Content="Отменить" Style="{StaticResource GlassButton}" Command="{Binding CancelCommand}" Margin="12,0,0,0" Padding="16,8"
+                Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibility}}" />
+      </StackPanel>
+      <TextBlock Text="{Binding ProgressText}" Style="{StaticResource Muted}" Margin="0,12,0,0" TextTrimming="CharacterEllipsis"
+                 Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibility}}" />
+      <TextBlock Text="{Binding ResultText}" Margin="0,12,0,0" TextWrapping="Wrap" MaxWidth="720" HorizontalAlignment="Left">
+        <TextBlock.Style>
+          <Style TargetType="TextBlock" BasedOn="{StaticResource Body}">
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding ResultIsProblem}" Value="True">
+                <Setter Property="Foreground" Value="{StaticResource WarnBrush}" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </TextBlock.Style>
+      </TextBlock>
 
       <Border Style="{StaticResource Card}" Margin="0,30,0,0">
         <StackPanel>

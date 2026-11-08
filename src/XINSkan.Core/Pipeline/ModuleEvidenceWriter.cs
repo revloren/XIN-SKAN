@@ -17,6 +17,7 @@ internal sealed class ModuleEvidenceWriter : IEvidenceWriter
     private long _evidence;
     private long _coverage;
     private volatile bool _closed;
+    private volatile InvestigationSinkException? _sinkFailure;
 
     public ModuleEvidenceWriter(IInvestigationSink sink, Ulid investigationId, string moduleId)
     {
@@ -40,6 +41,12 @@ internal sealed class ModuleEvidenceWriter : IEvidenceWriter
         }
     }
 
+    /// <summary>
+    /// The first failure of the store, kept even if the analyzer caught it, so the runner can stop the
+    /// investigation instead of reporting the module as merely failed.
+    /// </summary>
+    public InvestigationSinkException? SinkFailure => _sinkFailure;
+
     public void Close() => _closed = true;
 
     public async ValueTask AddEvidenceAsync(Evidence evidence, CancellationToken cancellationToken)
@@ -62,7 +69,7 @@ internal sealed class ModuleEvidenceWriter : IEvidenceWriter
             throw new InvalidEvidenceException($"Evidence {evidence.EvidenceId} is invalid: {string.Join(" ", problems)}");
         }
 
-        await _sink.AddEvidenceAsync(evidence, cancellationToken).ConfigureAwait(false);
+        await GuardAsync(() => _sink.AddEvidenceAsync(evidence, cancellationToken)).ConfigureAwait(false);
         Interlocked.Increment(ref _evidence);
     }
 
@@ -81,7 +88,7 @@ internal sealed class ModuleEvidenceWriter : IEvidenceWriter
             throw new InvalidEvidenceException($"Coverage for {coverage.Source} is invalid: {string.Join(" ", problems)}");
         }
 
-        await _sink.AddCoverageAsync(coverage, cancellationToken).ConfigureAwait(false);
+        await GuardAsync(() => _sink.AddCoverageAsync(coverage, cancellationToken)).ConfigureAwait(false);
         Interlocked.Increment(ref _coverage);
     }
 
@@ -94,7 +101,31 @@ internal sealed class ModuleEvidenceWriter : IEvidenceWriter
             _errors.Add(moduleError);
         }
 
-        await _sink.AddErrorAsync(_moduleId, moduleError, cancellationToken).ConfigureAwait(false);
+        await GuardAsync(() => _sink.AddErrorAsync(_moduleId, moduleError, cancellationToken)).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Turns any failure of the store, synchronous or asynchronous, into <see cref="InvestigationSinkException"/>;
+    /// cancellation passes through.
+    /// </summary>
+    private async ValueTask GuardAsync(Func<ValueTask> write)
+    {
+        try
+        {
+            await write().ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+#pragma warning disable CA1031 // Any store failure is rethrown, wrapped, so the runner can tell it from an analyzer bug.
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            var failure = new InvestigationSinkException($"Saving records failed: {ex.Message}", ex);
+            _sinkFailure ??= failure;
+            throw failure;
+        }
     }
 
     private void EnsureOpen()
@@ -119,6 +150,27 @@ public sealed class InvalidEvidenceException : Exception
     }
 
     public InvalidEvidenceException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
+}
+
+/// <summary>
+/// The evidence store failed while a module was writing. Unlike an analyzer error this is not isolated: the
+/// investigation can no longer guarantee that what it reports was saved, so it stops.
+/// </summary>
+public sealed class InvestigationSinkException : Exception
+{
+    public InvestigationSinkException()
+    {
+    }
+
+    public InvestigationSinkException(string message)
+        : base(message)
+    {
+    }
+
+    public InvestigationSinkException(string message, Exception innerException)
         : base(message, innerException)
     {
     }

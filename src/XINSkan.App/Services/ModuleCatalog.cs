@@ -29,7 +29,7 @@ public static class ModuleCatalog
 
     public static IReadOnlyList<ModuleInfo> Analyzers { get; } =
     [
-        new("File Hunter", "Существующие файлы: имена, хеши, подписи, метаданные", ModuleReadiness.Planned, 4),
+        new("File Hunter", "Существующие файлы: имена, хеши, подписи, метаданные", ModuleReadiness.Ready, 4),
         new("History Engine", "MFT, USN Journal, Корзина, LNK, Jump Lists, ShellBags, логи Minecraft", ModuleReadiness.Planned, 5),
         new("Execution Engine", "Prefetch, Amcache, BAM, SRUM, журналы событий", ModuleReadiness.Planned, 6),
         new("Корреляция", "Связи между свидетельствами и единая хронология", ModuleReadiness.Planned, 7),

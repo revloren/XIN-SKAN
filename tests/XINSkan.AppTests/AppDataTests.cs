@@ -24,11 +24,12 @@ public sealed class AppDataTests : IDisposable
     }
 
     [Fact]
-    public void No_analyzer_is_marked_ready_before_its_stage_is_delivered()
+    public void Only_delivered_analyzers_are_marked_ready()
     {
-        // When File Hunter lands, this test is updated in the same commit together with real analyzer tests.
-        Assert.All(ModuleCatalog.Analyzers, m => Assert.Equal(ModuleReadiness.Planned, m.Readiness));
-        Assert.False(ModuleCatalog.AnyAnalyzerReady);
+        // Updated in the stage 4 commit together with File Hunter's tests and the investigation service.
+        Assert.Equal(new[] { "File Hunter" }, ModuleCatalog.Analyzers.Where(m => m.IsReady).Select(m => m.Name));
+        Assert.True(ModuleCatalog.AnyAnalyzerReady);
+        Assert.All(ModuleCatalog.Analyzers.Where(m => m.Stage > 4), m => Assert.Equal(ModuleReadiness.Planned, m.Readiness));
         Assert.All(ModuleCatalog.Foundation, m => Assert.Equal(ModuleReadiness.Ready, m.Readiness));
     }
 

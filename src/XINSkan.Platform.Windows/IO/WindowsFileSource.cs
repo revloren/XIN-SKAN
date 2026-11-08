@@ -11,6 +11,9 @@ namespace XINSkan.Platform.Windows.IO;
 [SupportedOSPlatform("windows")]
 public sealed class WindowsFileSource : IFileSource
 {
+    /// <summary>How files are opened, as written to the audit log.</summary>
+    public const string AccessDescription = "GENERIC_READ; share read/write/delete; OPEN_EXISTING; backup semantics";
+
     public static readonly WindowsFileSource Instance = new();
 
     public IOpenedFile Open(string path) => Wrap(ReadOnlyFile.OpenHandle(path));

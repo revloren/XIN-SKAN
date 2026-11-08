@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>XINSkan.Investigation</RootNamespace>
+    <Description>Runs one investigation end to end: new output folder, audit log, store, analyzers, integrity manifest.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XINSkan.Models\XINSkan.Models.csproj" />
+    <ProjectReference Include="..\XINSkan.Core\XINSkan.Core.csproj" />
+    <ProjectReference Include="..\XINSkan.Security\XINSkan.Security.csproj" />
+    <ProjectReference Include="..\XINSkan.Platform.Windows\XINSkan.Platform.Windows.csproj" />
+    <ProjectReference Include="..\XINSkan.Analyzers.FileHunter\XINSkan.Analyzers.FileHunter.csproj" />
+  </ItemGroup>
+</Project>

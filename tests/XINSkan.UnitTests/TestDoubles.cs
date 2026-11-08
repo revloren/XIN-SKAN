@@ -33,10 +33,18 @@ internal sealed class InMemorySink : IInvestigationSink
 
     public bool CheckpointTokenWasCancellable { get; private set; }
 
+    /// <summary>When set, adding evidence fails as a full or removed output drive would.</summary>
+    public Exception? EvidenceFailure { get; set; }
+
     public ValueTask AddEvidenceAsync(Evidence evidence, CancellationToken cancellationToken)
     {
         lock (_gate)
         {
+            if (EvidenceFailure is not null)
+            {
+                throw EvidenceFailure;
+            }
+
             Evidence.Add(evidence);
         }
 

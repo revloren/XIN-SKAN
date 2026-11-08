@@ -34,6 +34,13 @@ public sealed class WindowsAdminFactAttribute : FactAttribute
 [SupportedOSPlatform("windows")]
 internal sealed class TestVhd : IDisposable
 {
+    /// <summary>
+    /// Test assemblies run in parallel processes; two volumes created at once would race for the same drive
+    /// letter and for diskpart. One VHD at a time, across processes, for the lifetime of the volume.
+    /// A semaphore rather than a mutex, because async tests dispose the volume on another thread.
+    /// </summary>
+    private static readonly Semaphore Gate = new(1, 1, @"Local\XINSkan-TestVhd");
+
     private readonly string _vhdPath;
 
     private TestVhd(string vhdPath, char letter)
@@ -47,6 +54,24 @@ internal sealed class TestVhd : IDisposable
     public string Root => $@"{Letter}:\";
 
     public static TestVhd Create(int sizeMb = 256)
+    {
+        if (!Gate.WaitOne(TimeSpan.FromMinutes(10)))
+        {
+            throw new TimeoutException("Another test volume was not released within 10 minutes.");
+        }
+
+        try
+        {
+            return CreateLocked(sizeMb);
+        }
+        catch
+        {
+            Gate.Release();
+            throw;
+        }
+    }
+
+    private static TestVhd CreateLocked(int sizeMb)
     {
         var used = DriveInfo.GetDrives().Select(d => char.ToUpperInvariant(d.Name[0])).ToHashSet();
         var letter = "XWVUTSRQPONMLKJ".First(c => !used.Contains(c));
@@ -84,9 +109,16 @@ internal sealed class TestVhd : IDisposable
         }
         finally
         {
-            if (File.Exists(_vhdPath))
+            try
             {
-                File.Delete(_vhdPath);
+                if (File.Exists(_vhdPath))
+                {
+                    File.Delete(_vhdPath);
+                }
+            }
+            finally
+            {
+                Gate.Release();
             }
         }
     }

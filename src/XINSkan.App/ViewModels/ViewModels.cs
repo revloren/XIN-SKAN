@@ -4,8 +4,11 @@ using System.Globalization;
 using System.Windows.Input;
 using System.Windows.Media;
 using XINSkan.App.Infrastructure;
+using XINSkan.Analyzers.FileHunter;
 using XINSkan.App.Services;
 using XINSkan.Core.Permissions;
+using XINSkan.Core.Pipeline;
+using XINSkan.Investigation;
 using XINSkan.Models;
 using XINSkan.Security;
 using XINSkan.Storage;
@@ -162,15 +165,24 @@ public sealed class DashboardViewModel : ObservableObject
 
 public sealed class InvestigationViewModel : ObservableObject
 {
+    private static readonly CultureInfo Ru = CultureInfo.GetCultureInfo("ru-RU");
+
     private readonly AppEnvironment _env;
     private string _outputAssessment = string.Empty;
     private bool _outputOnInvestigatedVolume;
+    private string _operatorName = string.Empty;
+    private bool _isRunning;
+    private string _progressText = string.Empty;
+    private string _resultText = string.Empty;
+    private bool _resultIsProblem;
+    private CancellationTokenSource? _cts;
 
     public InvestigationViewModel(AppEnvironment env)
     {
         _env = env;
         RefreshCommand = new AsyncCommand(RefreshAsync);
-        StartCommand = new RelayCommand(() => { }, () => CanStart);
+        StartCommand = new AsyncCommand(StartAsync, () => CanStart && !IsRunning);
+        CancelCommand = new RelayCommand(() => _cts?.Cancel(), () => IsRunning);
         env.Changed += (_, _) => RefreshCommand.Execute(null);
         RefreshCommand.Execute(null);
     }
@@ -183,14 +195,53 @@ public sealed class InvestigationViewModel : ObservableObject
 
     public ICommand StartCommand { get; }
 
+    public ICommand CancelCommand { get; }
+
     /// <summary>Starting is possible only once at least one real analyzer is connected.</summary>
     public bool CanStart => ModuleCatalog.AnyAnalyzerReady;
 
     public string StartHint => CanStart
-        ? "Проверка соберёт свидетельства доступными модулями. Модули без нужных прав будут пропущены с указанием причины."
-        : "Запуск станет доступен, когда будет подключён первый анализатор — File Hunter, этап 4. Сейчас готовы ядро, защита только для чтения и хранилище.";
+        ? "Проверка соберёт свидетельства подключёнными модулями (сейчас — File Hunter). Модули без нужных прав будут пропущены с указанием причины. Исследуемые данные только читаются."
+        : "Запуск станет доступен, когда будет подключён первый анализатор.";
 
     public string OutputFolder => _env.OutputRoot;
+
+    /// <summary>Who runs the check; stored in the investigation as entered.</summary>
+    public string OperatorName
+    {
+        get => _operatorName;
+        set => Set(ref _operatorName, value);
+    }
+
+    public bool IsRunning
+    {
+        get => _isRunning;
+        private set
+        {
+            if (Set(ref _isRunning, value))
+            {
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+    }
+
+    public string ProgressText
+    {
+        get => _progressText;
+        private set => Set(ref _progressText, value);
+    }
+
+    public string ResultText
+    {
+        get => _resultText;
+        private set => Set(ref _resultText, value);
+    }
+
+    public bool ResultIsProblem
+    {
+        get => _resultIsProblem;
+        private set => Set(ref _resultIsProblem, value);
+    }
 
     public string OutputAssessment
     {
@@ -203,6 +254,67 @@ public sealed class InvestigationViewModel : ObservableObject
         get => _outputOnInvestigatedVolume;
         private set => Set(ref _outputOnInvestigatedVolume, value);
     }
+
+    private async Task StartAsync()
+    {
+        IsRunning = true;
+        ResultText = string.Empty;
+        ProgressText = "Подготовка…";
+        _cts = new CancellationTokenSource();
+        try
+        {
+            // Progress<T> created here posts back to the interface thread.
+            var progress = new Progress<ModuleProgress>(p => ProgressText = p.Message ?? $"{ModuleName(p.ModuleId)}: {StateText(p.State)}");
+            var outcome = await InvestigationLauncher.RunAsync(_env.OutputRoot, OperatorName, progress, _cts.Token);
+            Describe(outcome);
+        }
+        catch (InvestigationSinkException ex)
+        {
+            ResultIsProblem = true;
+            ResultText = $"Проверка остановлена: не удалось сохранить записи ({ex.InnerException?.Message ?? ex.Message}). Папка оставлена без манифеста и в списке проверок будет отмечена как незакрытая.";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            ResultIsProblem = true;
+            ResultText = $"Не удалось создать папку проверки в «{_env.OutputRoot}»: {ex.Message}";
+        }
+        finally
+        {
+            _cts.Dispose();
+            _cts = null;
+            ProgressText = string.Empty;
+            IsRunning = false;
+            _env.NotifyInvestigationsChanged();
+        }
+    }
+
+    private void Describe(InvestigationOutcome o)
+    {
+        var modules = string.Join("; ", o.Run.Modules.Select(m =>
+            $"{ModuleName(m.ModuleId)}: {StateText(m.State)}, записей {m.EvidenceCount.ToString("N0", Ru)}" +
+            (m.Errors.Count > 0 ? $", ошибок доступа {m.Errors.Count}" : string.Empty)));
+        var head = o.Run.Cancelled
+            ? "Проверка отменена. Собранные до отмены записи сохранены, папка закрыта манифестом."
+            : "Проверка завершена.";
+        var check = o.SelfCheck.Count == 0
+            ? $"Манифест SHA-256 {o.ManifestSha256}."
+            : $"Самопроверка манифеста не прошла: {o.SelfCheck.Count} расхождений.";
+        ResultIsProblem = o.SelfCheck.Count > 0 || o.Run.Modules.Any(m => m.State is ModuleState.Failed);
+        ResultText = $"{head} {modules}. Папка: {o.Folder}. {check} Записи — сведения о найденных объектах, а не выводы о нарушении.";
+    }
+
+    private static string ModuleName(string id) => id == FileHunterAnalyzer.ModuleId ? "File Hunter" : id;
+
+    private static string StateText(ModuleState s) => s switch
+    {
+        ModuleState.Completed => "завершено",
+        ModuleState.CompletedWithErrors => "завершено с ошибками доступа",
+        ModuleState.Skipped => "пропущено",
+        ModuleState.Failed => "сбой",
+        ModuleState.Cancelled => "отменено",
+        ModuleState.Running => "выполняется",
+        _ => s.ToString(),
+    };
 
     private async Task RefreshAsync()
     {

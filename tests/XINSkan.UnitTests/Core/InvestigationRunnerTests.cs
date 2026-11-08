@@ -14,6 +14,60 @@ public class InvestigationRunnerTests
         new(_sink, new PermissionManager(new FakeProbe(available), _time).Snapshot(), _time);
 
     [Fact]
+    public async Task Store_failure_while_a_module_writes_stops_the_investigation_instead_of_failing_the_module()
+    {
+        _sink.EvidenceFailure = new IOException("disk full");
+        var laterRan = false;
+        var modules = new IAnalyzer[]
+        {
+            new DelegateAnalyzer("writer", async (ctx, ct) => await ctx.Writer.AddEvidenceAsync(Samples.Evidence(ctx), ct)),
+            new DelegateAnalyzer("later", (_, _) => { laterRan = true; return Task.CompletedTask; }),
+        };
+
+        var ex = await Assert.ThrowsAsync<InvestigationSinkException>(() => Runner().RunAsync(_inv, modules, CancellationToken.None));
+        Assert.IsType<IOException>(ex.InnerException);
+        Assert.False(laterRan);
+        Assert.Empty(_sink.Checkpoints);
+    }
+
+    [Fact]
+    public async Task Store_failure_is_not_hidden_by_an_analyzer_that_catches_it()
+    {
+        _sink.EvidenceFailure = new IOException("disk full");
+        var swallowing = new DelegateAnalyzer("swallowing", async (ctx, ct) =>
+        {
+            try
+            {
+                await ctx.Writer.AddEvidenceAsync(Samples.Evidence(ctx), ct);
+            }
+            catch (InvestigationSinkException)
+            {
+            }
+        });
+
+        await Assert.ThrowsAsync<InvestigationSinkException>(() => Runner().RunAsync(_inv, [swallowing], CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Store_failure_turned_into_cancellation_by_the_analyzer_is_still_a_store_failure()
+    {
+        _sink.EvidenceFailure = new IOException("disk full");
+        var converting = new DelegateAnalyzer("converting", async (ctx, ct) =>
+        {
+            try
+            {
+                await ctx.Writer.AddEvidenceAsync(Samples.Evidence(ctx), ct);
+            }
+            catch (InvestigationSinkException)
+            {
+                throw new OperationCanceledException();
+            }
+        });
+
+        await Assert.ThrowsAsync<InvestigationSinkException>(() => Runner().RunAsync(_inv, [converting], CancellationToken.None));
+    }
+
+    [Fact]
     public async Task Failing_module_is_isolated_and_the_next_module_still_runs()
     {
         var modules = new IAnalyzer[]

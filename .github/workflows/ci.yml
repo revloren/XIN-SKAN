@@ -17,7 +17,7 @@ jobs:
   windows:
     name: Build and test (Windows)
     runs-on: windows-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -49,6 +49,21 @@ jobs:
             if ($out -notmatch "ForbiddenCalls\.cs\($line,\d+\): error RS0030") { Write-Error "No RS0030 reported for ForbiddenCalls.cs line $line"; exit 1 }
           }
           exit 0
+
+      - name: Real run on this runner (CLI)
+        # File Hunter over the runner's real profile; results go to the runner's D: drive, not the investigated C:.
+        shell: pwsh
+        timeout-minutes: 15
+        run: |
+          $out = Join-Path $env:RUNNER_TEMP 'xinskan-out'
+          dotnet src/XINSkan.Cli/bin/Release/net10.0/xinskan.dll investigate --output $out --operator CI
+          $code = $LASTEXITCODE
+          Write-Host "investigate exit code: $code"
+          if ($code -ge 2) { exit 1 }
+          $folder = Get-ChildItem $out -Directory | Select-Object -First 1
+          dotnet src/XINSkan.Cli/bin/Release/net10.0/xinskan.dll verify $folder.FullName
+          if ($LASTEXITCODE -ne 0) { Write-Error "verify failed"; exit 1 }
+          Get-ChildItem $folder.FullName | Format-Table Name, Length, Attributes
 
       - name: Upload test results
         if: always()

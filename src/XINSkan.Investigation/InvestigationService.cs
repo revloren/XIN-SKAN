@@ -1,0 +1,205 @@
+using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using XINSkan.Analyzers.FileHunter;
+using XINSkan.Core.IO;
+using XINSkan.Core.Permissions;
+using XINSkan.Core.Pipeline;
+using XINSkan.Models;
+using XINSkan.Platform.Windows;
+using XINSkan.Platform.Windows.IO;
+using XINSkan.Security;
+
+namespace XINSkan.Investigation;
+
+/// <summary>What the platform provides: how files are listed and opened, how signatures and capabilities are checked.</summary>
+/// <param name="FileAccess">How <paramref name="Files"/> opens files, as written to the audit log.</param>
+public sealed record PlatformServices(
+    IDirectoryLister Lister,
+    IFileSource Files,
+    ISignatureVerifier Signatures,
+    ICapabilityProbe Probe,
+    string FileAccess)
+{
+    /// <summary>The read-only Windows implementations, for the system XIN SKAN runs on.</summary>
+    [SupportedOSPlatform("windows")]
+    public static PlatformServices ForWindows() => new(
+        SystemDirectoryLister.Instance,
+        WindowsFileSource.Instance,
+        AuthenticodeVerifier.Instance,
+        new WindowsCapabilityProbe(),
+        WindowsFileSource.AccessDescription);
+}
+
+public sealed record InvestigationRequest
+{
+    /// <summary>Folder under which a new investigation folder is created.</summary>
+    public required string OutputRoot { get; init; }
+
+    public required FileHunterOptions FileHunter { get; init; }
+
+    /// <summary>Who runs the check, as entered by the operator.</summary>
+    public string? Operator { get; init; }
+
+    /// <summary>Consents given by the owner for this investigation. None are assumed.</summary>
+    public IReadOnlyList<(Consent Consent, string GrantedBy, string Statement)> Consents { get; init; } = [];
+}
+
+/// <summary>Result of one investigation, as written to its folder.</summary>
+public sealed record InvestigationOutcome(
+    Ulid InvestigationId,
+    string Folder,
+    InvestigationRunResult Run,
+    long EvidenceWritten,
+    Sha256Hash ManifestSha256,
+    IReadOnlyList<IntegrityProblem> SelfCheck,
+    OutputLocationAssessment OutputLocation,
+    PermissionSnapshot Permissions);
+
+/// <summary>Creates the evidence store inside the investigation folder (normally InvestigationStore.Create).</summary>
+public delegate IInvestigationSink StoreFactory(OutputSink output, InvestigationInfo info);
+
+/// <summary>
+/// Runs one investigation end to end. The order is fixed so that a folder is either complete and covered by its
+/// manifest, or visibly unfinished:
+/// new folder → audit log → store → permissions → analyzers → close store → close audit → manifest → seal.
+/// </summary>
+/// <remarks>
+/// Cancellation is not a failure: records collected so far are saved and the folder is closed with a manifest.
+/// A failure of the store or the output folder is: the folder is left without a manifest, so the library shows
+/// it as not closed, and the exception is rethrown.
+/// </remarks>
+public sealed class InvestigationService(PlatformServices platform, StoreFactory createStore, TimeProvider time, string toolVersion)
+{
+    public const string AuditFileName = "audit.jsonl";
+
+    public async Task<InvestigationOutcome> RunAsync(InvestigationRequest request, IProgress<ModuleProgress>? progress, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.OutputRoot);
+
+        var started = time.GetUtcNow();
+        var id = Ulid.NewUlid(started);
+        var location = OutputLocationPolicy.Assess(request.OutputRoot, InvestigatedVolumes(request.FileHunter));
+        var folderName = string.Create(CultureInfo.InvariantCulture, $"XINSKAN-{started.UtcDateTime:yyyyMMdd-HHmmss}-{id}");
+        var output = OutputSink.CreateInvestigationFolder(request.OutputRoot, folderName);
+
+        var info = new InvestigationInfo
+        {
+            InvestigationId = id,
+            StartedUtc = started,
+            ToolVersion = toolVersion,
+            Operator = string.IsNullOrWhiteSpace(request.Operator) ? null : request.Operator.Trim(),
+            MachineName = Environment.MachineName,
+            OsDescription = RuntimeInformation.OSDescription,
+            TimeZoneId = TimeZoneInfo.Local.Id,
+        };
+
+        InvestigationRunResult run;
+        long written;
+        PermissionSnapshot permissions;
+        using (var audit = new AuditLogger(output.CreateNew(AuditFileName), time))
+        {
+            audit.Record("investigation-start", output.Root, "create-new", "ok", $"{id}; {location.Message}");
+
+            var store = createStore(output, info);
+            var counting = new CountingSink(store);
+            try
+            {
+                var manager = new PermissionManager(platform.Probe, time);
+                foreach (var (consent, grantedBy, statement) in request.Consents)
+                {
+                    manager.Grant(consent, grantedBy, statement);
+                    audit.Record("consent", consent.ToString(), "granted", "ok", $"{grantedBy}: {statement}");
+                }
+
+                permissions = manager.Snapshot();
+                foreach (var c in permissions.Capabilities.OrderBy(c => c.Capability))
+                {
+                    audit.Record("probe", c.Capability.ToString(), "query", c.Available ? "available" : "unavailable", c.Reason);
+                }
+
+                var lister = new AuditingDirectoryLister(platform.Lister, audit);
+                var files = new AuditingFileSource(platform.Files, audit, platform.FileAccess);
+                IAnalyzer[] analyzers = [new FileHunterAnalyzer(request.FileHunter, lister, files, platform.Signatures)];
+
+                var runner = new InvestigationRunner(counting, permissions, time, progress);
+                run = await runner.RunAsync(id, analyzers, cancellationToken).ConfigureAwait(false);
+                written = counting.Evidence;
+            }
+            catch (Exception ex)
+            {
+                // Best effort only: the original failure is what the caller must see.
+                TryQuietly(() => audit.Record("investigation-failed", output.Root, "-", "error", $"{ex.GetType().Name}: {ex.Message}"));
+                TryQuietly(() => (store as IDisposable)?.Dispose());
+                throw;
+            }
+
+            // Closing the store flushes the last batch; it must happen before the manifest hashes the database.
+            (store as IDisposable)?.Dispose();
+            audit.Record(
+                "investigation-end",
+                output.Root,
+                "-",
+                run.Cancelled ? "cancelled" : "ok",
+                $"records {written}; modules: {string.Join(", ", run.Modules.Select(m => $"{m.ModuleId}={m.State}"))}");
+        }
+
+        var manifest = IntegrityManifest.Write(output, time);
+        foreach (var file in output.CreatedFiles)
+        {
+            output.Seal(file);
+        }
+
+        var selfCheck = IntegrityManifest.Verify(output.Root);
+        return new InvestigationOutcome(id, output.Root, run, written, manifest, selfCheck, location, permissions);
+    }
+
+    /// <summary>Volumes the analyzers read from, so the output policy can warn when results land on one of them.</summary>
+    public static IReadOnlyList<string> InvestigatedVolumes(FileHunterOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        return new[] { options.UsersRoot, options.CurrentProfile }
+            .Concat(options.TempFolders)
+            .Concat(options.ExtraRoots)
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Select(p => Path.GetPathRoot(Path.GetFullPath(p)))
+            .Where(r => !string.IsNullOrEmpty(r))
+            .Select(r => r!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static void TryQuietly(Action action)
+    {
+        try
+        {
+            action();
+        }
+#pragma warning disable CA1031 // Cleanup after a failure must not replace the failure being reported.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+        }
+    }
+
+    /// <summary>Counts records the store accepted.</summary>
+    private sealed class CountingSink(IInvestigationSink inner) : IInvestigationSink
+    {
+        private long _evidence;
+
+        public long Evidence => Interlocked.Read(ref _evidence);
+
+        public async ValueTask AddEvidenceAsync(Evidence evidence, CancellationToken cancellationToken)
+        {
+            await inner.AddEvidenceAsync(evidence, cancellationToken).ConfigureAwait(false);
+            Interlocked.Increment(ref _evidence);
+        }
+
+        public ValueTask AddCoverageAsync(SourceCoverage coverage, CancellationToken cancellationToken) => inner.AddCoverageAsync(coverage, cancellationToken);
+
+        public ValueTask AddErrorAsync(string moduleId, ModuleError moduleError, CancellationToken cancellationToken) => inner.AddErrorAsync(moduleId, moduleError, cancellationToken);
+
+        public ValueTask CheckpointAsync(ModuleResult result, CancellationToken cancellationToken) => inner.CheckpointAsync(result, cancellationToken);
+    }
+}
