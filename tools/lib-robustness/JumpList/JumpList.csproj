@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><AssemblyName>JumpList</AssemblyName></PropertyGroup>
+  <ItemGroup><Compile Include="$(LibSrc)/JumpList/JumpList/**/*.cs" Exclude="$(LibSrc)/JumpList/JumpList/**/obj/**;$(LibSrc)/JumpList/JumpList/**/bin/**" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="../Lnk/Lnk.csproj" /><ProjectReference Include="../OleCf/OleCf.csproj" /><ProjectReference Include="../ExtensionBlocks/ExtensionBlocks.csproj" /><ProjectReference Include="../GuidMapping/GuidMapping.csproj" /><ProjectReference Include="../SerilogShim/SerilogShim.csproj" /></ItemGroup>
+  <ItemGroup><EmbeddedResource Include="$(LibSrc)/JumpList/JumpList/Properties/Resources.resx" LogicalName="JumpList.Properties.Resources.resources" /></ItemGroup>
+</Project>

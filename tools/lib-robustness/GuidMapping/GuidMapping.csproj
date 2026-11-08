@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><AssemblyName>GuidMapping</AssemblyName></PropertyGroup>
+  <ItemGroup><Compile Include="$(LibSrc)/GuidMapping/GuidMapping/**/*.cs" Exclude="$(LibSrc)/GuidMapping/GuidMapping/**/obj/**;$(LibSrc)/GuidMapping/GuidMapping/**/bin/**" /></ItemGroup>
+  <ItemGroup></ItemGroup>
+  <ItemGroup><EmbeddedResource Include="$(LibSrc)/GuidMapping/GuidMapping/Resources/GuidToName.txt" LogicalName="GuidMapping.GuidToName.txt" /><EmbeddedResource Include="$(LibSrc)/GuidMapping/GuidMapping/Resources/GuidPrefixToName.txt" LogicalName="GuidMapping.GuidPrefixToName.txt" /></ItemGroup>
+</Project>

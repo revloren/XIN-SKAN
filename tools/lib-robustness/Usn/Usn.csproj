@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><AssemblyName>Usn</AssemblyName></PropertyGroup>
+  <ItemGroup><Compile Include="$(LibSrc)/MFT/Usn/**/*.cs" Exclude="$(LibSrc)/MFT/Usn/**/obj/**;$(LibSrc)/MFT/Usn/**/bin/**" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="../SerilogShim/SerilogShim.csproj" /></ItemGroup>
+</Project>

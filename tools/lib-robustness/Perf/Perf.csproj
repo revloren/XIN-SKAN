@@ -1,0 +1,1 @@
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><ImplicitUsings>disable</ImplicitUsings></PropertyGroup><ItemGroup><Compile Include="Program.cs" /></ItemGroup><ItemGroup><ProjectReference Include="../MFT/MFT.csproj" /></ItemGroup></Project>

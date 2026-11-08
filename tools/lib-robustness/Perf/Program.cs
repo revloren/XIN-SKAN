@@ -1,0 +1,10 @@
+using System; using System.Diagnostics; using System.IO; using System.Linq;
+var path = args[0];
+GC.Collect(); var before = GC.GetTotalMemory(true);
+var sw = Stopwatch.StartNew();
+using var fs = new FileStream(path, FileMode.Open, FileAccess.Read);
+var m = new MFT.Mft(fs, false);
+sw.Stop();
+var after = GC.GetTotalMemory(true);
+var recs = m.FileRecords.Count + m.FreeFileRecords.Count;
+Console.WriteLine($"bytes={fs.Length} records(in-use+free)={m.FileRecords.Count}+{m.FreeFileRecords.Count} bad={m.BadRecords.Count} seconds={sw.Elapsed.TotalSeconds:F2} retainedMB={(after-before)/1048576.0:F0} bytesPerRecord={(after-before)/Math.Max(1,recs)}");

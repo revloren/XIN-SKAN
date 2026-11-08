@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><AssemblyName>Prefetch</AssemblyName></PropertyGroup>
+  <ItemGroup><Compile Include="$(LibSrc)/Prefetch/Prefetch/**/*.cs" Exclude="$(LibSrc)/Prefetch/Prefetch/**/obj/**;$(LibSrc)/Prefetch/Prefetch/**/bin/**" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="../SerilogShim/SerilogShim.csproj" /></ItemGroup>
+</Project>

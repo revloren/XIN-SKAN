@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><AssemblyName>ExtensionBlocks</AssemblyName></PropertyGroup>
+  <ItemGroup><Compile Include="$(LibSrc)/ExtensionBlocks/ExtensionBlocks/**/*.cs" Exclude="$(LibSrc)/ExtensionBlocks/ExtensionBlocks/**/obj/**;$(LibSrc)/ExtensionBlocks/ExtensionBlocks/**/bin/**" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="../GuidMapping/GuidMapping.csproj" /><ProjectReference Include="../SerilogShim/SerilogShim.csproj" /></ItemGroup>
+</Project>

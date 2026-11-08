@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><AssemblyName>OleCf</AssemblyName></PropertyGroup>
+  <ItemGroup><Compile Include="$(LibSrc)/OleCf/OleCf/**/*.cs" Exclude="$(LibSrc)/OleCf/OleCf/**/obj/**;$(LibSrc)/OleCf/OleCf/**/bin/**" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="../SerilogShim/SerilogShim.csproj" /></ItemGroup>
+</Project>

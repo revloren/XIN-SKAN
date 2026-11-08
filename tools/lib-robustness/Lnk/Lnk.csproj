@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><AssemblyName>Lnk</AssemblyName></PropertyGroup>
+  <ItemGroup><Compile Include="$(LibSrc)/Lnk/Lnk/**/*.cs" Exclude="$(LibSrc)/Lnk/Lnk/**/obj/**;$(LibSrc)/Lnk/Lnk/**/bin/**" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="../ExtensionBlocks/ExtensionBlocks.csproj" /><ProjectReference Include="../GuidMapping/GuidMapping.csproj" /><ProjectReference Include="../SerilogShim/SerilogShim.csproj" /></ItemGroup>
+</Project>

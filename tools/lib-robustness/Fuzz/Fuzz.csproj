@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><Nullable>enable</Nullable><ServerGarbageCollection>false</ServerGarbageCollection></PropertyGroup>
+  <ItemGroup><Compile Include="Program.cs" /></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Prefetch/Prefetch.csproj" />
+    <ProjectReference Include="../Lnk/Lnk.csproj" />
+    <ProjectReference Include="../JumpList/JumpList.csproj" />
+    <ProjectReference Include="../MFT/MFT.csproj" />
+    <ProjectReference Include="../Usn/Usn.csproj" />
+  </ItemGroup>
+</Project>

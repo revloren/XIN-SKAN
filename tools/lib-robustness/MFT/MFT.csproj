@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><AssemblyName>MFT</AssemblyName></PropertyGroup>
+  <ItemGroup><Compile Include="$(LibSrc)/MFT/MFT/**/*.cs" Exclude="$(LibSrc)/MFT/MFT/**/obj/**;$(LibSrc)/MFT/MFT/**/bin/**" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="../SerilogShim/SerilogShim.csproj" /></ItemGroup>
+</Project>
