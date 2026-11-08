@@ -37,7 +37,7 @@
                              Fill="{Binding Available, Converter={StaticResource AvailabilityBrush}}" />
                     <StackPanel>
                       <TextBlock Text="{Binding Name}" Style="{StaticResource Body}" />
-                      <TextBlock Text="{Binding Reason}" Style="{StaticResource Muted}" />
+                      <TextBlock Text="{Binding Reason}" Style="{StaticResource Muted}" ToolTip="{Binding Detail}" />
                     </StackPanel>
                   </DockPanel>
                 </Border>

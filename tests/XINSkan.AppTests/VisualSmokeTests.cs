@@ -116,15 +116,15 @@ public sealed class VisualSmokeTests(ITestOutputHelper output)
     private static byte[] Render(Window window)
     {
         var root = (FrameworkElement)window.Content;
-        root.Measure(new Size(1280, 800));
-        root.Arrange(new Rect(0, 0, 1280, 800));
         root.UpdateLayout();
+        var width = Math.Max(1, (int)Math.Ceiling(root.ActualWidth));
+        var height = Math.Max(1, (int)Math.Ceiling(root.ActualHeight));
 
-        var bitmap = new RenderTargetBitmap(1280, 800, 96, 96, PixelFormats.Pbgra32);
+        var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
         var background = new DrawingVisual();
         using (var dc = background.RenderOpen())
         {
-            dc.DrawRectangle(window.Background, null, new Rect(0, 0, 1280, 800));
+            dc.DrawRectangle(window.Background, null, new Rect(0, 0, width, height));
         }
 
         bitmap.Render(background);

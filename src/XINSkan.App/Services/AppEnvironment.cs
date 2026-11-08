@@ -30,7 +30,15 @@ public sealed class AppEnvironment
 
     public string SystemDrive { get; } = (Environment.GetEnvironmentVariable("SystemDrive") ?? "C:")[..2];
 
-    public OutputLocationAssessment AssessOutput() => OutputLocationPolicy.Assess(OutputRoot, [SystemDrive + "\\"]);
+    /// <summary>Where results would go, in the operator's language. The policy itself lives in XINSkan.Security.</summary>
+    public (bool OnInvestigatedVolume, string Text) DescribeOutput(string folder)
+    {
+        var a = OutputLocationPolicy.Assess(folder, [SystemDrive + "\\"]);
+        var root = Path.GetPathRoot(Path.GetFullPath(folder));
+        return (a.OnInvestigatedVolume, a.OnInvestigatedVolume
+            ? $"Результаты будут записаны на диск {root}, который исследуется. Новые файлы могут занять место, где ещё лежат остатки удалённых файлов, и появятся в его журнале изменений."
+            : $"Результаты будут записаны на диск {root}, который не исследуется.");
+    }
 
     /// <summary>Probes capabilities on a background thread; every row comes from the live system.</summary>
     public static Task<PermissionSnapshot> ProbeAsync() =>

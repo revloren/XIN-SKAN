@@ -19,8 +19,12 @@
       </Grid.ColumnDefinitions>
       <ComboBox ItemsSource="{Binding Investigations}" SelectedItem="{Binding Selected}" DisplayMemberPath="Title"
                 AutomationProperties.Name="Проверка" />
-      <TextBox Grid.Column="2" Style="{StaticResource Field}" Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}"
-               AutomationProperties.Name="Фильтр по пути, описанию или источнику" ToolTip="Фильтр по пути, описанию или источнику" />
+      <Grid Grid.Column="2">
+        <TextBox Style="{StaticResource Field}" Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}"
+                 AutomationProperties.Name="Фильтр по пути, описанию или источнику" />
+        <TextBlock Text="Найти по пути, описанию или источнику" Style="{StaticResource Muted}" Margin="13,0,0,0" VerticalAlignment="Center"
+                   IsHitTestVisible="False" Visibility="{Binding Filter, Converter={StaticResource EmptyToVisibility}}" />
+      </Grid>
       <Button Grid.Column="3" Content="Обновить" Style="{StaticResource GlassButton}" Padding="14,6" Margin="12,0,0,0" Command="{Binding RefreshCommand}" />
     </Grid>
 

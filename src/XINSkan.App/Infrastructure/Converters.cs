@@ -21,6 +21,15 @@ public sealed class BoolToVisibility : IValueConverter
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotSupportedException();
 }
 
+/// <summary>Empty string → visible (placeholders over empty fields).</summary>
+public sealed class EmptyToVisibility : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is null || (value is string s && s.Length == 0) ? Visibility.Visible : Visibility.Collapsed;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotSupportedException();
+}
+
 /// <summary>null or empty → collapsed.</summary>
 public sealed class NullToVisibility : IValueConverter
 {

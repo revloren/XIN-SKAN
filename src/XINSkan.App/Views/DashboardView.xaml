@@ -20,7 +20,16 @@
       <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}" Background="{StaticResource SurfaceBrush}" Padding="0">
         <Grid>
           <Border CornerRadius="14" Background="{StaticResource EmberWashBrush}" IsHitTestVisible="False" />
-          <StackPanel Margin="28,26,28,28">
+          <DockPanel Margin="28,26,28,26">
+            <StackPanel DockPanel.Dock="Bottom" Margin="0,24,0,0">
+              <Border BorderBrush="{StaticResource HairlineBrush}" BorderThickness="0,1,0,0" Margin="0,0,0,14" />
+              <TextBlock Style="{StaticResource Muted}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" ToolTip="{Binding OutputFolder}">
+                <Run Text="Результаты сохраняются в" />
+                <Run Text="{Binding OutputFolder, Mode=OneWay}" Foreground="{StaticResource TextBrush}" />
+              </TextBlock>
+              <TextBlock Text="Исследуемые данные только читаются: удаления и очистки в программе нет." Style="{StaticResource Muted}" Margin="0,6,0,0" />
+            </StackPanel>
+          <StackPanel>
             <TextBlock Text="Последняя проверка" Style="{StaticResource SectionTitle}" />
 
             <StackPanel Visibility="{Binding HasLastInvestigation, Converter={StaticResource BoolToVisibility}}" Margin="0,14,0,0">
@@ -45,6 +54,7 @@
             <Button Content="Перейти к проверке" Style="{StaticResource EmberButton}" Command="{Binding StartCommand}"
                     HorizontalAlignment="Left" Margin="0,26,0,0" />
           </StackPanel>
+          </DockPanel>
         </Grid>
       </Border>
 
@@ -66,7 +76,7 @@
                              Fill="{Binding Available, Converter={StaticResource AvailabilityBrush}}" />
                     <StackPanel>
                       <TextBlock Text="{Binding Name}" Style="{StaticResource Body}" />
-                      <TextBlock Text="{Binding Reason}" Style="{StaticResource Muted}" />
+                      <TextBlock Text="{Binding Reason}" Style="{StaticResource Muted}" ToolTip="{Binding Detail}" />
                     </StackPanel>
                   </DockPanel>
                 </Border>

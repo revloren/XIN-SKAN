@@ -10,6 +10,7 @@
       </ResourceDictionary.MergedDictionaries>
       <infra:BoolToVisibility x:Key="BoolToVisibility" />
       <infra:NullToVisibility x:Key="NullToVisibility" />
+      <infra:EmptyToVisibility x:Key="EmptyToVisibility" />
       <infra:AvailabilityBrush x:Key="AvailabilityBrush" />
       <infra:ReadyBrush x:Key="ReadyBrush" />
       <infra:IntegrityBrush x:Key="IntegrityBrush" />

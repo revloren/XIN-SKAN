@@ -15,24 +15,28 @@ namespace XINSkan.App.ViewModels;
 /// <summary>One entry of the navigation rail.</summary>
 public sealed record NavItem(string Title, Geometry Icon, ObservableObject Page);
 
-/// <summary>A capability as the operator should read it.</summary>
-public sealed record CapabilityRow(string Name, bool Available, string Reason)
+/// <summary>
+/// A capability as the operator reads it: a Russian summary of what it means for the check, with the
+/// platform's technical reason kept as <see cref="Detail"/> (shown as a tooltip and written to reports).
+/// </summary>
+public sealed record CapabilityRow(string Name, bool Available, string Reason, string Detail)
 {
     public static CapabilityRow From(CapabilityState s)
     {
         ArgumentNullException.ThrowIfNull(s);
-        return new(DisplayName(s.Capability), s.Available, s.Reason);
+        var (name, ok, missing) = Describe(s.Capability);
+        return new(name, s.Available, s.Available ? ok : missing, s.Reason);
     }
 
-    private static string DisplayName(Capability c) => c switch
+    private static (string Name, string Ok, string Missing) Describe(Capability c) => c switch
     {
-        Capability.Administrator => "Права администратора",
-        Capability.RawVolumeRead => "Чтение тома напрямую (MFT)",
-        Capability.UsnJournalRead => "Журнал изменений USN",
-        Capability.SystemRegistryHives => "Защищённые ключи реестра",
-        Capability.OtherUserProfiles => "Профили других пользователей",
-        Capability.SecurityEventLog => "Журнал безопасности Windows",
-        _ => c.ToString(),
+        Capability.Administrator => ("Права администратора", "Программа запущена от имени администратора.", "Программа запущена без прав администратора: источники, которым они нужны, будут пропущены."),
+        Capability.RawVolumeRead => ("Чтение тома напрямую", "Системный том читается посекторно: доступны MFT и записи удалённых файлов.", "Том нельзя читать напрямую: MFT и записи удалённых файлов недоступны."),
+        Capability.UsnJournalRead => ("Журнал изменений USN", "Журнал изменений системного тома активен и читается.", "Журнал изменений недоступен или отключён: история переименований и удалений будет неполной."),
+        Capability.SystemRegistryHives => ("Защищённые ключи реестра", "Защищённые ключи (в том числе BAM) читаются.", "Защищённые ключи реестра недоступны: часть свидетельств запуска будет пропущена."),
+        Capability.OtherUserProfiles => ("Профили других пользователей", "Профили других пользователей читаются или их нет.", "Профили других пользователей недоступны: их файлы не будут проверены."),
+        Capability.SecurityEventLog => ("Журнал безопасности Windows", "Журнал безопасности читается.", "Пока не проверяется: источник журналов событий появится на этапе 6."),
+        _ => (c.ToString(), "Доступно.", "Недоступно."),
     };
 }
 
@@ -111,6 +115,8 @@ public sealed class DashboardViewModel : ObservableObject
 
     public bool HasLastInvestigation => _last is not null;
 
+    public string OutputFolder => _env.OutputRoot;
+
     public bool Loading
     {
         get => _loading;
@@ -138,6 +144,7 @@ public sealed class DashboardViewModel : ObservableObject
                 Readiness.Add(CapabilityRow.From(s));
             }
 
+            OnPropertyChanged(nameof(OutputFolder));
             var investigations = await Task.Run(() => InvestigationLibrary.Scan(_env.OutputRoot));
             LastInvestigation = investigations.Count > 0 ? investigations[0] : null;
             Status = null;
@@ -206,9 +213,9 @@ public sealed class InvestigationViewModel : ObservableObject
             Capabilities.Add(CapabilityRow.From(s));
         }
 
-        var a = _env.AssessOutput();
-        OutputAssessment = a.Message;
-        OutputOnInvestigatedVolume = a.OnInvestigatedVolume;
+        var (onInvestigated, text) = _env.DescribeOutput(_env.OutputRoot);
+        OutputAssessment = text;
+        OutputOnInvestigatedVolume = onInvestigated;
         OnPropertyChanged(nameof(OutputFolder));
     }
 }
@@ -455,9 +462,9 @@ public sealed class SettingsViewModel : ObservableObject
     {
         try
         {
-            var a = OutputLocationPolicy.Assess(_outputRoot, [_env.SystemDrive + "\\"]);
-            Assessment = a.Message;
-            OnInvestigatedVolume = a.OnInvestigatedVolume;
+            var (onInvestigated, text) = _env.DescribeOutput(_outputRoot);
+            Assessment = text;
+            OnInvestigatedVolume = onInvestigated;
         }
         catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
         {
