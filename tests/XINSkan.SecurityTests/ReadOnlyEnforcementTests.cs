@@ -118,7 +118,10 @@ public class ReadOnlyEnforcementTests
             .Select(m => m.GetCustomAttribute<DllImportAttribute>()?.EntryPoint ?? m.Name)
             .ToHashSet(StringComparer.Ordinal);
 
-        Assert.Subset(new HashSet<string>(StringComparer.Ordinal) { "CreateFileW", "DeviceIoControl", "GetVolumeInformationW" }, entryPoints);
+        // Open for reading, query/read device data, read volume and file information, verify a signature offline.
+        Assert.Subset(
+            new HashSet<string>(StringComparer.Ordinal) { "CreateFileW", "DeviceIoControl", "GetVolumeInformationW", "GetFileInformationByHandle", "WinVerifyTrust" },
+            entryPoints);
         Assert.NotEmpty(entryPoints);
     }
 

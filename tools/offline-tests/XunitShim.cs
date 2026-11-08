@@ -59,6 +59,12 @@ public static class Assert
     public static void Contains(string expected, string? actual, StringComparison comparison = StringComparison.Ordinal)
     { if (actual is null || !actual.Contains(expected, comparison)) Fail($"'{actual}' does not contain '{expected}'."); }
 
+    public static void StartsWith(string expected, string? actual, StringComparison comparison = StringComparison.Ordinal) { if (actual is null || !actual.StartsWith(expected, comparison)) Fail($"'{actual}' does not start with '{expected}'."); }
+
+    public static void Matches(string pattern, string? actual) { if (actual is null || !System.Text.RegularExpressions.Regex.IsMatch(actual, pattern)) Fail($"'{actual}' does not match '{pattern}'."); }
+
+    public static void Same(object? expected, object? actual) { if (!ReferenceEquals(expected, actual)) Fail("Objects are not the same instance."); }
+
     public static void Contains<T>(T expected, IEnumerable<T> collection) { if (!collection.Contains(expected)) Fail($"Collection does not contain {expected}."); }
 
     public static void Contains<T>(IEnumerable<T> collection, Predicate<T> filter) { if (!collection.Any(x => filter(x))) Fail("No item matches the filter. Items: " + string.Join(" | ", collection)); }

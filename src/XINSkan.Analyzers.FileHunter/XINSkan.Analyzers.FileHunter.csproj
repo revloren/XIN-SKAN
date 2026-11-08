@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>XINSkan.Analyzers.FileHunter</RootNamespace>
+    <Description>File Hunter: existing files and folders, their content type, hashes, identity and embedded metadata.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XINSkan.Models\XINSkan.Models.csproj" />
+    <ProjectReference Include="..\XINSkan.Core\XINSkan.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="XINSkan.FileHunterTests" />
+    <!-- The local NuGet-free runner (tools/offline-tests) compiles all test sources into this assembly name. -->
+    <InternalsVisibleTo Include="XINSkan.UnitTests" />
+  </ItemGroup>
+</Project>

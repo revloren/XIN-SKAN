@@ -16,11 +16,57 @@ namespace XINSkan.Platform.Windows.IO;
 [SupportedOSPlatform("windows")]
 public static class ReadOnlyFile
 {
-    public static SafeFileHandle OpenHandle(string path)
+    private const int ErrorAccessDenied = 5;
+
+    public static SafeFileHandle OpenHandle(string path) =>
+        TryOpenHandle(path, out var error) ?? throw Translate(path, error);
+
+    /// <summary>Like <see cref="OpenHandle"/>, but returns null when the file or stream does not exist.</summary>
+    public static SafeFileHandle? TryOpenExisting(string path)
+    {
+        var handle = TryOpenHandle(path, out var error);
+        if (handle is not null)
+        {
+            return handle;
+        }
+
+        return error is NativeMethods.ErrorFileNotFound or NativeMethods.ErrorPathNotFound ? null : throw Translate(path, error);
+    }
+
+    /// <summary>NTFS identity of an open file (volume serial, MFT entry and sequence); null if the file system has none.</summary>
+    public static unsafe XINSkan.Core.IO.FileIdentity? GetIdentity(SafeFileHandle handle)
+    {
+        ArgumentNullException.ThrowIfNull(handle);
+        NativeMethods.ByHandleFileInformation info;
+        if (!NativeMethods.GetFileInformationByHandle(handle, &info))
+        {
+            return null;
+        }
+
+        var reference = ((ulong)info.FileIndexHigh << 32) | info.FileIndexLow;
+        return XINSkan.Core.IO.FileIdentity.FromFileReference(info.VolumeSerialNumber, reference, (int)info.NumberOfLinks);
+    }
+
+    /// <summary>
+    /// Adds the \\?\ prefix to paths at or beyond MAX_PATH, so CreateFileW accepts them without the system-wide
+    /// long-path setting.
+    /// </summary>
+    public static string ToExtendedPath(string path)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        if (path.Length < 248 || path.StartsWith(@"\\?\", StringComparison.Ordinal) || path.StartsWith(@"\\.\", StringComparison.Ordinal))
+        {
+            return path;
+        }
+
+        return path.StartsWith(@"\\", StringComparison.Ordinal) ? @"\\?\UNC\" + path[2..] : @"\\?\" + path;
+    }
+
+    private static SafeFileHandle? TryOpenHandle(string path, out int error)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         var handle = NativeMethods.CreateFile(
-            path,
+            ToExtendedPath(path),
             NativeMethods.GenericRead,
             NativeMethods.ShareAll,
             IntPtr.Zero,
@@ -30,12 +76,25 @@ public static class ReadOnlyFile
 
         if (handle.IsInvalid)
         {
-            var error = new Win32Exception();
+            error = System.Runtime.InteropServices.Marshal.GetLastPInvokeError();
             handle.Dispose();
-            throw new IOException($"Cannot open '{path}' for reading: {error.Message}", error);
+            return null;
         }
 
+        error = 0;
         return handle;
+    }
+
+    /// <summary>Access denied → <see cref="UnauthorizedAccessException"/>; missing → <see cref="FileNotFoundException"/>; else <see cref="IOException"/>.</summary>
+    private static Exception Translate(string path, int error)
+    {
+        var w = new Win32Exception(error);
+        return error switch
+        {
+            ErrorAccessDenied => new UnauthorizedAccessException($"Access to '{path}' is denied.", w),
+            NativeMethods.ErrorFileNotFound or NativeMethods.ErrorPathNotFound => new FileNotFoundException($"'{path}' does not exist.", path, w),
+            _ => new IOException($"Cannot open '{path}' for reading: {w.Message} (Win32 error {error}).", w),
+        };
     }
 
     /// <summary>A seekable, non-writable stream over the file.</summary>

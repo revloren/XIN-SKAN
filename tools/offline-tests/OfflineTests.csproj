@@ -16,6 +16,7 @@
     <Compile Include="*.cs" />
     <Compile Include="../../tests/XINSkan.UnitTests/**/*.cs" Exclude="../../tests/XINSkan.UnitTests/obj/**;../../tests/XINSkan.UnitTests/bin/**" />
     <Compile Include="../../tests/XINSkan.SecurityTests/**/*.cs" Exclude="../../tests/XINSkan.SecurityTests/obj/**;../../tests/XINSkan.SecurityTests/bin/**" />
+    <Compile Include="../../tests/XINSkan.FileHunterTests/**/*.cs" Exclude="../../tests/XINSkan.FileHunterTests/obj/**;../../tests/XINSkan.FileHunterTests/bin/**" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />
@@ -26,5 +27,6 @@
     <ProjectReference Include="../../src/XINSkan.Core/XINSkan.Core.csproj" />
     <ProjectReference Include="../../src/XINSkan.Platform.Windows/XINSkan.Platform.Windows.csproj" />
     <ProjectReference Include="../../src/XINSkan.Security/XINSkan.Security.csproj" />
+    <ProjectReference Include="../../src/XINSkan.Analyzers.FileHunter/XINSkan.Analyzers.FileHunter.csproj" />
   </ItemGroup>
 </Project>
