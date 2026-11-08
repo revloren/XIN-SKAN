@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Must NOT compile. CI builds it and fails if the build succeeds: proof that the banned-API analyzer is
+       active for projects with XinEnforceReadOnly=true. Not part of XINSkan.slnx. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <XinEnforceReadOnly>true</XinEnforceReadOnly>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+</Project>

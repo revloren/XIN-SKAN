@@ -1,0 +1,14 @@
+<Project>
+  <!-- Read-Only by Design, compile-time layer: projects that may only read the investigated system get the
+       banned-API analyzer and BannedSymbols.txt. A project opts out with <XinEnforceReadOnly>false</XinEnforceReadOnly>
+       (only XINSkan.Security, XINSkan.Storage, XINSkan.Reporting and test projects). -->
+  <ItemGroup Condition="'$(XinEnforceReadOnly)' == 'true' and '$(XinOffline)' != 'true'">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(XinEnforceReadOnly)' == 'true'">
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" Link="BannedSymbols.txt" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(XinEnforceReadOnly)' == 'true'">
+    <WarningsAsErrors>$(WarningsAsErrors);RS0030;RS0031</WarningsAsErrors>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>XINSkan.Platform.Windows</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Description>The only assembly with P/Invoke. Opens files, volumes and registry keys strictly for reading.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XINSkan.Core\XINSkan.Core.csproj" />
+  </ItemGroup>
+</Project>

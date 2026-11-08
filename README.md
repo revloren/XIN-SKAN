@@ -10,7 +10,7 @@ Windows-приложение для исследования цифровых с
 | --- | --- |
 | Проверка сторонних разборщиков | Готово — [docs/LIBRARY_REVIEW.md](docs/LIBRARY_REVIEW.md) |
 | 1. Core и модели | Готово |
-| 2. Read-Only Security | Не начат |
+| 2. Read-Only Security | Готово — [docs/SECURITY.md](docs/SECURITY.md) |
 | 3. Storage (SQLite) | Не начат |
 | 4. File Hunter | Не начат |
 | 5. History Engine | Не начат |
@@ -22,6 +22,8 @@ Windows-приложение для исследования цифровых с
 ```
 src/XINSkan.Models   схема Evidence v1 (без зависимостей)
 src/XINSkan.Core     конвейер проверки, разрешения и согласия, нормализация путей
+src/XINSkan.Platform.Windows  единственная сборка с системными вызовами; только чтение
+src/XINSkan.Security          единственный писатель (папка проверки), аудит, манифест
 tests/               модульные тесты (xUnit)
 tools/               инструменты разработки, не входят в поставку
 docs/                документация
@@ -34,5 +36,6 @@ docs/                документация
 ## Документация
 
 - [docs/EVIDENCE_SCHEMA.md](docs/EVIDENCE_SCHEMA.md) — схема свидетельства и её правила
+- [docs/SECURITY.md](docs/SECURITY.md) — как устроен и проверяется Read-Only
 - [docs/LIBRARY_REVIEW.md](docs/LIBRARY_REVIEW.md) — проверка библиотек MFT, Prefetch, Jump Lists
 - [docs/PROGRESS.md](docs/PROGRESS.md) — отчёты по этапам

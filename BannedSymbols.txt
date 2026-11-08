@@ -1,0 +1,98 @@
+# Read-Only by Design: APIs that may change the investigated system.
+# Enforced by Microsoft.CodeAnalysis.BannedApiAnalyzers (RS0030, an error) in every project with
+# XinEnforceReadOnly=true, and checked again on compiled IL by tests/XINSkan.SecurityTests.
+# Format: documentation comment ID;reason. SecurityTests verify that every entry resolves to a real API,
+# so a typo cannot silently disable a ban.
+
+# Files: all of System.IO.File and FileStream. Investigated files are opened only through
+# XINSkan.Platform.Windows.IO.ReadOnlyFile (GENERIC_READ, share read/write/delete).
+T:System.IO.File;Use ReadOnlyFile for investigated files; XIN SKAN output goes through OutputSink
+T:System.IO.FileStream;Use ReadOnlyFile / ReadOnlyHandleStream; FileStream can write and can block other processes
+T:System.IO.StreamWriter;Analyzers must not write files
+T:System.IO.FileSystemWatcher;Not needed for a read-only investigation
+M:System.IO.FileInfo.OpenRead;Opens with FileShare.Read and blocks the system's own writers; use ReadOnlyFile
+M:System.IO.FileInfo.OpenText;Opens with FileShare.Read and blocks the system's own writers; use ReadOnlyFile
+M:System.IO.FileInfo.Open(System.IO.FileMode);Can create or truncate
+M:System.IO.FileInfo.Open(System.IO.FileMode,System.IO.FileAccess);Can create or truncate
+M:System.IO.FileInfo.Open(System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare);Can create or truncate
+M:System.IO.FileInfo.Open(System.IO.FileStreamOptions);Can create or truncate
+M:System.IO.FileInfo.OpenWrite;Writes to the investigated file
+M:System.IO.FileInfo.Create;Creates a file
+M:System.IO.FileInfo.CreateText;Creates a file
+M:System.IO.FileInfo.AppendText;Writes to the investigated file
+M:System.IO.FileInfo.Delete;Deletes a file
+M:System.IO.FileInfo.MoveTo(System.String);Moves a file
+M:System.IO.FileInfo.MoveTo(System.String,System.Boolean);Moves a file
+M:System.IO.FileInfo.CopyTo(System.String);Creates a file
+M:System.IO.FileInfo.CopyTo(System.String,System.Boolean);Creates or overwrites a file
+M:System.IO.FileInfo.Replace(System.String,System.String);Replaces a file
+M:System.IO.FileInfo.Replace(System.String,System.String,System.Boolean);Replaces a file
+M:System.IO.FileInfo.Encrypt;Changes a file
+M:System.IO.FileInfo.Decrypt;Changes a file
+M:System.IO.FileInfo.set_IsReadOnly(System.Boolean);Changes attributes
+M:System.IO.FileSystemInfo.Delete;Deletes a file or folder
+M:System.IO.FileSystemInfo.set_Attributes(System.IO.FileAttributes);Changes attributes
+M:System.IO.FileSystemInfo.set_CreationTime(System.DateTime);Changes timestamps
+M:System.IO.FileSystemInfo.set_CreationTimeUtc(System.DateTime);Changes timestamps
+M:System.IO.FileSystemInfo.set_LastAccessTime(System.DateTime);Changes timestamps
+M:System.IO.FileSystemInfo.set_LastAccessTimeUtc(System.DateTime);Changes timestamps
+M:System.IO.FileSystemInfo.set_LastWriteTime(System.DateTime);Changes timestamps
+M:System.IO.FileSystemInfo.set_LastWriteTimeUtc(System.DateTime);Changes timestamps
+M:System.IO.FileSystemInfo.set_UnixFileMode(System.IO.UnixFileMode);Changes permissions
+M:System.IO.FileSystemInfo.CreateAsSymbolicLink(System.String);Creates a link
+M:System.IO.DirectoryInfo.Create;Creates a folder
+M:System.IO.DirectoryInfo.CreateSubdirectory(System.String);Creates a folder
+M:System.IO.DirectoryInfo.Delete;Deletes a folder
+M:System.IO.DirectoryInfo.Delete(System.Boolean);Deletes a folder tree
+M:System.IO.DirectoryInfo.MoveTo(System.String);Moves a folder
+
+# Folders: mutating members of System.IO.Directory (enumeration stays allowed).
+M:System.IO.Directory.CreateDirectory(System.String);Creates a folder
+M:System.IO.Directory.CreateDirectory(System.String,System.IO.UnixFileMode);Creates a folder
+M:System.IO.Directory.CreateTempSubdirectory(System.String);Creates a folder
+M:System.IO.Directory.CreateSymbolicLink(System.String,System.String);Creates a link
+M:System.IO.Directory.Delete(System.String);Deletes a folder
+M:System.IO.Directory.Delete(System.String,System.Boolean);Deletes a folder tree
+M:System.IO.Directory.Move(System.String,System.String);Moves a folder
+M:System.IO.Directory.SetCreationTime(System.String,System.DateTime);Changes timestamps
+M:System.IO.Directory.SetCreationTimeUtc(System.String,System.DateTime);Changes timestamps
+M:System.IO.Directory.SetLastAccessTime(System.String,System.DateTime);Changes timestamps
+M:System.IO.Directory.SetLastAccessTimeUtc(System.String,System.DateTime);Changes timestamps
+M:System.IO.Directory.SetLastWriteTime(System.String,System.DateTime);Changes timestamps
+M:System.IO.Directory.SetLastWriteTimeUtc(System.String,System.DateTime);Changes timestamps
+M:System.IO.Directory.SetCurrentDirectory(System.String);Changes process state used by relative paths
+
+# Raw handle writes.
+M:System.IO.RandomAccess.Write(Microsoft.Win32.SafeHandles.SafeFileHandle,System.ReadOnlySpan{System.Byte},System.Int64);Writes through a handle
+M:System.IO.RandomAccess.Write(Microsoft.Win32.SafeHandles.SafeFileHandle,System.Collections.Generic.IReadOnlyList{System.ReadOnlyMemory{System.Byte}},System.Int64);Writes through a handle
+M:System.IO.RandomAccess.WriteAsync(Microsoft.Win32.SafeHandles.SafeFileHandle,System.ReadOnlyMemory{System.Byte},System.Int64,System.Threading.CancellationToken);Writes through a handle
+M:System.IO.RandomAccess.WriteAsync(Microsoft.Win32.SafeHandles.SafeFileHandle,System.Collections.Generic.IReadOnlyList{System.ReadOnlyMemory{System.Byte}},System.Int64,System.Threading.CancellationToken);Writes through a handle
+M:System.IO.RandomAccess.SetLength(Microsoft.Win32.SafeHandles.SafeFileHandle,System.Int64);Truncates or extends a file
+
+# Processes: XIN SKAN never starts, stops or signals other processes (no cleaners, no fsutil, no taskkill).
+T:System.Diagnostics.Process;Analyzers must not start or stop processes
+
+# Registry: only the read-only OpenSubKey(string) is allowed.
+M:Microsoft.Win32.RegistryKey.OpenSubKey(System.String,System.Boolean);Can open for writing; use OpenSubKey(string)
+M:Microsoft.Win32.RegistryKey.OpenSubKey(System.String,Microsoft.Win32.RegistryKeyPermissionCheck);Can open for writing
+M:Microsoft.Win32.RegistryKey.OpenSubKey(System.String,Microsoft.Win32.RegistryKeyPermissionCheck,System.Security.AccessControl.RegistryRights);Can open for writing
+M:Microsoft.Win32.RegistryKey.OpenSubKey(System.String,System.Security.AccessControl.RegistryRights);Can open for writing
+M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String);Creates a key
+M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String,System.Boolean);Creates a key
+M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String,System.Boolean,Microsoft.Win32.RegistryOptions);Creates a key
+M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String,Microsoft.Win32.RegistryKeyPermissionCheck);Creates a key
+M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String,Microsoft.Win32.RegistryKeyPermissionCheck,Microsoft.Win32.RegistryOptions);Creates a key
+M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String,Microsoft.Win32.RegistryKeyPermissionCheck,System.Security.AccessControl.RegistrySecurity);Creates a key
+M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String,Microsoft.Win32.RegistryKeyPermissionCheck,Microsoft.Win32.RegistryOptions,System.Security.AccessControl.RegistrySecurity);Creates a key
+M:Microsoft.Win32.RegistryKey.SetValue(System.String,System.Object);Writes a value
+M:Microsoft.Win32.RegistryKey.SetValue(System.String,System.Object,Microsoft.Win32.RegistryValueKind);Writes a value
+M:Microsoft.Win32.RegistryKey.DeleteValue(System.String);Deletes a value
+M:Microsoft.Win32.RegistryKey.DeleteValue(System.String,System.Boolean);Deletes a value
+M:Microsoft.Win32.RegistryKey.DeleteSubKey(System.String);Deletes a key
+M:Microsoft.Win32.RegistryKey.DeleteSubKey(System.String,System.Boolean);Deletes a key
+M:Microsoft.Win32.RegistryKey.DeleteSubKeyTree(System.String);Deletes a key tree
+M:Microsoft.Win32.RegistryKey.DeleteSubKeyTree(System.String,System.Boolean);Deletes a key tree
+M:Microsoft.Win32.RegistryKey.SetAccessControl(System.Security.AccessControl.RegistrySecurity);Changes permissions
+M:Microsoft.Win32.RegistryKey.Flush;Forces hive writes
+M:Microsoft.Win32.Registry.SetValue(System.String,System.String,System.Object);Writes a value
+M:Microsoft.Win32.Registry.SetValue(System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind);Writes a value

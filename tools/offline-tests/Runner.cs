@@ -24,9 +24,10 @@ foreach (var type in asm.GetTypes().Where(t => t.IsClass && !t.IsAbstract && t.N
             object? instance = null;
             try
             {
-                instance = Activator.CreateInstance(type);
+                var ctor = type.GetConstructors().OrderBy(c => c.GetParameters().Length).First();
+                instance = ctor.GetParameters().Length == 0 ? ctor.Invoke(null) : ctor.Invoke([new ConsoleOutput()]);
                 var ps = m.GetParameters();
-                var call = ps.Select((p, i) => Convert(i < row.Length ? row[i] : null, p.ParameterType)).ToArray();
+                var call = ps.Select((p, i) => ConvertArg(i < row.Length ? row[i] : null, p.ParameterType)).ToArray();
                 var ret = m.Invoke(instance, call);
                 if (ret is Task t) await t;
                 passed++;
@@ -49,7 +50,7 @@ foreach (var type in asm.GetTypes().Where(t => t.IsClass && !t.IsAbstract && t.N
 Console.WriteLine($"passed={passed} failed={failed} skipped={skipped} seconds={sw.Elapsed.TotalSeconds:F1}");
 return failed == 0 ? 0 : 1;
 
-static object? Convert(object? value, Type target)
+static object? ConvertArg(object? value, Type target)
 {
     if (value is null) return null;
     var t = Nullable.GetUnderlyingType(target) ?? target;
@@ -59,3 +60,10 @@ static object? Convert(object? value, Type target)
 }
 
 internal sealed class OfflineRunnerMarker;
+
+internal sealed class ConsoleOutput : Xunit.Abstractions.ITestOutputHelper
+{
+    public void WriteLine(string message) => Console.WriteLine("     | " + message);
+
+    public void WriteLine(string format, params object[] args) => Console.WriteLine("     | " + string.Format(System.Globalization.CultureInfo.InvariantCulture, format, args));
+}

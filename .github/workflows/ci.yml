@@ -37,6 +37,19 @@ jobs:
       - name: Test
         run: dotnet test XINSkan.slnx -c Release --no-build --logger "trx;LogFileName=results.trx" --logger "console;verbosity=normal" --results-directory TestResults
 
+      - name: Read-only enforcement must reject forbidden calls
+        shell: pwsh
+        run: |
+          $out = dotnet build tests/XINSkan.NegativeBuild/XINSkan.NegativeBuild.csproj -c Release 2>&1 | Out-String
+          if ($LASTEXITCODE -eq 0) { Write-Error "The forbidden-call project compiled: the banned-API analyzer is not active."; exit 1 }
+          $hits = ([regex]::Matches($out, 'error RS0030') | ForEach-Object { $_.Value }).Count
+          Write-Host "RS0030 errors reported: $hits"
+          # ForbiddenCalls.cs lines: 8 File.Delete, 10 Directory.Delete, 12 Process.Start, 14 OpenSubKey(writable: true)
+          foreach ($line in 8, 10, 12, 14) {
+            if ($out -notmatch "ForbiddenCalls\.cs\($line,\d+\): error RS0030") { Write-Error "No RS0030 reported for ForbiddenCalls.cs line $line"; exit 1 }
+          }
+          exit 0
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4

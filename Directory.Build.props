@@ -16,6 +16,8 @@
     <Product>XIN SKAN</Product>
     <Version>0.1.0</Version>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <!-- Read-Only by Design: on by default; see Directory.Build.targets and BannedSymbols.txt. -->
+    <XinEnforceReadOnly Condition="'$(XinEnforceReadOnly)' == ''">true</XinEnforceReadOnly>
   </PropertyGroup>
 
   <!-- XinOffline=true is only for sandboxed development without NuGet access

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>XINSkan.Security</RootNamespace>
+    <Description>Output sink (the only writer), audit log with hash chain, integrity manifest, output location policy.</Description>
+    <!-- This assembly writes XIN SKAN's own results, so the read-only API ban does not apply to it.
+         SecurityTests restrict file-writing calls to OutputSink and IntegrityManifest. -->
+    <XinEnforceReadOnly>false</XinEnforceReadOnly>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XINSkan.Models\XINSkan.Models.csproj" />
+  </ItemGroup>
+</Project>

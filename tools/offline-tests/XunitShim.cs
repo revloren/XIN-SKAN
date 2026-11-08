@@ -3,7 +3,8 @@
 using System.Collections;
 using System.Reflection;
 
-namespace Xunit;
+namespace Xunit
+{
 
 [AttributeUsage(AttributeTargets.Method)]
 public class FactAttribute : Attribute
@@ -75,6 +76,8 @@ public static class Assert
 
     public static void Single(IEnumerable collection) { var c = collection.Cast<object?>().Count(); if (c != 1) Fail($"Expected one item, got {c}."); }
 
+    public static void Subset<T>(ISet<T> expectedSuperset, ISet<T>? actual) { if (actual is null || !actual.IsSubsetOf(expectedSuperset)) Fail("Not a subset: " + string.Join(", ", actual ?? new HashSet<T>())); }
+
     public static void All<T>(IEnumerable<T> collection, Action<T> action) { foreach (var x in collection) action(x); }
 
     public static T IsType<T>(object? value) { if (value is not T t || value.GetType() != typeof(T)) { Fail($"Expected {typeof(T)}, got {value?.GetType()}."); return default!; } return t; }
@@ -116,4 +119,15 @@ public static class Assert
     }
 
     public static void Fail(string message) => throw new AssertException(message);
+}
+}
+
+namespace Xunit.Abstractions
+{
+    public interface ITestOutputHelper
+    {
+        void WriteLine(string message);
+
+        void WriteLine(string format, params object[] args);
+    }
 }
