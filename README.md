@@ -11,7 +11,7 @@ Windows-приложение для исследования цифровых с
 | Проверка сторонних разборщиков | Готово — [docs/LIBRARY_REVIEW.md](docs/LIBRARY_REVIEW.md) |
 | 1. Core и модели | Готово |
 | 2. Read-Only Security | Готово — [docs/SECURITY.md](docs/SECURITY.md) |
-| 3. Storage (SQLite) | Не начат |
+| 3. Storage (SQLite) | Готово — [docs/STORAGE.md](docs/STORAGE.md) |
 | 4. File Hunter | Не начат |
 | 5. History Engine | Не начат |
 | 6. Execution Engine | Не начат |
@@ -24,6 +24,7 @@ src/XINSkan.Models   схема Evidence v1 (без зависимостей)
 src/XINSkan.Core     конвейер проверки, разрешения и согласия, нормализация путей
 src/XINSkan.Platform.Windows  единственная сборка с системными вызовами; только чтение
 src/XINSkan.Security          единственный писатель (папка проверки), аудит, манифест
+src/XINSkan.Storage           база SQLite проверки, записи только добавляются
 tests/               модульные тесты (xUnit)
 tools/               инструменты разработки, не входят в поставку
 docs/                документация
