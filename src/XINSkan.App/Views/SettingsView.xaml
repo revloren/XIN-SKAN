@@ -1,0 +1,33 @@
+<UserControl x:Class="XINSkan.App.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <StackPanel Margin="40,4,40,36" MaxWidth="760" HorizontalAlignment="Left">
+    <TextBlock Text="Настройки" Style="{StaticResource PageTitle}" />
+    <TextBlock Text="{Binding PersistenceNote}" Style="{StaticResource Muted}" Margin="0,10,0,0" />
+
+    <Border Style="{StaticResource Card}" Margin="0,24,0,0">
+      <StackPanel>
+        <TextBlock Text="Папка для результатов" Style="{StaticResource SectionTitle}" />
+        <TextBlock Text="Каждая проверка создаёт в ней новую папку; прежние проверки не перезаписываются." Style="{StaticResource Muted}" Margin="0,6,0,12" />
+        <DockPanel>
+          <Button DockPanel.Dock="Right" Content="Применить" Style="{StaticResource GlassButton}" Margin="12,0,0,0" Command="{Binding ApplyCommand}" />
+          <TextBox Style="{StaticResource Field}" Text="{Binding OutputRoot, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Папка для результатов" />
+        </DockPanel>
+        <TextBlock Text="{Binding Assessment}" Style="{StaticResource Muted}" Margin="0,10,0,0" />
+        <TextBlock Visibility="{Binding OnInvestigatedVolume, Converter={StaticResource BoolToVisibility}}" Style="{StaticResource Body}" Foreground="{StaticResource WarnBrush}" Margin="0,6,0,0"
+                   Text="Запись на исследуемый диск может затереть остатки удалённых файлов. Лучше выбрать внешний носитель." />
+      </StackPanel>
+    </Border>
+
+    <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+      <StackPanel>
+        <TextBlock Text="О программе" Style="{StaticResource SectionTitle}" />
+        <TextBlock Style="{StaticResource Body}" Margin="0,8,0,0">
+          <Run Text="XIN SKAN, версия" />
+          <Run Text="{Binding Version, Mode=OneWay}" />
+        </TextBlock>
+        <TextBlock Text="Только чтение: программа не удаляет, не очищает и не изменяет данные исследуемого компьютера." Style="{StaticResource Muted}" Margin="0,4,0,0" />
+      </StackPanel>
+    </Border>
+  </StackPanel>
+</UserControl>

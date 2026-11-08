@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <XinEnforceReadOnly>false</XinEnforceReadOnly>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\XINSkan.App\XINSkan.App.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Storage\XINSkan.Storage.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Security\XINSkan.Security.csproj" />
+  </ItemGroup>
+</Project>

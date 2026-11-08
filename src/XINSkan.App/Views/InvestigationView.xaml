@@ -1,0 +1,72 @@
+<UserControl x:Class="XINSkan.App.Views.InvestigationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Margin="40,4,40,36" MaxWidth="980" HorizontalAlignment="Left">
+      <TextBlock Text="Новая проверка" Style="{StaticResource PageTitle}" />
+      <TextBlock Text="{Binding StartHint}" Style="{StaticResource Body}" Margin="0,10,0,0" MaxWidth="720" HorizontalAlignment="Left" />
+
+      <Button Content="Начать проверку" Style="{StaticResource EmberButton}" Command="{Binding StartCommand}"
+              HorizontalAlignment="Left" Margin="0,22,0,0" />
+
+      <Border Style="{StaticResource Card}" Margin="0,30,0,0">
+        <StackPanel>
+          <TextBlock Text="Куда сохраняются результаты" Style="{StaticResource SectionTitle}" />
+          <TextBlock Text="{Binding OutputFolder}" Style="{StaticResource Body}" Margin="0,10,0,0" FontFamily="{StaticResource DisplayFont}" />
+          <TextBlock Text="{Binding OutputAssessment}" Style="{StaticResource Muted}" Margin="0,6,0,0" />
+          <TextBlock Visibility="{Binding OutputOnInvestigatedVolume, Converter={StaticResource BoolToVisibility}}"
+                     Style="{StaticResource Body}" Foreground="{StaticResource WarnBrush}" Margin="0,8,0,0"
+                     Text="Папку можно сменить в настройках, например на флешку, с которой запущен XIN SKAN." />
+        </StackPanel>
+      </Border>
+
+      <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+        <DockPanel>
+          <DockPanel DockPanel.Dock="Top">
+            <Button DockPanel.Dock="Right" Content="Проверить снова" Style="{StaticResource GlassButton}" Padding="14,6" Command="{Binding RefreshCommand}" />
+            <TextBlock Text="Доступ к источникам" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
+          </DockPanel>
+          <TextBlock DockPanel.Dock="Top" Style="{StaticResource Muted}" Margin="0,6,0,4"
+                     Text="Источник без нужного доступа будет пропущен, а в отчёте будет указано почему. Отсутствие следов в пропущенном источнике ничего не доказывает." />
+          <ItemsControl ItemsSource="{Binding Capabilities}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border BorderBrush="{StaticResource HairlineBrush}" BorderThickness="0,0,0,1" Padding="0,10">
+                  <DockPanel>
+                    <Ellipse DockPanel.Dock="Left" Width="8" Height="8" Margin="0,6,12,0" VerticalAlignment="Top"
+                             Fill="{Binding Available, Converter={StaticResource AvailabilityBrush}}" />
+                    <StackPanel>
+                      <TextBlock Text="{Binding Name}" Style="{StaticResource Body}" />
+                      <TextBlock Text="{Binding Reason}" Style="{StaticResource Muted}" />
+                    </StackPanel>
+                  </DockPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </DockPanel>
+      </Border>
+
+      <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+        <StackPanel>
+          <TextBlock Text="Этапы проверки" Style="{StaticResource SectionTitle}" />
+          <ItemsControl ItemsSource="{Binding Analyzers}" Margin="0,8,0,0">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border BorderBrush="{StaticResource HairlineBrush}" BorderThickness="0,0,0,1" Padding="0,10">
+                  <DockPanel>
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding StatusText}" Style="{StaticResource Body}" Foreground="{Binding IsReady, Converter={StaticResource ReadyBrush}}" />
+                    <StackPanel>
+                      <TextBlock Text="{Binding Name}" Style="{StaticResource Body}" />
+                      <TextBlock Text="{Binding Purpose}" Style="{StaticResource Muted}" />
+                    </StackPanel>
+                  </DockPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -29,3 +29,7 @@ dotnet_diagnostic.CA1707.severity = none
 dotnet_diagnostic.CA1515.severity = none
 dotnet_diagnostic.CA2000.severity = none
 dotnet_diagnostic.CA1861.severity = none
+
+[src/XINSkan.App/**.cs]
+# The desktop app is an executable; its public view models and converters are bound from XAML.
+dotnet_diagnostic.CA1515.severity = none

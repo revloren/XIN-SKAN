@@ -1,0 +1,73 @@
+<Window x:Class="XINSkan.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:XINSkan.App.ViewModels"
+        xmlns:views="clr-namespace:XINSkan.App.Views"
+        Title="XIN SKAN" Width="1280" Height="800" MinWidth="980" MinHeight="640"
+        Background="{StaticResource WindowBrush}" Foreground="{StaticResource TextBrush}"
+        FontFamily="{StaticResource TextFont}" WindowStartupLocation="CenterScreen"
+        UseLayoutRounding="True" TextOptions.TextFormattingMode="Display">
+  <WindowChrome.WindowChrome>
+    <WindowChrome CaptionHeight="40" ResizeBorderThickness="6" CornerRadius="0" GlassFrameThickness="0" UseAeroCaptionButtons="False" />
+  </WindowChrome.WindowChrome>
+
+  <Window.DataContext>
+    <vm:MainViewModel />
+  </Window.DataContext>
+
+  <Window.Resources>
+    <DataTemplate DataType="{x:Type vm:DashboardViewModel}"><views:DashboardView /></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:InvestigationViewModel}"><views:InvestigationView /></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:TimelineViewModel}"><views:TimelineView /></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:ReportsViewModel}"><views:ReportsView /></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:PlannedModuleViewModel}"><views:PlannedModuleView /></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><views:SettingsView /></DataTemplate>
+  </Window.Resources>
+
+  <Grid x:Name="Root">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="84" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+
+    <!-- Rail -->
+    <Border Grid.Column="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource HairlineBrush}" BorderThickness="0,0,1,0">
+      <DockPanel LastChildFill="True" Margin="0,14,0,18">
+        <!-- Wordmark: two stacked syllables, the second in ember — the only brand mark in the app. -->
+        <StackPanel DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,0,0,26" WindowChrome.IsHitTestVisibleInChrome="False">
+          <TextBlock Text="XIN" FontFamily="{StaticResource DisplayFont}" FontWeight="Bold" FontSize="17" Foreground="{StaticResource TextBrush}" HorizontalAlignment="Center" />
+          <TextBlock Text="SKAN" FontFamily="{StaticResource DisplayFont}" FontWeight="Light" FontSize="13" Foreground="{StaticResource EmberBrush}" HorizontalAlignment="Center" Margin="0,-3,0,0" />
+        </StackPanel>
+        <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" Background="Transparent" BorderThickness="0"
+                 HorizontalAlignment="Center" ItemContainerStyle="{StaticResource RailItem}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                 WindowChrome.IsHitTestVisibleInChrome="True" AutomationProperties.Name="Разделы" />
+      </DockPanel>
+    </Border>
+
+    <!-- Content -->
+    <Grid Grid.Column="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="40" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+
+      <DockPanel Grid.Row="0">
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True">
+          <Button Style="{StaticResource CaptionButton}" Click="OnMinimize" AutomationProperties.Name="Свернуть">
+            <Path Data="M0,0 H10" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1" />
+          </Button>
+          <Button Style="{StaticResource CaptionButton}" Click="OnMaximize" AutomationProperties.Name="Развернуть">
+            <Rectangle Width="10" Height="10" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1" />
+          </Button>
+          <Button Style="{StaticResource CaptionButton}" Click="OnClose" AutomationProperties.Name="Закрыть">
+            <Path Data="M0,0 L10,10 M10,0 L0,10" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1" />
+          </Button>
+        </StackPanel>
+        <TextBlock Text="{Binding Selected.Title}" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="40,0,0,0" />
+      </DockPanel>
+
+      <ContentControl Grid.Row="1" Content="{Binding Selected.Page}" Focusable="False" />
+    </Grid>
+  </Grid>
+</Window>

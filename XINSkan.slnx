@@ -5,10 +5,12 @@
     <Project Path="src/XINSkan.Platform.Windows/XINSkan.Platform.Windows.csproj" />
     <Project Path="src/XINSkan.Security/XINSkan.Security.csproj" />
     <Project Path="src/XINSkan.Storage/XINSkan.Storage.csproj" />
+    <Project Path="src/XINSkan.App/XINSkan.App.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/XINSkan.UnitTests/XINSkan.UnitTests.csproj" />
     <Project Path="tests/XINSkan.SecurityTests/XINSkan.SecurityTests.csproj" />
     <Project Path="tests/XINSkan.StorageTests/XINSkan.StorageTests.csproj" />
+    <Project Path="tests/XINSkan.AppTests/XINSkan.AppTests.csproj" />
   </Folder>
 </Solution>
