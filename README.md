@@ -12,6 +12,7 @@ Windows-приложение для исследования цифровых с
 | 1. Core и модели | Готово |
 | 2. Read-Only Security | Готово — [docs/SECURITY.md](docs/SECURITY.md) |
 | 3. Storage (SQLite) | Готово — [docs/STORAGE.md](docs/STORAGE.md) |
+| Каркас интерфейса | Готово (показывает только настоящие данные) |
 | 4. File Hunter | Не начат |
 | 5. History Engine | Не начат |
 | 6. Execution Engine | Не начат |
@@ -25,6 +26,7 @@ src/XINSkan.Core     конвейер проверки, разрешения и 
 src/XINSkan.Platform.Windows  единственная сборка с системными вызовами; только чтение
 src/XINSkan.Security          единственный писатель (папка проверки), аудит, манифест
 src/XINSkan.Storage           база SQLite проверки, записи только добавляются
+src/XINSkan.App               интерфейс WPF (каркас; показывает только настоящие данные)
 tests/               модульные тесты (xUnit)
 tools/               инструменты разработки, не входят в поставку
 docs/                документация
