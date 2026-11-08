@@ -200,8 +200,11 @@ internal static class Program
             Console.WriteLine($"База: проверка {info.InvestigationId} от {info.StartedUtc.ToLocalTime().ToString("g", Ru)}, записей {reader.CountEvidence().ToString("N0", Ru)}.");
             foreach (var m in reader.ReadModuleResults())
             {
-                Console.WriteLine($"  Модуль {m.ModuleId}: {m.State}; записей {m.EvidenceCount}");
+                var took = m.FinishedUtc - m.StartedUtc;
+                Console.WriteLine($"  Модуль {m.ModuleId}: {m.State}; записей {m.EvidenceCount}{(took is { } t ? $", {t.TotalSeconds.ToString("F1", Ru)} с" : string.Empty)}");
             }
+
+            PrintSummary(reader.ReadEvidence().ToList());
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or Microsoft.Data.Sqlite.SqliteException or FormatException)
         {
@@ -212,23 +215,57 @@ internal static class Program
         return broken ? Failed : Ok;
     }
 
-    /// <summary>Prints module state changes and at most one progress line every two seconds.</summary>
+    /// <summary>What the stored records consist of: a quick check that the selection is sensible on a real machine.</summary>
+    private static void PrintSummary(List<Evidence> evidence)
+    {
+        void Group(string title, Func<Evidence, string> key, int top = 8)
+        {
+            var groups = evidence.GroupBy(key).OrderByDescending(g => g.Count()).Take(top);
+            Console.WriteLine($"  {title}: " + string.Join(", ", groups.Select(g => $"{g.Key} {g.Count().ToString("N0", Ru)}")));
+        }
+
+        static string Attr(Evidence e, string name) => e.Attributes.TryGetValue(name, out var v) ? v : "—";
+
+        Group("По причине отбора", e => Attr(e, "Selection"));
+        Group("По содержимому", e => Attr(e, "Content"));
+        Group("Подпись (только PE)", e => Attr(e, "Signature"));
+        Group("Ограничения", e => e.Limitations.Count == 0 ? "нет" : string.Join("+", e.Limitations.Select(l => l.Code).Where(c => c != "FS.SI_TIMES").DefaultIfEmpty("только FS.SI_TIMES")));
+        Console.WriteLine("  Папки с наибольшим числом записей:");
+        foreach (var g in evidence.GroupBy(e => Path.GetDirectoryName(e.Target.RecordedPath ?? string.Empty) ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+                     .OrderByDescending(g => g.Count()).Take(8))
+        {
+            Console.WriteLine($"    {g.Count(),6}  {g.Key}");
+        }
+    }
+
+    /// <summary>
+    /// Prints module state changes and at most one progress line every two seconds; the last suppressed line is
+    /// printed before the next state change, so a module's final message is never lost.
+    /// </summary>
     private sealed class ConsoleProgress : IProgress<ModuleProgress>
     {
         private readonly Lock _gate = new();
         private long _lastTicks;
+        private string? _pending;
 
         public void Report(ModuleProgress value)
         {
             lock (_gate)
             {
                 var now = Stopwatch.GetTimestamp();
-                if (value.State == ModuleState.Running && value.Message is not null
-                    && Stopwatch.GetElapsedTime(_lastTicks, now) < TimeSpan.FromSeconds(2))
+                var isProgressLine = value.State == ModuleState.Running && value.Message is not null;
+                if (isProgressLine && Stopwatch.GetElapsedTime(_lastTicks, now) < TimeSpan.FromSeconds(2))
                 {
+                    _pending = $"[{value.ModuleId}] {value.Message}";
                     return;
                 }
 
+                if (!isProgressLine && _pending is not null)
+                {
+                    Console.WriteLine(_pending);
+                }
+
+                _pending = null;
                 _lastTicks = now;
                 Console.WriteLine(value.Message is null ? $"[{value.ModuleId}] {value.State}" : $"[{value.ModuleId}] {value.Message}");
             }

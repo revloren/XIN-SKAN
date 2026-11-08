@@ -85,6 +85,31 @@ public sealed class FileHunterAnalyzer : IAnalyzer
 
     private sealed record WorkItem(FsEntry Entry, Selection Selection, string? MinecraftRoot, ScopeRoot Root);
 
+    /// <summary>
+    /// Where the time goes, summed over worker threads. Reported through progress only (diagnostics, not evidence).
+    /// </summary>
+    private sealed class Timings
+    {
+        public long Listing;
+        public long Open;
+        public long Hash;
+        public long Archive;
+        public long Pe;
+        public long Signature;
+        public long SignatureCount;
+        public long Zone;
+
+        public static long Since(long start) => System.Diagnostics.Stopwatch.GetTimestamp() - start;
+
+        public string Describe(long selected)
+        {
+            static string S(long ticks) => (ticks / (double)System.Diagnostics.Stopwatch.Frequency).ToString("F1", CultureInfo.GetCultureInfo("ru-RU"));
+            return $"Записано объектов: {selected.ToString("N0", CultureInfo.GetCultureInfo("ru-RU"))}. Время по потокам, с: чтение папок {S(Listing)}, открытие {S(Open)}, хеши {S(Hash)}, архивы {S(Archive)}, PE {S(Pe)}, подписи {S(Signature)} ({SignatureCount} файлов), Zone.Identifier {S(Zone)}.";
+        }
+    }
+
+    private Timings _timings = new();
+
     private sealed class RootCounters
     {
         public long Entries;
@@ -97,6 +122,7 @@ public sealed class FileHunterAnalyzer : IAnalyzer
     public async Task RunAsync(AnalyzerContext context, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
+        _timings = new Timings();
         var scope = ScopeBuilder.Build(
             _lister,
             _options.UsersRoot,
@@ -223,6 +249,8 @@ public sealed class FileHunterAnalyzer : IAnalyzer
                 new ModuleError($"Ещё {errorsReported - _options.MaxReportedErrors} ошибок доступа не записаны по отдельности; их число учтено в покрытии."),
                 cancellationToken).ConfigureAwait(false);
         }
+
+        context.Progress.Report(new ModuleProgress(Id, ModuleState.Running, _timings.Describe(counters.Values.Sum(c => c.Selected))));
     }
 
     private async Task WalkAsync(
@@ -243,7 +271,9 @@ public sealed class FileHunterAnalyzer : IAnalyzer
             IReadOnlyList<FsEntry> entries;
             try
             {
+                var listStart = System.Diagnostics.Stopwatch.GetTimestamp();
                 entries = _lister.List(dir);
+                Interlocked.Add(ref _timings.Listing, Timings.Since(listStart));
             }
             catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or System.Security.SecurityException)
             {
@@ -335,9 +365,11 @@ public sealed class FileHunterAnalyzer : IAnalyzer
         }
 
         IOpenedFile opened;
+        var openStart = System.Diagnostics.Stopwatch.GetTimestamp();
         try
         {
             opened = _files.Open(e.FullPath);
+            Interlocked.Add(ref _timings.Open, Timings.Since(openStart));
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
         {
@@ -376,7 +408,9 @@ public sealed class FileHunterAnalyzer : IAnalyzer
             if (e.Length <= _options.MaxHashBytes)
             {
                 stream.Position = 0;
+                var hashStart = System.Diagnostics.Stopwatch.GetTimestamp();
                 hash = Sha256Hash.FromBytes(SHA256.HashData(stream));
+                Interlocked.Add(ref _timings.Hash, Timings.Since(hashStart));
                 if (stream.Length != e.Length)
                 {
                     limitations.Add(new Limitation("CONTENT.CHANGING", $"Размер файла изменился во время проверки ({e.Length} → {stream.Length} байт); хеш относится к прочитанному содержимому."));
@@ -392,7 +426,9 @@ public sealed class FileHunterAnalyzer : IAnalyzer
             PeFacts? pe = null;
             if (content == ContentType.Zip)
             {
+                var archiveStart = System.Diagnostics.Stopwatch.GetTimestamp();
                 archive = ArchiveInspector.Inspect(stream, _options.Archive);
+                Interlocked.Add(ref _timings.Archive, Timings.Since(archiveStart));
                 AddArchiveAttributes(attrs, archive);
                 if (archive.Problems.Count > 0)
                 {
@@ -402,7 +438,9 @@ public sealed class FileHunterAnalyzer : IAnalyzer
             }
             else if (content == ContentType.PortableExecutable)
             {
+                var peStart = System.Diagnostics.Stopwatch.GetTimestamp();
                 pe = PeInspector.Inspect(stream);
+                Interlocked.Add(ref _timings.Pe, Timings.Since(peStart));
                 AddPeAttributes(attrs, pe);
                 if (pe.Problems.Count > 0)
                 {
@@ -416,7 +454,9 @@ public sealed class FileHunterAnalyzer : IAnalyzer
                 attrs["SignatureDetail"] = signature.Detail;
             }
 
+            var zoneStart = System.Diagnostics.Stopwatch.GetTimestamp();
             AddZoneAttributes(attrs, e.FullPath, limitations);
+            Interlocked.Add(ref _timings.Zone, Timings.Since(zoneStart));
 
             return Build(context, e, item, attrs, limitations, opened.Identity, hash, status, Describe(e, content, archive, pe, mismatch));
         }
@@ -424,6 +464,7 @@ public sealed class FileHunterAnalyzer : IAnalyzer
 
     private SignatureResult VerifySignature(string path)
     {
+        var start = System.Diagnostics.Stopwatch.GetTimestamp();
         try
         {
             return _signatures.Verify(path);
@@ -431,6 +472,11 @@ public sealed class FileHunterAnalyzer : IAnalyzer
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             return new SignatureResult(SignatureStatus.Error, ex.Message);
+        }
+        finally
+        {
+            Interlocked.Add(ref _timings.Signature, Timings.Since(start));
+            Interlocked.Increment(ref _timings.SignatureCount);
         }
     }
 
