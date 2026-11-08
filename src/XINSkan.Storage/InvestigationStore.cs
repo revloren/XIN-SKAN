@@ -30,6 +30,7 @@ public sealed class InvestigationStore : IInvestigationSink, IDisposable
     private readonly List<(string Module, ModuleError Error)> _errors = [];
     private bool _disposed;
     private int _disposeStarted;
+    private string _synchronous = "FULL";
 
     private InvestigationStore(SqliteConnection connection, string path, InvestigationInfo info, TimeProvider time, int batchSize)
     {
@@ -42,10 +43,13 @@ public sealed class InvestigationStore : IInvestigationSink, IDisposable
 
     public string DatabasePath { get; }
 
+    /// <summary>Write statistics of this store (for diagnostics and performance tests).</summary>
+    public StoreStatistics Stats { get; } = new();
+
     public InvestigationInfo Info { get; }
 
     /// <summary>Creates the database for a new investigation. Fails if the folder already holds one.</summary>
-    public static InvestigationStore Create(OutputSink sink, InvestigationInfo info, TimeProvider time, int batchSize = 500)
+    public static InvestigationStore Create(OutputSink sink, InvestigationInfo info, TimeProvider time, int batchSize = 5000)
     {
         ArgumentNullException.ThrowIfNull(sink);
         ArgumentNullException.ThrowIfNull(info);
@@ -229,6 +233,17 @@ public sealed class InvestigationStore : IInvestigationSink, IDisposable
             return;
         }
 
+        // Durability policy: a module checkpoint is forced to disk (FULL); intermediate batches, which only bound
+        // memory, are handed to the OS without a forced flush (NORMAL). An application crash loses nothing that
+        // was flushed; a power loss in the middle of a module may lose that module's unfinished part.
+        var sync = result is null ? "NORMAL" : "FULL";
+        if (!string.Equals(sync, _synchronous, StringComparison.Ordinal))
+        {
+            Execute(_connection, result is null ? "PRAGMA synchronous = NORMAL;" : "PRAGMA synchronous = FULL;");
+            _synchronous = sync;
+        }
+
+        var started = System.Diagnostics.Stopwatch.GetTimestamp();
         using var tx = _connection.BeginTransaction();
         if (_evidence.Count > 0)
         {
@@ -288,7 +303,9 @@ public sealed class InvestigationStore : IInvestigationSink, IDisposable
             cmd.ExecuteNonQuery();
         }
 
+        var beforeCommit = System.Diagnostics.Stopwatch.GetTimestamp();
         tx.Commit();
+        Stats.Record(_evidence.Count, System.Diagnostics.Stopwatch.GetElapsedTime(started, beforeCommit), System.Diagnostics.Stopwatch.GetElapsedTime(beforeCommit));
 
         // Only after a successful commit: a failed flush keeps everything pending for the next attempt.
         _evidence.Clear();
@@ -376,4 +393,27 @@ public sealed class InvestigationStore : IInvestigationSink, IDisposable
         cmd.CommandText = sql;
         cmd.ExecuteNonQuery();
     }
+}
+
+/// <summary>Counters of written batches: how long inserting and committing took.</summary>
+public sealed class StoreStatistics
+{
+    public int Transactions { get; private set; }
+
+    public long RecordsWritten { get; private set; }
+
+    public TimeSpan InsertTime { get; private set; }
+
+    public TimeSpan CommitTime { get; private set; }
+
+    internal void Record(int records, TimeSpan insert, TimeSpan commit)
+    {
+        Transactions++;
+        RecordsWritten += records;
+        InsertTime += insert;
+        CommitTime += commit;
+    }
+
+    public override string ToString() =>
+        $"{Transactions} transactions, {RecordsWritten} records, insert {InsertTime.TotalSeconds:F1} s, commit {CommitTime.TotalSeconds:F1} s";
 }

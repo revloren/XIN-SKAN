@@ -56,7 +56,7 @@ public sealed class InvestigationStoreTests : IDisposable
         Directory.Delete(_base, recursive: true);
     }
 
-    private (OutputSink Sink, InvestigationStore Store, Ulid Id) NewStore(string name = "inv", int batch = 500)
+    private (OutputSink Sink, InvestigationStore Store, Ulid Id) NewStore(string name = "inv", int batch = 5000)
     {
         var sink = OutputSink.CreateInvestigationFolder(_base, name);
         var id = Ulid.NewUlid(T0);
@@ -389,7 +389,7 @@ public sealed class InvestigationStoreTests : IDisposable
         var size = new FileInfo(store.DatabasePath).Length;
         store.Dispose();
 
-        _output.WriteLine($"100000 records: {sw.Elapsed.TotalSeconds:F1} s, database {size / 1048576.0:F1} MB");
+        _output.WriteLine($"100000 records: {sw.Elapsed.TotalSeconds:F1} s, database {size / 1048576.0:F1} MB; {store.Stats}");
         Assert.True(sw.Elapsed < TimeSpan.FromSeconds(60), $"Took {sw.Elapsed}.");
     }
 
