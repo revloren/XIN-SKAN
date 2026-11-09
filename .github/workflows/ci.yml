@@ -38,9 +38,20 @@ jobs:
         shell: pwsh
         run: |
           $dir = Join-Path $env:RUNNER_TEMP 'mft-samples'
-          git -c core.autocrlf=false clone --quiet --filter=blob:none --no-checkout https://github.com/EricZimmerman/MFT.git $dir
-          git -c core.autocrlf=false -C $dir checkout 3eecafae50ac8935b239cf3ded690b11af5020f4 -- MFT.Test/TestFiles/tdungan MFT.Test/TestFiles/xw MFT.Test/TestFiles/NIST
-          "XINSKAN_NTFS_SAMPLES=$dir/MFT.Test/TestFiles" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $base = 'https://raw.githubusercontent.com/EricZimmerman/MFT/3eecafae50ac8935b239cf3ded690b11af5020f4/MFT.Test/TestFiles'
+          $expected = @{
+            'tdungan/$MFT'     = 'BD96A16EE812F9C7724EF31A87686A71EADA6C80A4E5131A94945E42500A6A2E'
+            'xw/$MFT'          = '2811D925D87BE7E90CDC7943432A32B8C22F141C4EEB13CA708E0A67F12CFE08'
+            'NIST/DFR-16/$MFT' = '9D42474A778C6C5C817C8B0EC59607DF637EFF24917E6266602D78FBD97B95F6'
+          }
+          foreach ($rel in $expected.Keys) {
+            $target = Join-Path $dir $rel
+            New-Item -ItemType Directory -Force -Path (Split-Path $target) | Out-Null
+            Invoke-WebRequest -Uri ("$base/" + $rel.Replace('$', '%24')) -OutFile $target
+            $hash = (Get-FileHash $target -Algorithm SHA256).Hash
+            if ($hash -ne $expected[$rel]) { Write-Error "$rel has SHA-256 $hash, expected $($expected[$rel])"; exit 1 }
+          }
+          "XINSKAN_NTFS_SAMPLES=$dir" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "XINSKAN_REQUIRE_SAMPLES=1" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Test
