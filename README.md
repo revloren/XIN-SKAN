@@ -4,7 +4,7 @@ Windows-приложение для исследования цифровых с
 
 ## Состояние
 
-Проект на ранней стадии. Готово только то, что перечислено в [docs/PROGRESS.md](docs/PROGRESS.md) с пройденными тестами. Подключён первый анализатор — File Hunter: он находит и описывает существующие файлы, но **ничего не оценивает** (все записи информационные). История, следы запуска и корреляция ещё не готовы, поэтому выводов о нарушении программа пока не делает.
+Проект на ранней стадии. Готово только то, что перечислено в [docs/PROGRESS.md](docs/PROGRESS.md) с пройденными тестами. Подключены File Hunter (существующие файлы) и History Engine (удалённые, переименованные и открывавшиеся файлы, журнал изменений, Корзина, логи Minecraft, ярлыки, Jump Lists, ShellBags). Они собирают факты и отдельные косвенные признаки (Low), но **не делают выводов о нарушении**: для этого нужны следы запуска (этап 6) и корреляция (этап 7).
 
 | Этап | Состояние |
 | --- | --- |
@@ -14,7 +14,7 @@ Windows-приложение для исследования цифровых с
 | 3. Storage (SQLite) | Готово — [docs/STORAGE.md](docs/STORAGE.md) |
 | Каркас интерфейса | Готово (показывает только настоящие данные) |
 | 4. File Hunter | Готово — [docs/FILE_HUNTER.md](docs/FILE_HUNTER.md) |
-| 5. History Engine | Не начат |
+| 5. History Engine | Частично — [docs/HISTORY_ENGINE.md](docs/HISTORY_ENGINE.md) (нет теневых копий: ждут решения владельца) |
 | 6. Execution Engine | Не начат |
 | 7. Evidence Correlation | Не начат |
 
@@ -26,7 +26,10 @@ src/XINSkan.Core     конвейер проверки, разрешения и 
 src/XINSkan.Platform.Windows  единственная сборка с системными вызовами; только чтение
 src/XINSkan.Security          единственный писатель (папка проверки), аудит, манифест
 src/XINSkan.Storage           база SQLite проверки, записи только добавляются
+src/XINSkan.Ntfs              разбор NTFS: записи MFT, цепочки кластеров, USN, карта путей
+src/XINSkan.ShellFormats      разбор ярлыков, элементов оболочки, составных файлов, Jump Lists
 src/XINSkan.Analyzers.FileHunter  существующие файлы: содержимое, хеши, метаданные, подписи
+src/XINSkan.Analyzers.History     MFT, USN, Корзина, логи Minecraft, LNK, Jump Lists, ShellBags
 src/XINSkan.Investigation     одна проверка целиком: папка, аудит, база, анализаторы, манифест
 src/XINSkan.Cli               командная строка: xinskan investigate / verify
 src/XINSkan.App               интерфейс WPF (показывает только настоящие данные)
@@ -45,5 +48,6 @@ docs/                документация
 - [docs/SECURITY.md](docs/SECURITY.md) — как устроен и проверяется Read-Only
 - [docs/STORAGE.md](docs/STORAGE.md) — хранилище проверки
 - [docs/FILE_HUNTER.md](docs/FILE_HUNTER.md) — что File Hunter ищет, записывает и чего не делает
+- [docs/HISTORY_ENGINE.md](docs/HISTORY_ENGINE.md) — модули истории, правила интерпретации, пределы
 - [docs/LIBRARY_REVIEW.md](docs/LIBRARY_REVIEW.md) — проверка библиотек MFT, Prefetch, Jump Lists
 - [docs/PROGRESS.md](docs/PROGRESS.md) — отчёты по этапам

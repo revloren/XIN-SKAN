@@ -35,6 +35,11 @@ public sealed class MftOnNtfsTests(ITestOutputHelper output)
         File.WriteAllBytes(stomped, Jar.FabricMod("s", "S", "1"));
         File.SetCreationTimeUtc(stomped, new DateTime(2015, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
+        // Created now, deleted last without a flush (see below). Created before the deletions: a file created after
+        // a deletion takes the freed record at once (seen in CI: late-delete.jar took the deleted mod's record).
+        var late = Path.Combine(profile, "Downloads", "late-delete.jar");
+        File.WriteAllBytes(late, Jar.FabricMod("late", "Late", "1"));
+
         // Deleted mod with its download origin; its sequence number is read from a live handle before deletion.
         // Deleted last: Windows hands a freed record to the next new file at once (seen in the first CI run,
         // where stomped.jar took the record of the deleted mod), so nothing is created after the deletion.
@@ -56,9 +61,6 @@ public sealed class MftOnNtfsTests(ITestOutputHelper output)
 
         // Measured, not asserted: a deletion right before the check, without a flush. Whether the MFT read from
         // the disk already shows it depends on when Windows writes the record back (the USN Journal always shows it).
-        var late = Path.Combine(profile, "Downloads", "late-delete.jar");
-        File.WriteAllBytes(late, Jar.FabricMod("late", "Late", "1"));
-        Flush(vhd.Letter);
         File.Delete(late);
         Thread.Sleep(10_000);
         var usnBefore = QueryJournal(vhd.Letter);
