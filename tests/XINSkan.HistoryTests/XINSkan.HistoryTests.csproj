@@ -29,6 +29,7 @@
     <Compile Include="..\XINSkan.NtfsTests\Support\TestImages.cs" Link="Support\TestImages.cs" />
     <Compile Include="..\XINSkan.FileHunterTests\Support\Fixtures.cs" Link="Support\Fixtures.cs" />
     <Compile Include="..\XINSkan.ShellFormatsTests\ShellBuilders.cs" Link="Support\ShellBuilders.cs" />
+    <Compile Include="..\XINSkan.ShellFormatsTests\ShellSamples.cs" Link="Support\ShellSamples.cs" />
     <EmbeddedResource Include="..\XINSkan.NtfsTests\TestData\*.gz" LogicalName="%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>
