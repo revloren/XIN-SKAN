@@ -32,7 +32,7 @@ public sealed class WindowsCapabilityProbe : ICapabilityProbe
         Capability.UsnJournalRead => ProbeUsnJournal(),
         Capability.SystemRegistryHives => ProbeSystemRegistry(),
         Capability.OtherUserProfiles => ProbeOtherProfiles(),
-        Capability.SecurityEventLog => new CapabilityState(capability, false, "Not probed yet: the event log source is added in a later stage (TODO)."),
+        Capability.SecurityEventLog => ProbeSecurityLog(),
         _ => new CapabilityState(capability, false, "Unknown capability."),
     };
 
@@ -89,6 +89,20 @@ public sealed class WindowsCapabilityProbe : ICapabilityProbe
         catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
         {
             return new CapabilityState(Capability.SystemRegistryHives, false, ex.Message);
+        }
+    }
+
+    /// <summary>Opens a query over the Security log and takes at most one event (nothing is changed).</summary>
+    private static CapabilityState ProbeSecurityLog()
+    {
+        try
+        {
+            _ = EventLog.EventLogQuery.Query("Security", "*", newestFirst: true, max: 1).FirstOrDefault();
+            return new CapabilityState(Capability.SecurityEventLog, true, "The Security log can be queried.");
+        }
+        catch (System.ComponentModel.Win32Exception ex)
+        {
+            return new CapabilityState(Capability.SecurityEventLog, false, $"The Security log cannot be queried: {ex.Message} ({ex.NativeErrorCode}).");
         }
     }
 
