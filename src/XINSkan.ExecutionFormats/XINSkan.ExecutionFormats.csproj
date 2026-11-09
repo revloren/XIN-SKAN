@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>XINSkan.ExecutionFormats</RootNamespace>
+    <Description>Execution artifacts parsed from bytes with hard bounds: XPRESS Huffman, Prefetch, registry hives.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="XINSkan.ExecutionTests" />
+    <InternalsVisibleTo Include="XINSkan.UnitTests" />
+  </ItemGroup>
+</Project>

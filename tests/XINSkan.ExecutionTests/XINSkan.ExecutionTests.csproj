@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <XinEnforceReadOnly>false</XinEnforceReadOnly>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Xunit.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\XINSkan.Models\XINSkan.Models.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Core\XINSkan.Core.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Ntfs\XINSkan.Ntfs.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Platform.Windows\XINSkan.Platform.Windows.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Analyzers.FileHunter\XINSkan.Analyzers.FileHunter.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Analyzers.History\XINSkan.Analyzers.History.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.ExecutionFormats\XINSkan.ExecutionFormats.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Analyzers.Execution\XINSkan.Analyzers.Execution.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Investigation\XINSkan.Investigation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\XINSkan.FileHunterTests\Support\Fixtures.cs" Link="Support\Fixtures.cs" />
+    <Compile Include="..\XINSkan.SecurityTests\Windows\TestVhd.cs" Link="Windows\TestVhd.cs" />
+  </ItemGroup>
+</Project>

@@ -313,6 +313,8 @@ public sealed class InvestigationViewModel : ObservableObject
         "lnk" => "Ярлыки",
         "jumplists" => "Jump Lists",
         "shellbags" => "ShellBags",
+        "prefetch" => "Prefetch",
+        "bam" => "BAM",
         _ => id,
     };
 

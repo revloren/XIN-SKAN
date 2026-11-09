@@ -51,6 +51,9 @@ public sealed record HistoryOptions
 
     public IReadOnlyList<string> ExtraRoots { get; init; } = [];
 
+    /// <summary>The Windows folder of the investigated system (Prefetch, Amcache, registry hives live under it).</summary>
+    public string? WindowsFolder { get; init; }
+
     public static HistoryOptions From(XINSkan.Analyzers.FileHunter.FileHunterOptions fileHunter)
     {
         ArgumentNullException.ThrowIfNull(fileHunter);
@@ -62,6 +65,12 @@ public sealed record HistoryOptions
             CurrentProfile = fileHunter.CurrentProfile,
             TempFolders = fileHunter.TempFolders,
             ExtraRoots = fileHunter.ExtraRoots,
+
+            // C:\Windows\Temp is the system temp folder, so its parent is the Windows folder.
+            WindowsFolder = fileHunter.TempFolders.Select(t => t.TrimEnd('\\', '/'))
+                .Where(t => t.EndsWith("Temp", StringComparison.OrdinalIgnoreCase))
+                .Select(Path.GetDirectoryName)
+                .FirstOrDefault(),
         };
     }
 }

@@ -35,7 +35,12 @@ public sealed class AppDataTests : IDisposable
         Assert.Equal(ModuleReadiness.Partial, history.Readiness);
         Assert.Equal("Частично", history.StatusText);
         Assert.Contains("теневые копии", history.Purpose, StringComparison.Ordinal);
-        Assert.All(ModuleCatalog.Analyzers.Where(m => m.Stage > 5), m => Assert.Equal(ModuleReadiness.Planned, m.Readiness));
+
+        // Stage 6 runs Prefetch and BAM; what it does not read yet is named.
+        var execution = ModuleCatalog.Analyzers.Single(m => m.Stage == 6);
+        Assert.Equal(ModuleReadiness.Partial, execution.Readiness);
+        Assert.Contains("Ещё нет", execution.Purpose, StringComparison.Ordinal);
+        Assert.All(ModuleCatalog.Analyzers.Where(m => m.Stage > 6), m => Assert.Equal(ModuleReadiness.Planned, m.Readiness));
         Assert.All(ModuleCatalog.Foundation, m => Assert.Equal(ModuleReadiness.Ready, m.Readiness));
     }
 

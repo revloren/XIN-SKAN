@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>XINSkan.Analyzers.Execution</RootNamespace>
+    <Description>Execution Engine: evidence that programs ran (Prefetch, BAM, Amcache, event logs).</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XINSkan.Models\XINSkan.Models.csproj" />
+    <ProjectReference Include="..\XINSkan.Core\XINSkan.Core.csproj" />
+    <ProjectReference Include="..\XINSkan.Ntfs\XINSkan.Ntfs.csproj" />
+    <ProjectReference Include="..\XINSkan.ExecutionFormats\XINSkan.ExecutionFormats.csproj" />
+    <ProjectReference Include="..\XINSkan.Analyzers.History\XINSkan.Analyzers.History.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="XINSkan.ExecutionTests" />
+    <InternalsVisibleTo Include="XINSkan.UnitTests" />
+  </ItemGroup>
+</Project>

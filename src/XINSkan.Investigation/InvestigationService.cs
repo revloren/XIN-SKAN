@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using XINSkan.Analyzers.FileHunter;
+using XINSkan.Analyzers.Execution;
 using XINSkan.Analyzers.History;
 using XINSkan.Ntfs;
 using XINSkan.Core.IO;
@@ -32,6 +33,12 @@ public sealed record PlatformServices(
     /// <summary>ShellBags of the current user.</summary>
     public IShellBagSource ShellBags { get; init; } = NoShellBags.Instance;
 
+    /// <summary>HKEY_LOCAL_MACHINE for the Execution Engine (BAM, Prefetch settings, user profiles).</summary>
+    public IRegistryView Machine { get; init; } = NoRegistry.Instance;
+
+    /// <summary>Mounted volumes, to translate device paths in Prefetch and BAM to drive letters.</summary>
+    public IVolumeDirectory VolumeDirectory { get; init; } = NoVolumeDirectory.Instance;
+
     /// <summary>The read-only Windows implementations, for the system XIN SKAN runs on.</summary>
     [SupportedOSPlatform("windows")]
     public static PlatformServices ForWindows() => new(
@@ -44,6 +51,8 @@ public sealed record PlatformServices(
         Volumes = WindowsVolumeOpener.Instance,
         Journal = WindowsUsnJournalSource.Instance,
         ShellBags = WindowsShellBagSource.Instance,
+        Machine = WindowsMachineRegistry.Instance,
+        VolumeDirectory = WindowsVolumeDirectory.Instance,
     };
 }
 
@@ -145,6 +154,7 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
 
                 var lister = new AuditingDirectoryLister(platform.Lister, audit);
                 var files = new AuditingFileSource(platform.Files, audit, platform.FileAccess);
+                var machine = new AuditingRegistryView(platform.Machine, audit);
                 // File Hunter first (what exists now), then history; the MFT pass leaves its path index for later modules.
                 var history = new VolumeHistoryCache();
                 IAnalyzer[] analyzers =
@@ -157,6 +167,8 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
                     new LnkAnalyzer(HistoryOptions.From(request.FileHunter), lister, files),
                     new JumpListAnalyzer(HistoryOptions.From(request.FileHunter), lister, files),
                     new ShellBagsAnalyzer(new AuditingShellBagSource(platform.ShellBags, audit)),
+                    new PrefetchAnalyzer(HistoryOptions.From(request.FileHunter), lister, files, platform.VolumeDirectory, machine),
+                    new BamAnalyzer(HistoryOptions.From(request.FileHunter), machine, platform.VolumeDirectory),
                 ];
 
                 var runner = new InvestigationRunner(counting, permissions, time, progress);

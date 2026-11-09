@@ -242,6 +242,15 @@ internal static class Program
             }
         }
 
+        foreach (var g in evidence.Where(e => e.EventType is EvidenceEventType.Executed or EvidenceEventType.Loaded).GroupBy(e => e.ModuleId))
+        {
+            foreach (var e in g.OrderByDescending(e => e.Timestamp?.ValueUtc ?? DateTimeOffset.MinValue).Take(15))
+            {
+                var at = e.Timestamp is { } t ? t.ValueUtc.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) : "время неизвестно";
+                Console.WriteLine($"    {(e.EventType == EvidenceEventType.Loaded ? "загружен" : "запуск")} ({g.Key}, {at}): {e.Target.RecordedPath}");
+            }
+        }
+
         Console.WriteLine("  Папки с наибольшим числом записей:");
         foreach (var g in evidence.GroupBy(e => Path.GetDirectoryName(e.Target.RecordedPath ?? string.Empty) ?? string.Empty, StringComparer.OrdinalIgnoreCase)
                      .OrderByDescending(g => g.Count()).Take(8))

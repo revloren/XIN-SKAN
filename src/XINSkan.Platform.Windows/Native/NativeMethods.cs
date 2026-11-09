@@ -126,4 +126,8 @@ internal static partial class NativeMethods
         uint* maxValueLength,
         uint* securityDescriptorLength,
         long* lastWriteTime);
+
+    /// <summary>Maps a drive letter to its NT device path (\Device\HarddiskVolumeN). Query only.</summary>
+    [LibraryImport("kernel32.dll", EntryPoint = "QueryDosDeviceW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    internal static unsafe partial uint QueryDosDevice(string deviceName, char* targetPath, uint max);
 }
