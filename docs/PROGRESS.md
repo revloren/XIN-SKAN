@@ -240,7 +240,7 @@
 
 **Файлы.** `src/XINSkan.Models/Correlation.cs`, `src/XINSkan.Correlation/**`, `src/XINSkan.Core/Pipeline/Contracts.cs` (`ICorrelationSink`), `src/XINSkan.Storage/{Schema,InvestigationStore,InvestigationReader,Rows}.cs`, `src/XINSkan.Investigation/InvestigationService.cs`, `src/XINSkan.Platform.Windows/WindowsCapabilityProbe.cs`, `src/XINSkan.Cli/Program.cs`, `src/XINSkan.App/{Services/ModuleCatalog.cs,ViewModels/ViewModels.cs}`, `tests/XINSkan.CorrelationTests/**`, `tests/XINSkan.{StorageTests,InvestigationTests,AppTests}/*`, `tests/XINSkan.HistoryTests/Windows/UsnOnNtfsTests.cs`, `tools/offline-tests/OfflineTests.csproj`, `docs/{CORRELATION,STORAGE,PROGRESS}.md`, `README.md`, `XINSkan.slnx`.
 
-**Тесты.** CI-запуск 42654692478: 428 из 428 (модульные 96, Execution 62, History 59, безопасность 57, NTFS 43, File Hunter 43, оболочка 26, хранилище 17, корреляция 11, сервис проверки 7, интерфейс 6).
+**Тесты.** CI-запуски 42654692478 и 42656097157: 427 из 427 (модульные 96, Execution 62, History 59, безопасность 57, NTFS 43, File Hunter 43, оболочка 26, хранилище 17, корреляция 11, сервис проверки 7, интерфейс 6).
 
 - Связывание: одна ссылка MFT через переименование; удалённая запись с неизвестным путём (серийный номер → буква); путь без ссылки; один путь у двух разных файлов не смешивается.
 - Каждое правило: срабатывает, не срабатывает без второго источника, не поднимается выше Low с одним семейством. 200 000 записей — за несколько секунд.
