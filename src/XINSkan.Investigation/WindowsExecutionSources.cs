@@ -8,17 +8,19 @@ using XINSkan.Security;
 
 namespace XINSkan.Investigation;
 
-/// <summary>HKEY_LOCAL_MACHINE of the live system, read only (RegistryReader opens every key without write access).</summary>
+/// <summary>A root of the live registry (HKEY_LOCAL_MACHINE or HKEY_CURRENT_USER), read only (RegistryReader opens every key without write access).</summary>
 [SupportedOSPlatform("windows")]
-public sealed class WindowsMachineRegistry : IRegistryView
+public sealed class WindowsRegistryView(RegistryHive hive) : IRegistryView
 {
-    public static readonly WindowsMachineRegistry Instance = new();
+    public static readonly WindowsRegistryView Machine = new(RegistryHive.LocalMachine);
+
+    public static readonly WindowsRegistryView CurrentUser = new(RegistryHive.CurrentUser);
 
     public IReadOnlyList<RegistryEntry>? Values(string key)
     {
         try
         {
-            return RegistryReader.ReadValues(RegistryHive.LocalMachine, key)?
+            return RegistryReader.ReadValues(hive, key)?
                 .Select(v => new RegistryEntry(v.Name, v.Value))
                 .ToList();
         }
@@ -32,7 +34,7 @@ public sealed class WindowsMachineRegistry : IRegistryView
     {
         try
         {
-            return RegistryReader.ReadSubKeyNames(RegistryHive.LocalMachine, key);
+            return RegistryReader.ReadSubKeyNames(hive, key);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
         {
@@ -44,7 +46,7 @@ public sealed class WindowsMachineRegistry : IRegistryView
     {
         try
         {
-            return RegistryReader.ReadLastWriteTime(RegistryHive.LocalMachine, key);
+            return RegistryReader.ReadLastWriteTime(hive, key);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
         {
@@ -71,8 +73,8 @@ public sealed class NoVolumeDirectory : IVolumeDirectory
     public IReadOnlyList<KnownVolume> Volumes() => [];
 }
 
-/// <summary>Writes every machine registry key the analyzers open to the audit log.</summary>
-public sealed class AuditingRegistryView(IRegistryView inner, AuditLogger log) : IRegistryView
+/// <summary>Writes every registry key the analyzers open to the audit log.</summary>
+public sealed class AuditingRegistryView(IRegistryView inner, AuditLogger log, string root = "HKLM") : IRegistryView
 {
     private readonly HashSet<string> _logged = new(StringComparer.OrdinalIgnoreCase);
 
@@ -98,7 +100,7 @@ public sealed class AuditingRegistryView(IRegistryView inner, AuditLogger log) :
         {
             if (_logged.Add(access + "|" + key))
             {
-                log.Record("read-registry", @"HKLM\" + key, access + " (read only)", ok ? "ok" : "not-found");
+                log.Record("read-registry", root + "\\" + key, access + " (read only)", ok ? "ok" : "not-found");
             }
         }
     }
@@ -111,6 +113,7 @@ public sealed class WindowsEventLogSource : IEventLogSource
     public static readonly WindowsEventLogSource Instance = new();
 
     private const int ChannelNotFound = 15007;
+    private const int InvalidChannelPath = 15002;
     private const int AccessDenied = 5;
 
     public EventQueryResult Query(string channel, string xpath, int max)
@@ -125,9 +128,9 @@ public sealed class WindowsEventLogSource : IEventLogSource
         {
             return ex.NativeErrorCode switch
             {
-                ChannelNotFound => new EventQueryResult([], "журнала нет на этой системе", ChannelMissing: true),
+                ChannelNotFound or InvalidChannelPath => new EventQueryResult([], "журнала нет на этой системе", ChannelMissing: true),
                 AccessDenied => new EventQueryResult([], "нет доступа (нужны права администратора)"),
-                _ => new EventQueryResult([], ex.Message),
+                _ => new EventQueryResult([], $"{ex.Message} (код {ex.NativeErrorCode})"),
             };
         }
     }

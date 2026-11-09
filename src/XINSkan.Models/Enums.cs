@@ -22,6 +22,9 @@ public enum EvidenceSourceKind
     Browser,
     Network,
     Other,
+
+    /// <summary>UserAssist counters in a user's registry (programs started from Explorer). Added in stage 6.</summary>
+    UserAssist,
 }
 
 /// <summary>

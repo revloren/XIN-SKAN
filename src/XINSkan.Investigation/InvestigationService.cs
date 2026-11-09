@@ -39,6 +39,9 @@ public sealed record PlatformServices(
     /// <summary>Mounted volumes, to translate device paths in Prefetch and BAM to drive letters.</summary>
     public IVolumeDirectory VolumeDirectory { get; init; } = NoVolumeDirectory.Instance;
 
+    /// <summary>HKEY_CURRENT_USER of the account running XIN SKAN (UserAssist).</summary>
+    public IRegistryView CurrentUser { get; init; } = NoRegistry.Instance;
+
     /// <summary>Windows event logs for the Execution Engine.</summary>
     public IEventLogSource EventLogs { get; init; } = NoEventLogs.Instance;
 
@@ -54,7 +57,8 @@ public sealed record PlatformServices(
         Volumes = WindowsVolumeOpener.Instance,
         Journal = WindowsUsnJournalSource.Instance,
         ShellBags = WindowsShellBagSource.Instance,
-        Machine = WindowsMachineRegistry.Instance,
+        Machine = WindowsRegistryView.Machine,
+        CurrentUser = WindowsRegistryView.CurrentUser,
         VolumeDirectory = WindowsVolumeDirectory.Instance,
         EventLogs = WindowsEventLogSource.Instance,
     };
@@ -161,6 +165,9 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
                 var machine = new AuditingRegistryView(platform.Machine, audit);
                 // File Hunter first (what exists now), then history; the MFT pass leaves its path index for later modules.
                 var history = new VolumeHistoryCache();
+                var options = HistoryOptions.From(request.FileHunter);
+                var locked = new ProtectedFileSource(files, new AuditingVolumeOpener(platform.Volumes, audit), history);
+                var userHives = new UserHives(options, lister, locked, machine);
                 IAnalyzer[] analyzers =
                 [
                     new FileHunterAnalyzer(request.FileHunter, lister, files, platform.Signatures),
@@ -170,10 +177,11 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
                     new MinecraftLogsAnalyzer(HistoryOptions.From(request.FileHunter), lister, files, TimeZoneInfo.Local),
                     new LnkAnalyzer(HistoryOptions.From(request.FileHunter), lister, files),
                     new JumpListAnalyzer(HistoryOptions.From(request.FileHunter), lister, files),
-                    new ShellBagsAnalyzer(new AuditingShellBagSource(platform.ShellBags, audit)),
+                    new ShellBagsAnalyzer(new AuditingShellBagSource(platform.ShellBags, audit), new OtherUserShellBags(userHives)),
                     new PrefetchAnalyzer(HistoryOptions.From(request.FileHunter), lister, files, platform.VolumeDirectory, machine),
                     new BamAnalyzer(HistoryOptions.From(request.FileHunter), machine, platform.VolumeDirectory),
-                    new AmcacheAnalyzer(HistoryOptions.From(request.FileHunter), new ProtectedFileSource(files, new AuditingVolumeOpener(platform.Volumes, audit), history), platform.VolumeDirectory),
+                    new AmcacheAnalyzer(options, locked, platform.VolumeDirectory),
+                    new UserAssistAnalyzer(options, new AuditingRegistryView(platform.CurrentUser, audit, "HKCU"), userHives, platform.VolumeDirectory),
                     new EventLogAnalyzer(HistoryOptions.From(request.FileHunter), new AuditingEventLogSource(platform.EventLogs, audit), platform.VolumeDirectory),
                 ];
 

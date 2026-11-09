@@ -324,11 +324,22 @@ public interface IShellBagSource
     long? LastWriteTime(string key);
 }
 
+/// <summary>ShellBags of another user, read from that user's NTUSER.DAT and UsrClass.dat files.</summary>
+/// <param name="Prefix">How keys of this source are shown (for example "NTUSER(anna)").</param>
+public sealed record UserShellBags(string User, string? Sid, IShellBagSource Source, string Prefix, IReadOnlyList<string> Problems);
+
+/// <summary>Loads the registry files of users other than the one running XIN SKAN.</summary>
+public interface IOtherUserShellBags
+{
+    /// <param name="otherUsersAllowed">Whether other profiles may be read (Capability.OtherUserProfiles).</param>
+    IReadOnlyList<UserShellBags> Load(bool otherUsersAllowed);
+}
+
 /// <summary>
-/// ShellBags of the current user: folders Explorer has shown (including deleted folders, USB drives and folders
-/// inside archives), rebuilt from the BagMRU tree.
+/// ShellBags: folders Explorer has shown (including deleted folders, USB drives and folders inside archives),
+/// rebuilt from the BagMRU tree — of the current user from the live registry, of other users from their hive files.
 /// </summary>
-public sealed class ShellBagsAnalyzer(IShellBagSource registry) : IAnalyzer
+public sealed class ShellBagsAnalyzer(IShellBagSource registry, IOtherUserShellBags? otherUsers = null) : IAnalyzer
 {
     public const string ModuleId = "shellbags";
     private const string ParserName = "xinskan-shellbags";
@@ -350,39 +361,71 @@ public sealed class ShellBagsAnalyzer(IShellBagSource registry) : IAnalyzer
     public async Task RunAsync(AnalyzerContext context, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
+        var sources = new List<UserShellBags> { new(string.Empty, null, registry, "HKCU", []) };
+        var limitations = new List<Limitation>
+        {
+            new("SHELLBAGS.TIME", "Время — время последней записи ключа реестра: когда Проводник последний раз сохранял вид этой папки или её подпапок, а не обязательно когда её открывали."),
+        };
+        if (otherUsers is null)
+        {
+            limitations.Add(new Limitation("SHELLBAGS.CURRENT_USER", "Прочитаны ShellBags только текущего пользователя."));
+        }
+        else
+        {
+            var allowed = context.Permissions.Has(Capability.OtherUserProfiles);
+            sources.AddRange(otherUsers.Load(allowed));
+            if (!allowed)
+            {
+                limitations.Add(new Limitation("SHELLBAGS.OTHER_USERS", "ShellBags других пользователей не прочитаны: нет разрешения на чужие профили."));
+            }
+        }
+
+        foreach (var problem in sources.SelectMany(u => u.Problems.Select(p => $"{u.User}: {p}")))
+        {
+            limitations.Add(new Limitation("SHELLBAGS.USER_HIVE", problem));
+        }
+
         long nodes = 0, recorded = 0;
         var found = new List<string>();
-        foreach (var root in Roots)
+        foreach (var source in sources)
         {
-            if (registry.SubKeys(root) is null)
+            foreach (var root in Roots)
             {
-                continue;
-            }
-
-            found.Add(@"HKCU\" + root);
-            var stack = new Stack<(string Key, List<ShellItem> Items)>();
-            stack.Push((root, []));
-            while (stack.Count > 0 && nodes < MaxNodes)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var (key, items) = stack.Pop();
-                var values = registry.Values(key) ?? [];
-                foreach (var (name, data) in values.Where(v => int.TryParse(v.Name, NumberStyles.None, CultureInfo.InvariantCulture, out _)))
+                if (source.Source.SubKeys(root) is null)
                 {
-                    nodes++;
-                    var item = ShellItemParser.Parse(data);
-                    var path = new List<ShellItem>(items) { item };
-                    var text = ShellItemParser.ToPath(path);
-                    var child = key + "\\" + name;
-                    if (ShellTargets.IsRelevant(text))
-                    {
-                        await context.Writer.AddEvidenceAsync(Build(context, child, text, item, registry.LastWriteTime(child)), cancellationToken).ConfigureAwait(false);
-                        recorded++;
-                    }
+                    continue;
+                }
 
-                    stack.Push((child, path));
+                found.Add(source.Prefix + "\\" + root);
+                var stack = new Stack<(string Key, List<ShellItem> Items)>();
+                stack.Push((root, []));
+                while (stack.Count > 0 && nodes < MaxNodes)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var (key, items) = stack.Pop();
+                    var values = source.Source.Values(key) ?? [];
+                    foreach (var (name, data) in values.Where(v => int.TryParse(v.Name, NumberStyles.None, CultureInfo.InvariantCulture, out _)))
+                    {
+                        nodes++;
+                        var item = ShellItemParser.Parse(data);
+                        var path = new List<ShellItem>(items) { item };
+                        var text = ShellItemParser.ToPath(path);
+                        var child = key + "\\" + name;
+                        if (ShellTargets.IsRelevant(text))
+                        {
+                            await context.Writer.AddEvidenceAsync(Build(context, source, child, text, item, source.Source.LastWriteTime(child)), cancellationToken).ConfigureAwait(false);
+                            recorded++;
+                        }
+
+                        stack.Push((child, path));
+                    }
                 }
             }
+        }
+
+        if (nodes >= MaxNodes)
+        {
+            limitations.Add(new Limitation("SHELLBAGS.LIMIT", $"Прочитано {MaxNodes:N0} узлов, остальные пропущены."));
         }
 
         await context.Writer.AddCoverageAsync(new SourceCoverage
@@ -391,20 +434,20 @@ public sealed class ShellBagsAnalyzer(IShellBagSource registry) : IAnalyzer
             ModuleId = Id,
             Source = EvidenceSourceKind.ShellBags,
             Scope = found.Count == 0 ? "Ключи ShellBags не найдены" : string.Join("; ", found),
-            Status = nodes >= MaxNodes ? CollectionStatus.Partial : CollectionStatus.Collected,
+            Status = nodes >= MaxNodes || sources.Any(u => u.Problems.Count > 0) ? CollectionStatus.Partial : CollectionStatus.Collected,
             ItemsRead = nodes,
-            Limitations =
-            [
-                new("SHELLBAGS.CURRENT_USER", "Прочитаны ShellBags только текущего пользователя (его раздел реестра загружен). Для других пользователей нужен разбор их файлов NTUSER.DAT/UsrClass.dat — пока не реализован."),
-                new("SHELLBAGS.TIME", "Время — время последней записи ключа реестра: когда Проводник последний раз сохранял вид этой папки или её подпапок, а не обязательно когда её открывали."),
-            ],
+            Limitations = limitations,
         }, cancellationToken).ConfigureAwait(false);
-        context.Progress.Report(new ModuleProgress(Id, ModuleState.Running, $"Узлов ShellBags {nodes}, записано {recorded}."));
+        context.Progress.Report(new ModuleProgress(Id, ModuleState.Running, $"Узлов ShellBags {nodes}, записано {recorded}, пользователей {sources.Count}."));
     }
 
-    private Evidence Build(AnalyzerContext context, string key, string path, ShellItem item, long? lastWrite)
+    private Evidence Build(AnalyzerContext context, UserShellBags source, string key, string path, ShellItem item, long? lastWrite)
     {
-        var attrs = new Dictionary<string, string>(StringComparer.Ordinal) { ["ShellBags.Key"] = @"HKCU\" + key };
+        var attrs = new Dictionary<string, string>(StringComparer.Ordinal) { ["ShellBags.Key"] = source.Prefix + "\\" + key };
+        if (source.User.Length > 0)
+        {
+            attrs["ShellBags.User"] = source.User;
+        }
         if (item.MftEntry is { } entry)
         {
             attrs["Shell.MftEntry"] = entry.ToString(CultureInfo.InvariantCulture);
@@ -432,8 +475,9 @@ public sealed class ShellBagsAnalyzer(IShellBagSource registry) : IAnalyzer
             EvidenceId = context.NewEvidenceId(),
             InvestigationId = context.InvestigationId,
             ModuleId = Id,
-            Source = new SourceRef(EvidenceSourceKind.ShellBags, @"HKCU\" + Roots[0], ParserName, ParserVersion),
-            Locator = @"HKCU\" + key,
+            Source = new SourceRef(EvidenceSourceKind.ShellBags, source.Prefix + "\\" + Roots[0], ParserName, ParserVersion),
+            Locator = source.Prefix + "\\" + key,
+            UserSid = source.Sid,
             EventType = EvidenceEventType.Accessed,
             Timestamp = written is null ? null : new EvidenceTimestamp(written.Value, "Registry.KeyLastWrite", TimestampPrecision.HundredNanoseconds),
             OtherTimestamps = others,
@@ -448,7 +492,7 @@ public sealed class ShellBagsAnalyzer(IShellBagSource registry) : IAnalyzer
             Confidence = Confidence.Informational,
             Rationale = "ShellBags: Проводник запоминает вид каждой открытой папки, и запись остаётся после удаления папки или отключения диска. Это след того, что папку показывали в Проводнике.",
             CollectionStatus = item.Problem is null ? CollectionStatus.Collected : CollectionStatus.Partial,
-            Description = $"Папка открывалась в Проводнике: {path}.",
+            Description = $"Папка открывалась в Проводнике{(source.User.Length > 0 ? $" (пользователь {source.User})" : string.Empty)}: {path}.",
             Limitations = item.Problem is null ? [] : [new Limitation("SHELL.ITEM", item.Problem)],
             Attributes = attrs,
             CollectedAtUtc = context.Time.GetUtcNow(),

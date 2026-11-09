@@ -30,7 +30,6 @@ public static class EventLogQuery
 {
     private const uint QueryChannelPath = 0x1;
     private const uint QueryReverseDirection = 0x200;
-    private const uint QueryTolerateQueryErrors = 0x1000;
     private const uint RenderEventXml = 1;
     private const int ErrorNoMoreItems = 259;
     private const int ErrorInsufficientBuffer = 122;
@@ -41,7 +40,8 @@ public static class EventLogQuery
     {
         ArgumentNullException.ThrowIfNull(channel);
         ArgumentNullException.ThrowIfNull(xpath);
-        var flags = QueryChannelPath | QueryTolerateQueryErrors | (newestFirst ? QueryReverseDirection : 0);
+        // Without "tolerate query errors": a missing channel must fail here (15007), not look like an empty one.
+        var flags = QueryChannelPath | (newestFirst ? QueryReverseDirection : 0);
         var query = NativeMethods.EvtQuery(0, channel, xpath, flags);
         if (query.IsInvalid)
         {

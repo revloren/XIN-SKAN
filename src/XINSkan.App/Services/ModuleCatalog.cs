@@ -42,8 +42,8 @@ public static class ModuleCatalog
     public static IReadOnlyList<ModuleInfo> Analyzers { get; } =
     [
         new("File Hunter", "Существующие файлы: имена, хеши, подписи, метаданные", ModuleReadiness.Ready, 4),
-        new("History Engine", "MFT, USN Journal, Корзина, LNK, Jump Lists, ShellBags, логи Minecraft. Ещё нет: теневые копии (ждут решения владельца), ShellBags других пользователей", ModuleReadiness.Partial, 5),
-        new("Execution Engine", "Prefetch, BAM, Amcache, журналы событий. Ещё нет: SRUM, Amcache и кусты реестра других пользователей", ModuleReadiness.Partial, 6),
+        new("History Engine", "MFT, USN Journal, Корзина, LNK, Jump Lists, ShellBags, логи Minecraft. Ещё нет: теневые копии (ждут решения владельца)", ModuleReadiness.Partial, 5),
+        new("Execution Engine", "Prefetch, BAM, Amcache, UserAssist, журналы событий. Ещё нет: SRUM", ModuleReadiness.Partial, 6),
         new("Корреляция", "Связи между свидетельствами и единая хронология", ModuleReadiness.Planned, 7),
         new("Minecraft Integrity", "Экземпляры, моды, профили лаунчеров", ModuleReadiness.Planned, 8),
         new("База клиентов и признаков", "Известные клиенты, псевдонимы, функции, проверенные хеши", ModuleReadiness.Planned, 9),

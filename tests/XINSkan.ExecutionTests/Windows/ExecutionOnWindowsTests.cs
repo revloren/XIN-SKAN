@@ -48,7 +48,7 @@ public sealed class ExecutionOnWindowsTests(ITestOutputHelper output)
 
         await Task.Delay(15_000); // Prefetch is written about ten seconds after the start
 
-        var registry = WindowsMachineRegistry.Instance;
+        var registry = WindowsRegistryView.Machine;
         string[] keys = [BamAnalyzer.Roots[0], @"SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters"];
         var before = keys.Select(registry.LastWriteTime).ToList();
         var prefetchFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Prefetch");
@@ -148,6 +148,15 @@ public sealed class ExecutionOnWindowsTests(ITestOutputHelper output)
             output.WriteLine($"  {e.Timestamp?.ValueUtc:u} {e.Target.RecordedPath} {e.Attributes.GetValueOrDefault("Amcache.Sha1")} via {e.Attributes["Amcache.ReadMethod"]}");
         }
 
+        // The current user's NTUSER.DAT is loaded by Windows as well: read from the volume and recovered from its logs.
+        var locked = new ProtectedFileSource(WindowsFileSource.Instance, WindowsVolumeOpener.Instance, cache);
+        var me = Assert.Single(new UserHives(options, SystemDirectoryLister.Instance, locked, WindowsRegistryView.Machine).Load(otherUsersAllowed: false, includeCurrent: true));
+        output.WriteLine($"user {me.User} sid {me.Sid}; problems: {string.Join("; ", me.Problems)}");
+        var assist = me.View.SubKeys(UserAssistAnalyzer.Key);
+        output.WriteLine($"UserAssist GUIDs in the hive file: {(assist is null ? "none" : string.Join(", ", assist))}");
+        Assert.NotNull(me.View.SubKeys("Software"));
+        Assert.NotNull(me.Sid);
+
         Assert.NotNull(cache.Located(path));
         Assert.True(coverage.Status is CollectionStatus.Collected or CollectionStatus.Partial, $"Amcache: {coverage.Status}");
         Assert.True(coverage.ItemsRead > 0, "The system's Amcache lists no files.");
@@ -165,7 +174,9 @@ public sealed class ExecutionOnWindowsTests(ITestOutputHelper output)
         Assert.NotEmpty(sample.Events);
         Assert.All(sample.Events, xml => Assert.NotNull(EventXml.Parse(xml)));
         Assert.NotNull(source.Oldest("System"));
-        Assert.True(source.Query("No-Such-Channel/Operational", "*", 1).ChannelMissing);
+        var missing = source.Query("No-Such-Channel/Operational", "*", 1);
+        output.WriteLine($"missing channel: {missing.Failure}");
+        Assert.True(missing.ChannelMissing, missing.Failure);
 
         // A program in a temporary folder that crashes: Windows writes Application Error 1000 for it.
         var temp = Path.Combine(Path.GetTempPath(), "xinskan-crash-" + Guid.NewGuid().ToString("N"));
