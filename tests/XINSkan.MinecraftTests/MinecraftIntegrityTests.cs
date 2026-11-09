@@ -17,7 +17,9 @@ internal sealed class GameFolders(string profile)
 
     public string Official => Path.Combine(Roaming, ".minecraft");
 
+#pragma warning disable CA5350 // the version files publish SHA-1; tests write what they would contain
     public static string Sha1(byte[] b) => Convert.ToHexStringLower(SHA1.HashData(b));
+#pragma warning restore CA5350
 
     public static void Write(string path, byte[] data)
     {
@@ -30,7 +32,7 @@ internal sealed class GameFolders(string profile)
     public static string Lib(string root, string relative) => Path.Combine([root, "libraries", .. relative.Split('/')]);
 
     /// <summary>A vanilla version with a client JAR and libraries; clientBytes may differ from what the file promises.</summary>
-    public void Vanilla(string root, string id, byte[] promised, byte[] actual, params (string Path, byte[] Promised, byte[]? Actual)[] libraries)
+    public static void Vanilla(string root, string id, byte[] promised, byte[] actual, params (string Path, byte[] Promised, byte[]? Actual)[] libraries)
     {
         Write(Path.Combine(root, "versions", id, id + ".jar"), actual);
         foreach (var (p, _, a) in libraries.Where(l => l.Actual is not null))
@@ -87,11 +89,11 @@ public sealed class MinecraftIntegrityTests : IDisposable
             },
             version = 3,
         });
-        g.Vanilla(g.Official, "1.20.1", Client, Client,
+        GameFolders.Vanilla(g.Official, "1.20.1", Client, Client,
             ("com/mojang/authlib/4.0.43/authlib-4.0.43.jar", Authlib, Authlib),
             ("org/lwjgl/lwjgl/3.3.1/lwjgl-3.3.1.jar", Lwjgl, Encoding.ASCII.GetBytes("PK lwjgl patched")),
             ("org/lwjgl/lwjgl/3.3.1/lwjgl-3.3.1-natives-macos.jar", Lwjgl, null));
-        g.Vanilla(g.Official, "1.8.9-hacked", Client, Encoding.ASCII.GetBytes("PK modified client"));
+        GameFolders.Vanilla(g.Official, "1.8.9-hacked", Client, Encoding.ASCII.GetBytes("PK modified client"));
 
         // A Fabric profile: inherits the vanilla version, Fabric-style libraries with top-level hashes.
         var loader = Encoding.ASCII.GetBytes("PK fabric loader");
@@ -247,7 +249,7 @@ public sealed class MinecraftIntegrityTests : IDisposable
     public async Task Hash_budget_is_stated_and_damaged_files_never_throw()
     {
         var g = new GameFolders(_p.Player);
-        g.Vanilla(g.Official, "1.20.1", Client, Client, ("a/b/1/b-1.jar", Authlib, Authlib));
+        GameFolders.Vanilla(g.Official, "1.20.1", Client, Client, ("a/b/1/b-1.jar", Authlib, Authlib));
         GameFolders.Write(Path.Combine(g.Official, "launcher_profiles.json"), Encoding.UTF8.GetBytes("{ \"profiles\": { \"x\": [1, 2"));
         GameFolders.Write(Path.Combine(g.Official, "versions", "broken", "broken.json"), Encoding.UTF8.GetBytes("not json"));
         GameFolders.Json(Path.Combine(g.Official, "versions", "evil", "evil.json"), new { libraries = new object[] { new { name = "..:..:..", sha1 = "00" }, new { downloads = new { artifact = new { path = "../../../../Windows/x.dll", sha1 = "00" } } } } });
