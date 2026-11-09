@@ -41,7 +41,8 @@ public sealed class AppDataTests : IDisposable
         Assert.Equal(ModuleReadiness.Partial, execution.Readiness);
         Assert.Contains("Ещё нет", execution.Purpose, StringComparison.Ordinal);
         Assert.Equal(ModuleReadiness.Partial, ModuleCatalog.Analyzers.Single(m => m.Stage == 7).Readiness);
-        Assert.All(ModuleCatalog.Analyzers.Where(m => m.Stage > 7), m => Assert.Equal(ModuleReadiness.Planned, m.Readiness));
+        Assert.Equal(ModuleReadiness.Partial, ModuleCatalog.Analyzers.Single(m => m.Stage == 8).Readiness);
+        Assert.All(ModuleCatalog.Analyzers.Where(m => m.Stage > 8), m => Assert.Equal(ModuleReadiness.Planned, m.Readiness));
         Assert.All(ModuleCatalog.Foundation, m => Assert.Equal(ModuleReadiness.Ready, m.Readiness));
     }
 

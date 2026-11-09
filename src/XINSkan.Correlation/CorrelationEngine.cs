@@ -352,6 +352,27 @@ public sealed class CorrelationEngine(Ulid investigationId, DateTimeOffset inves
                 $"Microsoft Defender определил {name} как «{detections[0].Attr("Defender.Threat")}», и этот файл запускался или загружался ({string.Join(", ", otherRuns.Select(Family).Distinct())}).",
                 "Классификация Защитника и след запуска — независимые источники. Название угрозы — мнение Защитника: под HackTool и PUA попадают и читы, и безобидные утилиты.");
         }
+
+        // AGENT_CONFIRMED: a launcher setting loads this file into the game, and another source shows it was loaded.
+        var injections = facts.Where(f => f.Source == EvidenceSourceKind.Launcher && f.Attr("Jvm.Flag") is "javaagent" or "agentpath" or "bootclasspath" or "extramods").ToList();
+        var loads = executions.Where(e => Family(e) != "launcher").ToList();
+        if (injections.Count > 0 && loads.Count > 0)
+        {
+            yield return Make("AGENT_CONFIRMED", Confidence.Medium, o, [.. injections, .. loads.Take(MaxContext)], [],
+                "Агент из настроек лаунчера действительно загружался",
+                $"{name} подключается к игре параметром JVM ({injections[0].Attr("Jvm.Flag")}, {injections[0].Attr("Jvm.Where")}), и независимый источник показывает его загрузку ({string.Join(", ", loads.Select(Family).Distinct())}).",
+                "Настройка лаунчера и след загрузки — независимые источники: агент не только прописан, но и работал. Так внедряют чит-клиенты; так же работают профилировщики и агенты оптимизации.");
+        }
+
+        // MODIFIED_FILE_LOADED: the game's own file differs from its version file, and it was loaded.
+        var modified = facts.Where(f => f.Source == EvidenceSourceKind.Launcher && f.Attr("Sha1.Actual") is { Length: > 0 }).ToList();
+        if (modified.Count > 0 && loads.Count > 0)
+        {
+            yield return Make("MODIFIED_FILE_LOADED", Confidence.Medium, o, [.. modified, .. loads.Take(MaxContext)], [],
+                "Изменённый файл игры загружался",
+                $"{name} отличается от хеша в файле версии {modified[0].Attr("Version.Id")} и загружался ({string.Join(", ", loads.Select(Family).Distinct())}).",
+                "Несовпадение хеша (файлы игры) и загрузка (независимый источник). Безобидные причины — старые моды, встраиваемые в JAR, собственные сборки лаунчеров.");
+        }
     }
 
     // ----- Rules across objects -----

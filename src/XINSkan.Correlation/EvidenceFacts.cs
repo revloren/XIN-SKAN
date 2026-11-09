@@ -30,6 +30,7 @@ public sealed record EvidenceFacts(
         "Defender.Threat", "Defender.ExclusionType", "Defender.Change",
         "EventLog.EventId", "EventLog.Channel", "EventLog.ClearedChannel",
         "Volume.Serial", "Lnk.DriveSerial", "Lnk.DriveType", "Lnk.VolumeLabel", "MinecraftRoot",
+        "Jvm.Flag", "Jvm.Where", "Sha1.Actual", "Version.Id",
     ];
 
     public string? Attr(string name) => Attributes.TryGetValue(name, out var v) && v.Length > 0 ? v : null;

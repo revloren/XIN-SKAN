@@ -84,6 +84,29 @@ jobs:
           "XINSKAN_SHELL_SAMPLES=$root" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "XINSKAN_EXEC_SAMPLES=$root" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
+      - name: Real Minecraft version (Mojang version file, client and libraries; checked against the manifest)
+        shell: pwsh
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP 'mc-samples'
+          $mc = Join-Path $root '.minecraft'
+          $manifest = Invoke-RestMethod 'https://piston-meta.mojang.com/mc/game/version_manifest_v2.json'
+          $entry = $manifest.versions | Where-Object id -eq '1.20.1'
+          $dir = Join-Path $mc 'versions\1.20.1'
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          $json = Join-Path $dir '1.20.1.json'
+          Invoke-WebRequest -Uri $entry.url -OutFile $json
+          $sha = (Get-FileHash $json -Algorithm SHA1).Hash.ToLowerInvariant()
+          if ($sha -ne $entry.sha1) { Write-Error "version file SHA-1 $sha, manifest says $($entry.sha1)"; exit 1 }
+          $version = Get-Content $json -Raw | ConvertFrom-Json
+          Invoke-WebRequest -Uri $version.downloads.client.url -OutFile (Join-Path $dir '1.20.1.jar')
+          $libs = $version.libraries | Where-Object { $_.downloads.artifact -and -not $_.rules } | Select-Object -First 8
+          foreach ($l in $libs) {
+            $to = Join-Path $mc ('libraries\' + $l.downloads.artifact.path.Replace('/', '\'))
+            New-Item -ItemType Directory -Force -Path (Split-Path $to) | Out-Null
+            Invoke-WebRequest -Uri $l.downloads.artifact.url -OutFile $to
+          }
+          "XINSKAN_MC_SAMPLES=$root" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
       - name: Test
         run: dotnet test XINSkan.slnx -c Release --no-build --logger "trx;LogFileName=results.trx" --logger "console;verbosity=detailed" --results-directory TestResults
 

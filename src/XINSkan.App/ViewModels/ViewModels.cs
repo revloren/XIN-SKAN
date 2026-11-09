@@ -323,6 +323,8 @@ public sealed class InvestigationViewModel : ObservableObject
         "amcache" => "Amcache",
         "eventlogs" => "Журналы событий",
         "userassist" => "UserAssist",
+        "minecraft-integrity" => "Minecraft Integrity",
+        "correlation" => "Корреляция",
         _ => id,
     };
 

@@ -228,3 +228,33 @@ public sealed class CorrelationEngineTests
         Assert.Equal(100_000, r.Objects.Count);
     }
 }
+
+public sealed class LauncherRulesTests
+{
+    private const string Agent = @"C:\Users\player\Downloads\agent.jar";
+
+    [Fact]
+    public void An_agent_from_launcher_settings_that_was_loaded_is_medium()
+    {
+        var flag = F.Fact(EvidenceSourceKind.Launcher, EvidenceEventType.Observed, Agent, confidence: Confidence.Low, attrs: [("Jvm.Flag", "javaagent"), ("Jvm.Where", "профиль «PvP»")]);
+        var loaded = F.Fact(EvidenceSourceKind.Prefetch, EvidenceEventType.Loaded, Agent.ToUpperInvariant(), at: F.T0);
+        var f = Assert.Single(F.Run(flag, loaded).Findings);
+        Assert.Equal("AGENT_CONFIRMED", f.RuleId);
+        Assert.Equal(Confidence.Medium, f.Confidence);
+        Assert.Equal(new[] { "launcher", "prefetch" }, f.IndependentFamilies);
+
+        // Configured but nothing shows it ran: no finding (the Low record stays as it is).
+        Assert.Empty(F.Run(flag, F.Fact(EvidenceSourceKind.FileSystem, EvidenceEventType.Existed, Agent)).Findings);
+    }
+
+    [Fact]
+    public void A_modified_game_file_that_was_loaded_is_medium()
+    {
+        const string jar = @"C:\Users\player\AppData\Roaming\.minecraft\versions\1.8.9\1.8.9.jar";
+        var mismatch = F.Fact(EvidenceSourceKind.Launcher, EvidenceEventType.Observed, jar, confidence: Confidence.Medium, attrs: [("Sha1.Actual", "ab"), ("Version.Id", "1.8.9")]);
+        var loaded = F.Fact(EvidenceSourceKind.Prefetch, EvidenceEventType.Loaded, jar, at: F.T0);
+        var f = Assert.Single(F.Run(mismatch, loaded).Findings);
+        Assert.Equal("MODIFIED_FILE_LOADED", f.RuleId);
+        Assert.Equal(Confidence.Medium, f.Confidence);
+    }
+}

@@ -4,6 +4,7 @@ using System.Runtime.Versioning;
 using XINSkan.Analyzers.FileHunter;
 using XINSkan.Analyzers.Execution;
 using XINSkan.Analyzers.History;
+using XINSkan.Analyzers.Minecraft;
 using XINSkan.Correlation;
 using XINSkan.Ntfs;
 using XINSkan.Core.IO;
@@ -188,6 +189,10 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
                     new BamAnalyzer(HistoryOptions.From(request.FileHunter), machine, platform.VolumeDirectory),
                     new AmcacheAnalyzer(options, locked, platform.VolumeDirectory),
                     new UserAssistAnalyzer(options, new AuditingRegistryView(platform.CurrentUser, audit, "HKCU"), userHives, platform.VolumeDirectory),
+                    new MinecraftIntegrityAnalyzer(
+                        new MinecraftOptions { UsersRoot = request.FileHunter.UsersRoot, CurrentProfile = request.FileHunter.CurrentProfile, ExtraRoots = request.FileHunter.ExtraRoots },
+                        lister,
+                        files),
                     new EventLogAnalyzer(HistoryOptions.From(request.FileHunter), new AuditingEventLogSource(platform.EventLogs, audit), platform.VolumeDirectory),
                 ];
 

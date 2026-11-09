@@ -11,6 +11,7 @@
     <Project Path="src/XINSkan.Analyzers.History/XINSkan.Analyzers.History.csproj" />
     <Project Path="src/XINSkan.ExecutionFormats/XINSkan.ExecutionFormats.csproj" />
     <Project Path="src/XINSkan.Analyzers.Execution/XINSkan.Analyzers.Execution.csproj" />
+    <Project Path="src/XINSkan.Analyzers.Minecraft/XINSkan.Analyzers.Minecraft.csproj" />
     <Project Path="src/XINSkan.Correlation/XINSkan.Correlation.csproj" />
     <Project Path="src/XINSkan.Investigation/XINSkan.Investigation.csproj" />
     <Project Path="src/XINSkan.Cli/XINSkan.Cli.csproj" />
@@ -28,5 +29,6 @@
     <Project Path="tests/XINSkan.ShellFormatsTests/XINSkan.ShellFormatsTests.csproj" />
     <Project Path="tests/XINSkan.ExecutionTests/XINSkan.ExecutionTests.csproj" />
     <Project Path="tests/XINSkan.CorrelationTests/XINSkan.CorrelationTests.csproj" />
+    <Project Path="tests/XINSkan.MinecraftTests/XINSkan.MinecraftTests.csproj" />
   </Folder>
 </Solution>

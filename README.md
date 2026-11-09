@@ -17,6 +17,7 @@ Windows-приложение для исследования цифровых с
 | 5. History Engine | Частично — [docs/HISTORY_ENGINE.md](docs/HISTORY_ENGINE.md) (нет теневых копий: ждут решения владельца) |
 | 6. Execution Engine | Частично — [docs/EXECUTION_ENGINE.md](docs/EXECUTION_ENGINE.md) (нет SRUM) |
 | 7. Evidence Correlation | Частично — [docs/CORRELATION.md](docs/CORRELATION.md) (нет связи по содержимому и отчёта-хронологии) |
+| 8. Minecraft Integrity | Частично — [docs/MINECRAFT_INTEGRITY.md](docs/MINECRAFT_INTEGRITY.md) (сверка с локальными файлами версий; с хешами Mojang — этап 9) |
 
 ## Структура
 
@@ -32,6 +33,7 @@ src/XINSkan.Analyzers.FileHunter  существующие файлы: соде�
 src/XINSkan.Analyzers.History     MFT, USN, Корзина, логи Minecraft, LNK, Jump Lists, ShellBags
 src/XINSkan.ExecutionFormats      разбор Prefetch, XPRESS Huffman, кустов реестра (regf) с журналами
 src/XINSkan.Analyzers.Execution   Prefetch, BAM, Amcache, UserAssist, журналы событий, кусты пользователей
+src/XINSkan.Analyzers.Minecraft    лаунчеры и экземпляры, сверка клиента и библиотек, параметры JVM
 src/XINSkan.Correlation           связь записей одного файла, правила находок, политика уровней
 src/XINSkan.Investigation     одна проверка целиком: папка, аудит, база, анализаторы, манифест
 src/XINSkan.Cli               командная строка: xinskan investigate / verify
