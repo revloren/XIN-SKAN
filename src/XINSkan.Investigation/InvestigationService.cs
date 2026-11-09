@@ -169,6 +169,7 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
                     new ShellBagsAnalyzer(new AuditingShellBagSource(platform.ShellBags, audit)),
                     new PrefetchAnalyzer(HistoryOptions.From(request.FileHunter), lister, files, platform.VolumeDirectory, machine),
                     new BamAnalyzer(HistoryOptions.From(request.FileHunter), machine, platform.VolumeDirectory),
+                    new AmcacheAnalyzer(HistoryOptions.From(request.FileHunter), new ProtectedFileSource(files, new AuditingVolumeOpener(platform.Volumes, audit), history), platform.VolumeDirectory),
                 ];
 
                 var runner = new InvestigationRunner(counting, permissions, time, progress);

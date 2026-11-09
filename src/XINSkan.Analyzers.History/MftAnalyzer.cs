@@ -36,6 +36,45 @@ public sealed class VolumeHistoryCache
     public void SetFormatted(string drive, DateTimeOffset time) => _formatted[drive] = time;
 
     public DateTimeOffset? Formatted(string drive) => _formatted.TryGetValue(drive, out var t) ? t : null;
+
+    /// <summary>
+    /// Files Windows keeps open exclusively, located during the MFT pass so the Execution Engine can read them
+    /// from the volume: registry hives and their transaction logs, the SRUM database.
+    /// </summary>
+    public static readonly IReadOnlySet<string> LocatedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "Amcache.hve", "Amcache.hve.LOG1", "Amcache.hve.LOG2",
+        "NTUSER.DAT", "NTUSER.DAT.LOG1", "NTUSER.DAT.LOG2",
+        "UsrClass.dat", "UsrClass.dat.LOG1", "UsrClass.dat.LOG2",
+        "SRUDB.dat",
+    };
+
+    private readonly Dictionary<string, FileReference> _located = new(StringComparer.OrdinalIgnoreCase);
+
+    public void SetLocated(string path, FileReference reference)
+    {
+        lock (_located)
+        {
+            _located[path] = reference;
+        }
+    }
+
+    /// <summary>The MFT reference of a located file by its full path, or null.</summary>
+    public FileReference? Located(string path)
+    {
+        lock (_located)
+        {
+            return _located.TryGetValue(path, out var r) ? r : null;
+        }
+    }
+
+    public IReadOnlyList<string> LocatedPaths()
+    {
+        lock (_located)
+        {
+            return [.. _located.Keys];
+        }
+    }
 }
 
 public sealed record HistoryOptions
@@ -157,6 +196,7 @@ public sealed class MftAnalyzer(HistoryOptions options, IVolumeOpener volumes, V
         var scope = new HistoryScope(options.UsersRoot, options.CurrentProfile, context.Permissions.Has(Capability.OtherUserProfiles), options.TempFolders, options.ExtraRoots);
         var index = new MftIndex(reader.RecordCount, drive);
         var candidates = new List<Candidate>();
+        var located = new List<(FileReference Reference, FileNameAttribute Name)>();
         long parsed = 0, empty = 0, invalid = 0, torn = 0, free = 0;
         foreach (var raw in reader.ReadRecords(ct))
         {
@@ -193,6 +233,11 @@ public sealed class MftAnalyzer(HistoryOptions options, IVolumeOpener volumes, V
                 continue;
             }
 
+            if (r.InUse && !r.IsDirectory && VolumeHistoryCache.LocatedNames.Contains(name.Name))
+            {
+                located.Add((r.Reference, name));
+            }
+
             var relevantName = RelevantExtensions.Contains(Path.GetExtension(name.Name));
             if (r.InUse && (!relevantName || r.IsDirectory))
             {
@@ -217,6 +262,14 @@ public sealed class MftAnalyzer(HistoryOptions options, IVolumeOpener volumes, V
         }
 
         cache.Set(drive, index);
+        foreach (var (reference, fileName) in located)
+        {
+            var at = index.Resolve(fileName.Parent, fileName.Name);
+            if (at.Quality == PathQuality.Complete)
+            {
+                cache.SetLocated(at.Path, reference);
+            }
+        }
         var finalScope = new HistoryScope(options.UsersRoot, options.CurrentProfile, context.Permissions.Has(Capability.OtherUserProfiles), options.TempFolders, options.ExtraRoots);
         long deletedRecorded = 0, liveRecorded = 0, anomalies = 0;
         foreach (var c in candidates)

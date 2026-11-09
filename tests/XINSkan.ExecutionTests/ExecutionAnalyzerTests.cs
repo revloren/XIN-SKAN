@@ -231,7 +231,7 @@ public sealed class BamAnalyzerTests
         Assert.Equal(Confidence.Informational, java.Confidence);
         Assert.Contains("player", java.Description, StringComparison.Ordinal);
 
-        Assert.Contains("съёмного", sink.Evidence.Single(e => e.Target.FileName == "autoclicker.exe").Attributes["Bam.Why"], StringComparison.Ordinal);
+        Assert.Contains("съёмном", sink.Evidence.Single(e => e.Target.FileName == "autoclicker.exe").Attributes["Bam.Why"], StringComparison.Ordinal);
 
         // The other user's entries need the permission to read other profiles.
         var c = Assert.Single(sink.Coverage);

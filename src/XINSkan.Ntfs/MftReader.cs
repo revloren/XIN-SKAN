@@ -165,6 +165,22 @@ public sealed class MftReader
         return new MftReader(volume, boot, extents, size, problems);
     }
 
+    /// <summary>Reads one record by its number (raw bytes, fixups not applied); null when it is outside $MFT or unreadable.</summary>
+    public byte[]? ReadRecord(ulong entry)
+    {
+        try
+        {
+            return (long)entry < RecordCount ? ReadRecordAt(_volume, _extents, Boot, entry) : null;
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Reads bytes of the volume (for file content located through data runs).</summary>
+    public int ReadVolume(long offset, Span<byte> buffer) => _volume.Read(offset, buffer);
+
     /// <summary>Enumerates every record in order. A failed read yields nothing for those records and is counted.</summary>
     public IEnumerable<MftRawRecord> ReadRecords(CancellationToken cancellationToken = default)
     {

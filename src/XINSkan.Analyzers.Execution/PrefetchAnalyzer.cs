@@ -33,7 +33,7 @@ public sealed class PrefetchAnalyzer(HistoryOptions options, IDirectoryLister li
     public async Task RunAsync(AnalyzerContext context, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
-        var folder = Path.Combine(options.WindowsFolder ?? (options.Volumes.Count > 0 ? options.Volumes[0] : "C:") + @"\Windows", "Prefetch");
+        var folder = ProgramRelevance.Join(options.WindowsFolder ?? (options.Volumes.Count > 0 ? options.Volumes[0] : "C:") + @"\Windows", "Prefetch");
         var resolver = new VolumeResolver(volumes.Volumes());
         var scope = new HistoryScope(options.UsersRoot, options.CurrentProfile, context.Permissions.Has(Capability.OtherUserProfiles), options.TempFolders, options.ExtraRoots);
         var limitations = new List<Limitation>

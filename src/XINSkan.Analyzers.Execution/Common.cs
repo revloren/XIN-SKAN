@@ -80,12 +80,12 @@ internal static class ProgramRelevance
 
         if (!resolved)
         {
-            return "том, на котором лежала программа, сейчас не подключён";
+            return "программа на томе, который сейчас не подключён";
         }
 
         if (removable)
         {
-            return "программа запускалась со съёмного диска";
+            return "программа на съёмном диске";
         }
 
         var m = scope.Match(path);
@@ -96,11 +96,17 @@ internal static class ProgramRelevance
 
         if (m.InDropLocation)
         {
-            return "программа запускалась из папки загрузок или временной папки";
+            return "программа в загрузках, на рабочем столе, в документах или во временной папке";
         }
 
         return m.InScope ? "программа в профиле пользователя" : null;
     }
+
+    /// <summary>Joins Windows paths with backslashes on any platform (tests run on Linux with Windows paths).</summary>
+    public static string Join(string root, params string[] parts) =>
+        root.Contains('\\', StringComparison.Ordinal) || (root.Length >= 2 && root[1] == ':')
+            ? string.Join('\\', [root.TrimEnd('\\'), .. parts])
+            : Path.Combine([root, .. parts]);
 
     public static string FileName(string path)
     {

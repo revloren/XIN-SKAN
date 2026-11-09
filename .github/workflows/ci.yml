@@ -55,16 +55,31 @@ jobs:
           "XINSKAN_NTFS_SAMPLES=$dir" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "XINSKAN_REQUIRE_SAMPLES=1" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
-      - name: Reference shell and execution samples (Lnk, JumpList and Prefetch corpora, reviewed commits)
+      - name: Reference shell and execution samples (Lnk, JumpList, Prefetch, AmcacheParser corpora and Registry hives, reviewed commits)
         shell: pwsh
         run: |
           $root = Join-Path $env:RUNNER_TEMP 'shell-samples'
-          foreach ($repo in @(@('Lnk', 'dab1c8ab9c1c18d2cf89a4938ab95794d17d3a44'), @('JumpList', 'c125c8e008e62255afb3bd176e00efa171d5c1b4'), @('Prefetch', '841212266356a9121a1c34ee538cbce2bb2b9cf3'))) {
+          foreach ($repo in @(@('Lnk', 'dab1c8ab9c1c18d2cf89a4938ab95794d17d3a44'), @('JumpList', 'c125c8e008e62255afb3bd176e00efa171d5c1b4'), @('Prefetch', '841212266356a9121a1c34ee538cbce2bb2b9cf3'), @('AmcacheParser', '4706a080461d9506edbd6327bc58fc558978606d'))) {
             $dir = Join-Path $root $repo[0]
             git -c core.autocrlf=false init --quiet $dir
             git -c core.autocrlf=false -C $dir fetch --quiet --depth 1 "https://github.com/EricZimmerman/$($repo[0]).git" $repo[1]
             git -c core.autocrlf=false -C $dir checkout --quiet FETCH_HEAD
             if ((git -C $dir rev-parse HEAD) -ne $repo[1]) { Write-Error "$($repo[0]) is not at the reviewed commit"; exit 1 }
+          }
+          # Registry hives: the repository is 130 MB, so only these files, by raw URL with pinned hashes.
+          $hives = @{
+            'SAM'      = '8AEA3C9217BFE1ECC39DF535C25A02D5DFB76D0427298898A370A086C10F72AA'
+            'DRIVERS'  = 'B171EA9638C71C7B3CC9595E19378D63BB8251917E5D6296BDD92C0C4324EB28'
+            'NotAHive' = 'E4A4034DCCBFE49D305824FD10F4E63D1CA9C886009C381AE87D57F2A1527F66'
+            'NTUSER1.DAT' = '8E6B4A5C64A17BCC220DF4A01AEED83D5BE91385CD354511F18F493C39401836'
+          }
+          $hiveDir = Join-Path $root 'RegistryHives'
+          New-Item -ItemType Directory -Force -Path $hiveDir | Out-Null
+          foreach ($h in $hives.Keys) {
+            $target = Join-Path $hiveDir $h
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/EricZimmerman/Registry/d23a4b049de1ac31efbb915946e028a901d22bfb/Registry.Test/Hives/$h" -OutFile $target
+            $hash = (Get-FileHash $target -Algorithm SHA256).Hash
+            if ($hash -ne $hives[$h]) { Write-Error "$h has SHA-256 $hash, expected $($hives[$h])"; exit 1 }
           }
           "XINSKAN_SHELL_SAMPLES=$root" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "XINSKAN_EXEC_SAMPLES=$root" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8

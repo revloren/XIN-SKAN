@@ -105,6 +105,55 @@ public sealed class ExecutionOnWindowsTests(ITestOutputHelper output)
         Directory.Delete(temp, recursive: true);
     }
 
+    [WindowsAdminFact]
+    [SupportedOSPlatform("windows")]
+    public async Task Locked_amcache_is_read_from_the_volume_after_the_mft_pass()
+    {
+        var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+        var system = windows[..2];
+        var path = Path.Combine(windows, "AppCompat", "Programs", "Amcache.hve");
+        try
+        {
+            using var direct = WindowsFileSource.Instance.Open(path);
+            output.WriteLine($"Amcache.hve opened directly ({direct.Content.Length} bytes): not locked on this machine.");
+        }
+        catch (IOException ex)
+        {
+            output.WriteLine($"Amcache.hve is locked: {ex.Message}");
+        }
+
+        var profile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var options = new HistoryOptions { Volumes = [system], UsersRoot = Path.GetDirectoryName(profile)!, CurrentProfile = profile, WindowsFolder = windows };
+        var cache = new VolumeHistoryCache();
+        var sink = new MemorySink();
+        var permissions = new PermissionManager(new WindowsCapabilityProbe(system), TimeProvider.System).Snapshot();
+        var started = Stopwatch.StartNew();
+        var run = await new InvestigationRunner(sink, permissions, TimeProvider.System).RunAsync(
+            Ulid.NewUlid(DateTimeOffset.UtcNow),
+            [
+                new MftAnalyzer(options, WindowsVolumeOpener.Instance, cache),
+                new AmcacheAnalyzer(options, new ProtectedFileSource(WindowsFileSource.Instance, WindowsVolumeOpener.Instance, cache), WindowsVolumeDirectory.Instance),
+            ],
+            CancellationToken.None);
+        output.WriteLine($"took {started.Elapsed.TotalSeconds:F1} s; located: {string.Join(", ", cache.LocatedPaths())}");
+        foreach (var m in run.Modules)
+        {
+            output.WriteLine($"{m.ModuleId}: {m.State}, evidence {m.EvidenceCount} {m.Reason}");
+        }
+
+        var coverage = sink.Coverage.Single(c => c.ModuleId == AmcacheAnalyzer.ModuleId);
+        output.WriteLine($"amcache coverage: {coverage.Status}, items {coverage.ItemsRead}, {coverage.EarliestUtc:u} .. {coverage.LatestUtc:u}; {string.Join("; ", coverage.Limitations.Select(l => l.Code + ": " + l.Text))}");
+        foreach (var e in sink.Evidence.Where(e => e.ModuleId == AmcacheAnalyzer.ModuleId).Take(30))
+        {
+            output.WriteLine($"  {e.Timestamp?.ValueUtc:u} {e.Target.RecordedPath} {e.Attributes.GetValueOrDefault("Amcache.Sha1")} via {e.Attributes["Amcache.ReadMethod"]}");
+        }
+
+        Assert.NotNull(cache.Located(path));
+        Assert.True(coverage.Status is CollectionStatus.Collected or CollectionStatus.Partial, $"Amcache: {coverage.Status}");
+        Assert.True(coverage.ItemsRead > 0, "The system's Amcache lists no files.");
+        Assert.DoesNotContain(coverage.Limitations, l => l.Code is "AMCACHE.UNREADABLE" or "AMCACHE.DAMAGED");
+    }
+
     private static List<string> Snapshot(string folder) =>
         Directory.Exists(folder)
             ? Directory.EnumerateFiles(folder)

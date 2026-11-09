@@ -28,5 +28,7 @@
   <ItemGroup>
     <Compile Include="..\XINSkan.FileHunterTests\Support\Fixtures.cs" Link="Support\Fixtures.cs" />
     <Compile Include="..\XINSkan.SecurityTests\Windows\TestVhd.cs" Link="Windows\TestVhd.cs" />
+    <Compile Include="..\XINSkan.NtfsTests\Support\TestImages.cs" Link="Support\TestImages.cs" />
+    <EmbeddedResource Include="..\XINSkan.NtfsTests\TestData\*.gz" LogicalName="%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>
