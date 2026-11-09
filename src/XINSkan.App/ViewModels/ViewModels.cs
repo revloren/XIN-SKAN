@@ -201,7 +201,7 @@ public sealed class InvestigationViewModel : ObservableObject
     public bool CanStart => ModuleCatalog.AnyAnalyzerReady;
 
     public string StartHint => CanStart
-        ? "Проверка соберёт свидетельства подключёнными модулями (сейчас — File Hunter). Модули без нужных прав будут пропущены с указанием причины. Исследуемые данные только читаются."
+        ? $"Проверка соберёт свидетельства подключёнными модулями ({string.Join(", ", ModuleCatalog.Analyzers.Where(a => a.Runs).Select(a => a.Name))}). Модули без нужных прав будут пропущены с указанием причины. Исследуемые данные только читаются."
         : "Запуск станет доступен, когда будет подключён первый анализатор.";
 
     public string OutputFolder => _env.OutputRoot;
@@ -303,7 +303,18 @@ public sealed class InvestigationViewModel : ObservableObject
         ResultText = $"{head} {modules}. Папка: {o.Folder}. {check} Записи — сведения о найденных объектах, а не выводы о нарушении.";
     }
 
-    private static string ModuleName(string id) => id == FileHunterAnalyzer.ModuleId ? "File Hunter" : id;
+    private static string ModuleName(string id) => id switch
+    {
+        FileHunterAnalyzer.ModuleId => "File Hunter",
+        "mft" => "MFT",
+        "usn" => "USN Journal",
+        "recycle-bin" => "Корзина",
+        "minecraft-logs" => "Логи Minecraft",
+        "lnk" => "Ярлыки",
+        "jumplists" => "Jump Lists",
+        "shellbags" => "ShellBags",
+        _ => id,
+    };
 
     private static string StateText(ModuleState s) => s switch
     {

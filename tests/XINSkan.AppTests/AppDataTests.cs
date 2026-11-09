@@ -29,7 +29,13 @@ public sealed class AppDataTests : IDisposable
         // Updated in the stage 4 commit together with File Hunter's tests and the investigation service.
         Assert.Equal(new[] { "File Hunter" }, ModuleCatalog.Analyzers.Where(m => m.IsReady).Select(m => m.Name));
         Assert.True(ModuleCatalog.AnyAnalyzerReady);
-        Assert.All(ModuleCatalog.Analyzers.Where(m => m.Stage > 4), m => Assert.Equal(ModuleReadiness.Planned, m.Readiness));
+
+        // Stage 5 runs but is partial until shadow copies are decided; this says so instead of "Ready".
+        var history = ModuleCatalog.Analyzers.Single(m => m.Stage == 5);
+        Assert.Equal(ModuleReadiness.Partial, history.Readiness);
+        Assert.Equal("Частично", history.StatusText);
+        Assert.Contains("теневые копии", history.Purpose, StringComparison.Ordinal);
+        Assert.All(ModuleCatalog.Analyzers.Where(m => m.Stage > 5), m => Assert.Equal(ModuleReadiness.Planned, m.Readiness));
         Assert.All(ModuleCatalog.Foundation, m => Assert.Equal(ModuleReadiness.Ready, m.Readiness));
     }
 

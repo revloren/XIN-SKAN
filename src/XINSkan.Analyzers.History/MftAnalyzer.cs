@@ -239,7 +239,8 @@ public sealed class MftAnalyzer(HistoryOptions options, IVolumeOpener volumes, V
 
         var limitations = new List<Limitation>
         {
-            new("MFT.REUSE", "Запись удалённого файла существует, пока NTFS не отдаст её новому объекту. Отсутствие записи не значит, что файла не было."),
+            new("MFT.REUSE", "Запись удалённого файла существует, пока NTFS не отдаст её новому объекту; Windows отдаёт освобождённые записи быстро. Отсутствие записи не значит, что файла не было."),
+            new("MFT.LIVE", "Таблица читается с диска работающей системы: изменения последних секунд, которые Windows ещё держит в памяти, могут быть не видны. USN Journal показывает их."),
         };
         if (reader.Statistics.UnreadableBytes > 0)
         {

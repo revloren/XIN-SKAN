@@ -53,7 +53,14 @@ public sealed class MftOnNtfsTests(ITestOutputHelper output)
 
         // The MFT is read from the disk, not from the file system cache: flush what Windows still holds.
         Flush(vhd.Letter);
-        Thread.Sleep(2000);
+
+        // Measured, not asserted: a deletion right before the check, without a flush. Whether the MFT read from
+        // the disk already shows it depends on when Windows writes the record back (the USN Journal always shows it).
+        var late = Path.Combine(profile, "Downloads", "late-delete.jar");
+        File.WriteAllBytes(late, Jar.FabricMod("late", "Late", "1"));
+        Flush(vhd.Letter);
+        File.Delete(late);
+        Thread.Sleep(10_000);
         var usnBefore = QueryJournal(vhd.Letter);
 
         var sink = new MemorySink();
@@ -70,6 +77,7 @@ public sealed class MftOnNtfsTests(ITestOutputHelper output)
         }
 
         output.WriteLine($"USN next {usnBefore.NextUsn} -> {usnAfter.NextUsn}");
+        output.WriteLine($"Deleted 10 s before the check without a flush, seen in the MFT: {sink.Evidence.Any(e => e.Target.FileName == "late-delete.jar" && e.EventType == EvidenceEventType.Deleted)}");
         Assert.Equal(ModuleState.Completed, Assert.Single(run.Modules).State);
 
         var deleted = sink.Evidence.Single(e => e.Target.FileName == "cheat-client.jar");

@@ -17,7 +17,7 @@ jobs:
   windows:
     name: Build and test (Windows)
     runs-on: windows-latest
-    timeout-minutes: 45
+    timeout-minutes: 70
     steps:
       - uses: actions/checkout@v4
 
@@ -87,7 +87,8 @@ jobs:
       - name: Real run on this runner (CLI)
         # File Hunter over the runner's real profile; results go to the runner's D: drive, not the investigated C:.
         shell: pwsh
-        timeout-minutes: 15
+        # The first read of a fresh runner disk is slow and varies (180–700 s seen for File Hunter alone).
+        timeout-minutes: 35
         run: |
           $out = Join-Path $env:RUNNER_TEMP 'xinskan-out'
           # A known deletion on the live system volume, a few seconds before the check: does the MFT pass see it
