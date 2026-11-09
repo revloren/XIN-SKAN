@@ -92,7 +92,7 @@ public sealed class ExecutionOnWindowsTests(ITestOutputHelper output)
         output.WriteLine($"probe seen by BAM: {sink.Evidence.Any(e => e.ModuleId == "bam" && e.Target.FileName!.Equals("xinskan-probe.exe", StringComparison.OrdinalIgnoreCase))}");
 
         Assert.All(run.Modules, m => Assert.True(m.State is ModuleState.Completed or ModuleState.CompletedWithErrors, $"{m.ModuleId}: {m.State} {m.Reason}"));
-        Assert.Empty(sink.Evidence.Where(e => e.Confidence > Confidence.Low));
+        Assert.DoesNotContain(sink.Evidence, e => e.Confidence > Confidence.Low);
         Assert.All(sink.Evidence.Where(e => e.EventType == EvidenceEventType.Executed && e.Target.NormalizedPath is not null),
             e => Assert.Matches(@"^[A-Za-z]:\\", e.Target.RecordedPath!));
 

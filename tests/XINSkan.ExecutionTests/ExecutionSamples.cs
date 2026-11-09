@@ -53,7 +53,7 @@ public sealed class PrefetchSampleTests(ITestOutputHelper output)
         }
 
         Assert.True(files.Count >= 50, $"Only {files.Count} files found under {root}.");
-        Assert.Empty(problems.Where(p => !p.Contains("Bad", StringComparison.OrdinalIgnoreCase)));
+        Assert.DoesNotContain(problems, p => !p.Contains("Bad", StringComparison.OrdinalIgnoreCase));
     }
 
     [ExecSampleFact]
