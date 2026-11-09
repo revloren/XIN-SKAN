@@ -130,4 +130,22 @@ internal static partial class NativeMethods
     /// <summary>Maps a drive letter to its NT device path (\Device\HarddiskVolumeN). Query only.</summary>
     [LibraryImport("kernel32.dll", EntryPoint = "QueryDosDeviceW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
     internal static unsafe partial uint QueryDosDevice(string deviceName, char* targetPath, uint max);
+
+    /// <summary>Opens a query over one event log channel (Windows Event Log API). Read only.</summary>
+    [LibraryImport("wevtapi.dll", EntryPoint = "EvtQuery", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    internal static partial EventLog.EvtHandle EvtQuery(nint session, string path, string query, uint flags);
+
+    /// <summary>Takes the next events of a query.</summary>
+    [LibraryImport("wevtapi.dll", EntryPoint = "EvtNext", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static unsafe partial bool EvtNext(EventLog.EvtHandle resultSet, uint eventsSize, nint* events, uint timeout, uint flags, out uint returned);
+
+    /// <summary>Renders an event as XML into a caller buffer.</summary>
+    [LibraryImport("wevtapi.dll", EntryPoint = "EvtRender", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static unsafe partial bool EvtRender(nint context, EventLog.EvtHandle fragment, uint flags, uint bufferSize, char* buffer, out uint bufferUsed, out uint propertyCount);
+
+    [LibraryImport("wevtapi.dll", EntryPoint = "EvtClose", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool EvtClose(nint handle);
 }

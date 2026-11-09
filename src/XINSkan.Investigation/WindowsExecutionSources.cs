@@ -1,6 +1,7 @@
 using System.Runtime.Versioning;
 using Microsoft.Win32;
 using XINSkan.Analyzers.Execution;
+using XINSkan.Platform.Windows.EventLog;
 using XINSkan.Platform.Windows.IO;
 using XINSkan.Platform.Windows.Registry;
 using XINSkan.Security;
@@ -101,4 +102,59 @@ public sealed class AuditingRegistryView(IRegistryView inner, AuditLogger log) :
             }
         }
     }
+}
+
+/// <summary>The live event logs through the Windows Event Log API (query and render only).</summary>
+[SupportedOSPlatform("windows")]
+public sealed class WindowsEventLogSource : IEventLogSource
+{
+    public static readonly WindowsEventLogSource Instance = new();
+
+    private const int ChannelNotFound = 15007;
+    private const int AccessDenied = 5;
+
+    public EventQueryResult Query(string channel, string xpath, int max)
+    {
+        try
+        {
+            var events = EventLogQuery.Query(channel, xpath, newestFirst: false, max: max + 1).ToList();
+            var truncated = events.Count > max;
+            return new EventQueryResult(truncated ? events[..max] : events, null, Truncated: truncated);
+        }
+        catch (System.ComponentModel.Win32Exception ex)
+        {
+            return ex.NativeErrorCode switch
+            {
+                ChannelNotFound => new EventQueryResult([], "журнала нет на этой системе", ChannelMissing: true),
+                AccessDenied => new EventQueryResult([], "нет доступа (нужны права администратора)"),
+                _ => new EventQueryResult([], ex.Message),
+            };
+        }
+    }
+
+    public DateTimeOffset? Oldest(string channel)
+    {
+        try
+        {
+            var first = EventLogQuery.Query(channel, "*", newestFirst: false, max: 1).FirstOrDefault();
+            return first is null ? null : EventXml.Parse(first)?.TimeCreated;
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            return null;
+        }
+    }
+}
+
+/// <summary>Writes every event log query to the audit log.</summary>
+public sealed class AuditingEventLogSource(IEventLogSource inner, AuditLogger log) : IEventLogSource
+{
+    public EventQueryResult Query(string channel, string xpath, int max)
+    {
+        var result = inner.Query(channel, xpath, max);
+        log.Record("read-eventlog", channel + " " + xpath, "EvtQuery/EvtRender (read only)", result.Failure is null ? $"ok ({result.Events.Count})" : result.ChannelMissing ? "not-found" : "denied", result.Failure);
+        return result;
+    }
+
+    public DateTimeOffset? Oldest(string channel) => inner.Oldest(channel);
 }

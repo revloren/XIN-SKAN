@@ -154,6 +154,60 @@ public sealed class ExecutionOnWindowsTests(ITestOutputHelper output)
         Assert.DoesNotContain(coverage.Limitations, l => l.Code is "AMCACHE.UNREADABLE" or "AMCACHE.DAMAGED");
     }
 
+    [WindowsAdminFact]
+    [SupportedOSPlatform("windows")]
+    public async Task Event_logs_are_queried_and_rendered_and_a_crash_from_temp_is_found()
+    {
+        // Every rendered event of the System log parses.
+        var source = WindowsEventLogSource.Instance;
+        var sample = source.Query("System", "*", 200);
+        Assert.Null(sample.Failure);
+        Assert.NotEmpty(sample.Events);
+        Assert.All(sample.Events, xml => Assert.NotNull(EventXml.Parse(xml)));
+        Assert.NotNull(source.Oldest("System"));
+        Assert.True(source.Query("No-Such-Channel/Operational", "*", 1).ChannelMissing);
+
+        // A program in a temporary folder that crashes: Windows writes Application Error 1000 for it.
+        var temp = Path.Combine(Path.GetTempPath(), "xinskan-crash-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(temp);
+        var crasher = Path.Combine(temp, "xinskan-crash.exe");
+        File.Copy(Path.Combine(Environment.SystemDirectory, "WindowsPowerShell", "v1.0", "powershell.exe"), crasher);
+        using (var p = Process.Start(new ProcessStartInfo(crasher, "-NoProfile -NonInteractive -Command [Environment]::FailFast('xinskan test crash')") { UseShellExecute = false, CreateNoWindow = true })!)
+        {
+            p.WaitForExit(60_000);
+            output.WriteLine($"crasher exit code 0x{p.ExitCode:X8}");
+        }
+
+        await Task.Delay(5000);
+        var profile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var options = new HistoryOptions
+        {
+            Volumes = [Environment.GetFolderPath(Environment.SpecialFolder.Windows)[..2]],
+            UsersRoot = Path.GetDirectoryName(profile)!,
+            CurrentProfile = profile,
+            TempFolders = [Path.GetTempPath().TrimEnd('\\')],
+        };
+        var sink = new MemorySink();
+        var permissions = new PermissionManager(new WindowsCapabilityProbe(options.Volumes[0]), TimeProvider.System).Snapshot();
+        var run = await new InvestigationRunner(sink, permissions, TimeProvider.System).RunAsync(
+            Ulid.NewUlid(DateTimeOffset.UtcNow), [new EventLogAnalyzer(options, source, WindowsVolumeDirectory.Instance)], CancellationToken.None);
+
+        foreach (var c in sink.Coverage)
+        {
+            output.WriteLine($"{c.Scope}: {c.Status}, events {c.ItemsRead}, oldest {c.EarliestUtc:u}; {string.Join("; ", c.Limitations.Select(l => l.Code))}");
+        }
+
+        foreach (var e in sink.Evidence.Take(40))
+        {
+            output.WriteLine($"{e.Attributes["EventLog.Channel"]} {e.Attributes["EventLog.EventId"]} {e.EventType} {e.Confidence} {e.Timestamp?.ValueUtc:u} {e.Target.RecordedPath} | {e.Description}");
+        }
+
+        Assert.Equal(ModuleState.Completed, Assert.Single(run.Modules).State);
+        Assert.Equal(CollectionStatus.Collected, sink.Coverage.Single(c => c.Scope == "System").Status);
+        output.WriteLine($"crash found: {sink.Evidence.Any(e => e.Target.FileName?.Equals("xinskan-crash.exe", StringComparison.OrdinalIgnoreCase) == true)}");
+        Directory.Delete(temp, recursive: true);
+    }
+
     private static List<string> Snapshot(string folder) =>
         Directory.Exists(folder)
             ? Directory.EnumerateFiles(folder)

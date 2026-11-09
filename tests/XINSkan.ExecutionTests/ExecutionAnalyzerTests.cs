@@ -121,7 +121,7 @@ public sealed class PrefetchAnalyzerTests : IDisposable
 
         var injector = sink.Evidence.Single(e => e.Target.FileName == "INJECTOR.EXE");
         Assert.Equal(@"C:\USERS\PLAYER\DOWNLOADS\INJECTOR.EXE", injector.Target.RecordedPath);
-        Assert.Contains("загрузок", injector.Attributes["Prefetch.Why"], StringComparison.Ordinal);
+        Assert.Contains("загрузках", injector.Attributes["Prefetch.Why"], StringComparison.Ordinal);
 
         // The volume is not mounted now: the path stays as recorded, and the record says so.
         var tool = sink.Evidence.Single(e => e.Target.FileName == "TOOL.EXE");

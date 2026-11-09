@@ -316,6 +316,7 @@ public sealed class InvestigationViewModel : ObservableObject
         "prefetch" => "Prefetch",
         "bam" => "BAM",
         "amcache" => "Amcache",
+        "eventlogs" => "Журналы событий",
         _ => id,
     };
 

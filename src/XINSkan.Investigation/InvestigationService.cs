@@ -39,6 +39,9 @@ public sealed record PlatformServices(
     /// <summary>Mounted volumes, to translate device paths in Prefetch and BAM to drive letters.</summary>
     public IVolumeDirectory VolumeDirectory { get; init; } = NoVolumeDirectory.Instance;
 
+    /// <summary>Windows event logs for the Execution Engine.</summary>
+    public IEventLogSource EventLogs { get; init; } = NoEventLogs.Instance;
+
     /// <summary>The read-only Windows implementations, for the system XIN SKAN runs on.</summary>
     [SupportedOSPlatform("windows")]
     public static PlatformServices ForWindows() => new(
@@ -53,6 +56,7 @@ public sealed record PlatformServices(
         ShellBags = WindowsShellBagSource.Instance,
         Machine = WindowsMachineRegistry.Instance,
         VolumeDirectory = WindowsVolumeDirectory.Instance,
+        EventLogs = WindowsEventLogSource.Instance,
     };
 }
 
@@ -170,6 +174,7 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
                     new PrefetchAnalyzer(HistoryOptions.From(request.FileHunter), lister, files, platform.VolumeDirectory, machine),
                     new BamAnalyzer(HistoryOptions.From(request.FileHunter), machine, platform.VolumeDirectory),
                     new AmcacheAnalyzer(HistoryOptions.From(request.FileHunter), new ProtectedFileSource(files, new AuditingVolumeOpener(platform.Volumes, audit), history), platform.VolumeDirectory),
+                    new EventLogAnalyzer(HistoryOptions.From(request.FileHunter), new AuditingEventLogSource(platform.EventLogs, audit), platform.VolumeDirectory),
                 ];
 
                 var runner = new InvestigationRunner(counting, permissions, time, progress);
