@@ -20,6 +20,7 @@
     <!-- Files named *WithSqlite* need Microsoft.Data.Sqlite (NuGet) and run in CI only. -->
     <Compile Include="../../tests/XINSkan.NtfsTests/**/*.cs" Exclude="../../tests/XINSkan.NtfsTests/obj/**;../../tests/XINSkan.NtfsTests/bin/**" />
     <EmbeddedResource Include="../../tests/XINSkan.NtfsTests/TestData/*.gz" LogicalName="%(Filename)%(Extension)" />
+    <Compile Include="../../tests/XINSkan.HistoryTests/**/*.cs" Exclude="../../tests/XINSkan.HistoryTests/obj/**;../../tests/XINSkan.HistoryTests/bin/**" />
     <Compile Include="../../tests/XINSkan.InvestigationTests/**/*.cs" Exclude="../../tests/XINSkan.InvestigationTests/obj/**;../../tests/XINSkan.InvestigationTests/bin/**;../../tests/XINSkan.InvestigationTests/**/*WithSqlite*.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -34,5 +35,6 @@
     <ProjectReference Include="../../src/XINSkan.Analyzers.FileHunter/XINSkan.Analyzers.FileHunter.csproj" />
     <ProjectReference Include="../../src/XINSkan.Investigation/XINSkan.Investigation.csproj" />
     <ProjectReference Include="../../src/XINSkan.Ntfs/XINSkan.Ntfs.csproj" />
+    <ProjectReference Include="../../src/XINSkan.Analyzers.History/XINSkan.Analyzers.History.csproj" />
   </ItemGroup>
 </Project>

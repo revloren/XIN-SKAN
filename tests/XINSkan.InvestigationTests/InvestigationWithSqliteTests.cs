@@ -54,7 +54,7 @@ public sealed class InvestigationWithSqliteTests : IDisposable
         Assert.Equal(outcome.InvestigationId, reader.ReadInfo().InvestigationId);
         Assert.Equal("Модератор", reader.ReadInfo().Operator);
 
-        var module = Assert.Single(reader.ReadModuleResults());
+        var module = reader.ReadModuleResults().Single(m => m.ModuleId == FileHunterAnalyzer.ModuleId);
         Assert.Equal(FileHunterAnalyzer.ModuleId, module.ModuleId);
         Assert.Equal(ModuleState.Completed, module.State);
         Assert.Equal(outcome.EvidenceWritten, module.EvidenceCount);

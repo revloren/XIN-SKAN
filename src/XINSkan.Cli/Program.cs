@@ -226,10 +226,18 @@ internal static class Program
 
         static string Attr(Evidence e, string name) => e.Attributes.TryGetValue(name, out var v) ? v : "—";
 
+        Group("По модулям и событиям", e => $"{e.ModuleId}/{e.EventType}");
         Group("По причине отбора", e => Attr(e, "Selection"));
         Group("По содержимому", e => Attr(e, "Content"));
         Group("Подпись (только PE)", e => Attr(e, "Signature"));
+        Group("Уверенность", e => e.Confidence.ToString());
+        Group("Расхождение времени MFT", e => Attr(e, "Mft.TimeAnomaly"));
         Group("Ограничения", e => e.Limitations.Count == 0 ? "нет" : string.Join("+", e.Limitations.Select(l => l.Code).Where(c => c != "FS.SI_TIMES").DefaultIfEmpty("только FS.SI_TIMES")));
+        foreach (var e in evidence.Where(e => e.EventType == EvidenceEventType.Deleted).Take(15))
+        {
+            Console.WriteLine($"    удалено: {e.Target.RecordedPath}");
+        }
+
         Console.WriteLine("  Папки с наибольшим числом записей:");
         foreach (var g in evidence.GroupBy(e => Path.GetDirectoryName(e.Target.RecordedPath ?? string.Empty) ?? string.Empty, StringComparer.OrdinalIgnoreCase)
                      .OrderByDescending(g => g.Count()).Take(8))

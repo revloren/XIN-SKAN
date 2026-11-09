@@ -27,6 +27,8 @@ public static class Relevance
     };
 
     /// <summary>Folders, relative to a profile, where downloaded or dropped files usually land.</summary>
+    public static IReadOnlyList<string> DropFoldersInProfile => ProfileDropFolders;
+
     private static readonly string[] ProfileDropFolders =
     [
         "Downloads", "Desktop", "Documents", @"AppData\Local\Temp", "OneDrive\\Desktop", "OneDrive\\Documents",

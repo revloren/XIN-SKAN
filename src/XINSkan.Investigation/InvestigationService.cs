@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using XINSkan.Analyzers.FileHunter;
+using XINSkan.Analyzers.History;
+using XINSkan.Ntfs;
 using XINSkan.Core.IO;
 using XINSkan.Core.Permissions;
 using XINSkan.Core.Pipeline;
@@ -21,6 +23,9 @@ public sealed record PlatformServices(
     ICapabilityProbe Probe,
     string FileAccess)
 {
+    /// <summary>Raw volume access for the History Engine. Without it the MFT module reports the volume as unreadable.</summary>
+    public IVolumeOpener Volumes { get; init; } = NoVolumeAccess.Instance;
+
     /// <summary>The read-only Windows implementations, for the system XIN SKAN runs on.</summary>
     [SupportedOSPlatform("windows")]
     public static PlatformServices ForWindows() => new(
@@ -28,7 +33,18 @@ public sealed record PlatformServices(
         WindowsFileSource.Instance,
         AuthenticodeVerifier.Instance,
         new WindowsCapabilityProbe(),
-        WindowsFileSource.AccessDescription);
+        WindowsFileSource.AccessDescription)
+    {
+        Volumes = WindowsVolumeOpener.Instance,
+    };
+}
+
+/// <summary>Used where raw volume access does not exist (tests, other platforms).</summary>
+public sealed class NoVolumeAccess : IVolumeOpener
+{
+    public static readonly NoVolumeAccess Instance = new();
+
+    public IRawVolume Open(string drive) => throw new UnauthorizedAccessException($"Raw access to {drive} is not available here.");
 }
 
 public sealed record InvestigationRequest
@@ -121,7 +137,13 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
 
                 var lister = new AuditingDirectoryLister(platform.Lister, audit);
                 var files = new AuditingFileSource(platform.Files, audit, platform.FileAccess);
-                IAnalyzer[] analyzers = [new FileHunterAnalyzer(request.FileHunter, lister, files, platform.Signatures)];
+                // File Hunter first (what exists now), then history; the MFT pass leaves its path index for later modules.
+                var history = new VolumeHistoryCache();
+                IAnalyzer[] analyzers =
+                [
+                    new FileHunterAnalyzer(request.FileHunter, lister, files, platform.Signatures),
+                    new MftAnalyzer(HistoryOptions.From(request.FileHunter), new AuditingVolumeOpener(platform.Volumes, audit), history),
+                ];
 
                 var runner = new InvestigationRunner(counting, permissions, time, progress);
                 run = await runner.RunAsync(id, analyzers, cancellationToken).ConfigureAwait(false);

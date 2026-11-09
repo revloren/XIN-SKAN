@@ -1,4 +1,6 @@
+using XINSkan.Analyzers.History;
 using XINSkan.Core.IO;
+using XINSkan.Ntfs;
 using XINSkan.Security;
 
 namespace XINSkan.Investigation;
@@ -75,4 +77,24 @@ internal static class AuditResults
         FileNotFoundException or DirectoryNotFoundException => "not-found",
         _ => "error",
     };
+}
+
+/// <summary>Records every raw volume opened (the volume itself; individual sector reads are not listed).</summary>
+public sealed class AuditingVolumeOpener(IVolumeOpener inner, AuditLogger log) : IVolumeOpener
+{
+    public IRawVolume Open(string drive)
+    {
+        var target = $@"\\.\{drive}";
+        try
+        {
+            var volume = inner.Open(drive);
+            log.Record("open-volume", target, "GENERIC_READ; share read/write; raw sectors", "ok");
+            return volume;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+        {
+            log.Record("open-volume", target, "GENERIC_READ; share read/write; raw sectors", AuditResults.Of(ex), ex.Message);
+            throw;
+        }
+    }
 }

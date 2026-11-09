@@ -12,7 +12,7 @@ ntfs-3g -o streams_interface=xattr "$img" "$work/m"
 m="$work/m"
 P="$m/Users/player"
 MC="$P/AppData/Roaming/.minecraft"
-mkdir -p "$MC/mods" "$MC/versions/1.20.1" "$MC/logs" "$P/Downloads" "$P/Desktop" "$P/Games/Impact" "$m/Users/Public" "$m/Windows/Temp"
+mkdir -p "$MC/mods" "$MC/versions/1.20.1" "$MC/logs" "$P/Downloads" "$P/Desktop" "$P/Games/Impact" "$m/Users/Public" "$m/Windows/Temp" "$m/Windows/System32"
 
 # Many files first, so that $MFT grows beyond its initial allocation (and nothing created later reuses
 # the records freed at the end).
@@ -57,14 +57,24 @@ echo "wurst" > "$MC/mods/wurst-client.jar"
 python3 -c "import os,sys; os.setxattr(sys.argv[1], 'user.Zone.Identifier', b'[ZoneTransfer]\r\nZoneId=3\r\nHostUrl=https://example.org/wurst-client.jar\r\n')" "$MC/mods/wurst-client.jar"
 head -c 5000 /dev/zero | tr '\0' 'M' > "$P/Downloads/injector.exe"
 echo "impact" > "$P/Games/Impact/impact.jar"
+mkdir -p "$MC/config/wurst"
+echo '{"killaura":true}' > "$MC/config/wurst/settings.json"
+echo "dll" > "$m/Windows/System32/update.dll"
 
 rm "$MC/mods/wurst-client.jar"           # deleted, with a resident Zone.Identifier stream
 rm "$P/Downloads/injector.exe"           # deleted, non-resident content
 rm -r "$P/Games/Impact"                  # folder and file deleted: the file keeps a reference to the deleted folder
 rm -r "$P/Temp/Reused"
+rm -r "$MC/config/wurst"                 # a deleted config folder inside .minecraft: recorded whatever the names
+rm "$m/Windows/System32/update.dll"      # deleted outside the checked area: not recorded
+rm "$m/Filler/f1.txt"                    # deleted, irrelevant name, outside: not recorded
 
-# Exactly one new file: it takes the lowest free record, which is the deleted Impact folder (created by
-# mkdir at the start). impact.jar now points to a record that belongs to another object.
+# Exactly one new file after a remount (which resets ntfs-3g's allocation hint): it takes the lowest free
+# record, the deleted Impact folder (created by mkdir at the start). impact.jar now points to a record that
+# belongs to another object.
+sync
+fusermount -u "$m" 2>/dev/null || umount "$m"
+ntfs-3g -o streams_interface=xattr "$img" "$m"
 echo "new" > "$P/Temp/new.txt"
 
 sync

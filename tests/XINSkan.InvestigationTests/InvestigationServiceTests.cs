@@ -56,7 +56,12 @@ public sealed class InvestigationServiceTests : IDisposable
         Assert.Equal(store.Evidence.Count, outcome.EvidenceWritten);
         Assert.True(outcome.EvidenceWritten >= _p.ExpectedFiles.Count + _p.ExpectedDirectories.Count);
         Assert.False(outcome.Run.Cancelled);
-        Assert.Equal(ModuleState.Completed, Assert.Single(outcome.Run.Modules).State);
+        Assert.Equal(ModuleState.Completed, outcome.Run.Modules.Single(m => m.ModuleId == FileHunterAnalyzer.ModuleId).State);
+
+        // Without raw volume access the MFT module is skipped and says why.
+        var mft = outcome.Run.Modules.Single(m => m.ModuleId == XINSkan.Analyzers.History.MftAnalyzer.ModuleId);
+        Assert.Equal(ModuleState.Skipped, mft.State);
+        Assert.Contains("RawVolumeRead", mft.Reason, StringComparison.Ordinal);
 
         // The folder is new, named after the run, and holds exactly what the run created.
         Assert.StartsWith(Path.Combine(_out, "XINSKAN-"), outcome.Folder, StringComparison.Ordinal);
@@ -136,7 +141,7 @@ public sealed class InvestigationServiceTests : IDisposable
             new InvestigationRequest { OutputRoot = _out, FileHunter = Options }, null, cts.Token);
 
         Assert.True(outcome.Run.Cancelled);
-        Assert.Equal(ModuleState.Cancelled, Assert.Single(outcome.Run.Modules).State);
+        Assert.All(outcome.Run.Modules, m => Assert.Equal(ModuleState.Cancelled, m.State));
         Assert.Equal(store!.Evidence.Count, outcome.EvidenceWritten);
         Assert.Empty(outcome.SelfCheck);
         Assert.True(File.Exists(Path.Combine(outcome.Folder, IntegrityManifest.DefaultName)));

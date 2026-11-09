@@ -10,5 +10,7 @@
     <ProjectReference Include="..\XINSkan.Security\XINSkan.Security.csproj" />
     <ProjectReference Include="..\XINSkan.Platform.Windows\XINSkan.Platform.Windows.csproj" />
     <ProjectReference Include="..\XINSkan.Analyzers.FileHunter\XINSkan.Analyzers.FileHunter.csproj" />
+    <ProjectReference Include="..\XINSkan.Ntfs\XINSkan.Ntfs.csproj" />
+    <ProjectReference Include="..\XINSkan.Analyzers.History\XINSkan.Analyzers.History.csproj" />
   </ItemGroup>
 </Project>

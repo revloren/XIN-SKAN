@@ -21,7 +21,7 @@ public sealed class MftPlayerImageTests
         Assert.Equal(4096, V.Reader.Boot.BytesPerCluster);
         Assert.Equal(1024, V.Reader.Boot.BytesPerRecord);
 
-        // 1500 filler files force $MFT past its initial allocation.
+        // 1500 filler files (one later deleted) force $MFT past its initial allocation.
         Assert.True(V.Reader.RecordCount > 1500);
         Assert.Equal(V.Reader.RecordCount, V.Records.Count);
         Assert.Equal(0, V.Reader.Statistics.UnreadableBytes);
@@ -41,10 +41,14 @@ public sealed class MftPlayerImageTests
             new[]
             {
                 (@"C:\?\impact.jar", PathQuality.ReusedAncestor, false),
+                (@"C:\Filler\f1.txt", PathQuality.Complete, false),
+                (Mc + @"\config\wurst", PathQuality.Complete, true),
+                (Mc + @"\config\wurst\settings.json", PathQuality.DeletedAncestor, false),
                 (Mc + @"\mods\wurst-client.jar", PathQuality.Complete, false),
                 (@"C:\Users\player\Downloads\injector.exe", PathQuality.Complete, false),
                 (@"C:\Users\player\Temp\Reused", PathQuality.Complete, true),
                 (@"C:\Users\player\Temp\Reused\old.jar", PathQuality.DeletedAncestor, false),
+                (@"C:\Windows\System32\update.dll", PathQuality.Complete, false),
             },
             deleted.Select(d => (d.Path.Path, d.Path.Quality, d.IsDirectory)));
     }
@@ -146,7 +150,7 @@ public sealed class MftPlayerImageTests
     {
         var live = V.Records.Where(r => r.State == MftRecordState.Parsed && r.InUse && !r.IsExtension && r.PrimaryName is not null && r.Entry != MftIndex.RootEntry);
         Assert.All(live, r => Assert.Equal(PathQuality.Complete, V.Index.Resolve(r.PrimaryName!.Parent, r.PrimaryName.Name).Quality));
-        Assert.Equal(1500, V.Records.Count(r => r.InUse && r.PrimaryName is not null && V.PathOf(r).StartsWith(@"C:\Filler\f", StringComparison.Ordinal)));
+        Assert.Equal(1499, V.Records.Count(r => r.InUse && r.PrimaryName is not null && V.PathOf(r).StartsWith(@"C:\Filler\f", StringComparison.Ordinal)));
     }
 
     private static MftRecord DeletedNamed(string name) =>

@@ -11,8 +11,10 @@ implementation):
 | --- | --- |
 | `Users\player\AppData\Roaming\.minecraft\mods\wurst-client.jar` | deleted; resident content and a resident `Zone.Identifier` stream with `HostUrl` |
 | `Users\player\Downloads\injector.exe` | deleted; 5000 bytes, non-resident |
-| `Users\player\Games\Impact` and `impact.jar` inside | both deleted; the folder record was then reused by `Users\player\Temp\new.txt`, so `impact.jar` points to a record that belongs to another object |
+| `Users\player\Games\Impact` and `impact.jar` inside | both deleted; the folder record was then reused by `Users\player\Temp\new.txt` (created after a remount, which resets ntfs-3g's allocation hint), so `impact.jar` points to a record that belongs to another object |
 | `Users\player\Temp\Reused` and `old.jar` inside | both deleted; the folder record is free, so the path is still known |
+| `Users\player\AppData\Roaming\.minecraft\config\wurst` and `settings.json` inside | both deleted |
+| `Windows\System32\update.dll`, `Filler\f1.txt` | deleted outside the checked area |
 | `Users\player\Desktop\homework.txt` | renamed from `client.jar` (only the new name is in the MFT) |
 | `Users\player\Downloads\shared.jar` = `Desktop\shared-link.jar` | one record, two names |
 | `Users\player\Downloads\чит-клиент.jar`, a 200-character name | live |

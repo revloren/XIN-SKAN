@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>XINSkan.Analyzers.History</RootNamespace>
+    <Description>History Engine: what existed, was renamed or deleted, from MFT, USN Journal and other historical sources.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XINSkan.Models\XINSkan.Models.csproj" />
+    <ProjectReference Include="..\XINSkan.Core\XINSkan.Core.csproj" />
+    <ProjectReference Include="..\XINSkan.Ntfs\XINSkan.Ntfs.csproj" />
+    <ProjectReference Include="..\XINSkan.Analyzers.FileHunter\XINSkan.Analyzers.FileHunter.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="XINSkan.HistoryTests" />
+    <InternalsVisibleTo Include="XINSkan.UnitTests" />
+  </ItemGroup>
+</Project>

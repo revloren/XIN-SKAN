@@ -31,6 +31,9 @@ public static class ScopeBuilder
         "Default", "Default User", "All Users", "Public", "defaultuser0", "WDAGUtilityAccount",
     };
 
+    /// <summary>Profiles of Windows itself (templates, shared), not of a person.</summary>
+    public static bool IsSystemProfile(string name) => SystemProfiles.Contains(name);
+
     /// <param name="usersRoot">The profiles folder, normally C:\Users.</param>
     /// <param name="currentProfile">Profile of the account running XIN SKAN.</param>
     /// <param name="canReadOtherProfiles">Whether other profiles are readable (Capability.OtherUserProfiles).</param>
