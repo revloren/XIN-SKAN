@@ -239,6 +239,38 @@ public sealed class UsnAnalyzerTests
     }
 
     [Fact]
+    public async Task Installer_noise_is_reduced_and_finished_downloads_are_recognised()
+    {
+        var downloads = Folder(@"C:\Users\player\Downloads");
+        var appData = Folder(@"C:\Users\player\AppData\Roaming");
+        var journal = new JournalBuilder()
+            // Browser download: written as .crdownload, renamed on completion.
+            .Add(new FileReference(950, 1), downloads, "client.jar.crdownload", UsnReason.FileCreate | UsnReason.DataExtend | UsnReason.Close)
+            .Add(new FileReference(950, 1), downloads, "client.jar.crdownload", UsnReason.RenameOldName)
+            .Add(new FileReference(950, 1), downloads, "client.jar", UsnReason.RenameNewName | UsnReason.Close)
+            // An updater writes a DLL as .tmp, renames it, changes it, and later removes an old one.
+            .Add(new FileReference(951, 1), appData, "update.tmp", UsnReason.FileCreate | UsnReason.DataExtend | UsnReason.Close)
+            .Add(new FileReference(951, 1), appData, "update.tmp", UsnReason.RenameOldName)
+            .Add(new FileReference(951, 1), appData, "app.dll", UsnReason.RenameNewName | UsnReason.Close)
+            .Add(new FileReference(951, 1), appData, "app.dll", UsnReason.DataOverwrite | UsnReason.Close)
+            .Add(new FileReference(952, 1), appData, "old.dll", UsnReason.FileDelete | UsnReason.Close)
+            .Build();
+
+        var (sink, _) = await RunAsync(new BytesJournal(journal));
+        var events = sink.Evidence.Select(e => $"{e.EventType} {e.Target.FileName} {e.Confidence}").Order(StringComparer.Ordinal).ToList();
+        Assert.Equal(
+            new[]
+            {
+                "Created client.jar.crdownload Informational",
+                "Deleted old.dll Informational",
+                "Downloaded client.jar Informational",
+                "Modified client.jar.crdownload Informational",
+            },
+            events);
+        Assert.Equal(".crdownload → .jar", sink.Evidence.Single(e => e.EventType == EvidenceEventType.Downloaded).Attributes["Usn.DownloadCompleted"]);
+    }
+
+    [Fact]
     public async Task Coverage_states_the_window_of_the_journal()
     {
         var (sink, _) = await RunAsync(new BytesJournal(Scenario().Journal));

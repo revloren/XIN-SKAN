@@ -148,7 +148,7 @@ public sealed class MftAnalyzer(HistoryOptions options, IVolumeOpener volumes, V
         var scope = new HistoryScope(options.UsersRoot, options.CurrentProfile, context.Permissions.Has(Capability.OtherUserProfiles), options.TempFolders, options.ExtraRoots);
         var index = new MftIndex(reader.RecordCount, drive);
         var candidates = new List<Candidate>();
-        long parsed = 0, empty = 0, invalid = 0, torn = 0;
+        long parsed = 0, empty = 0, invalid = 0, torn = 0, free = 0;
         foreach (var raw in reader.ReadRecords(ct))
         {
             var r = MftRecord.Parse(raw.Bytes.Span, raw.Entry);
@@ -163,6 +163,11 @@ public sealed class MftAnalyzer(HistoryOptions options, IVolumeOpener volumes, V
             }
 
             parsed++;
+            if (!r.InUse)
+            {
+                free++;
+            }
+
             if (r.Entry == 0 && r.StandardInformation is { } mftInfo && NtfsTime.ToUtc(mftInfo.Times.Created) is { } formatted)
             {
                 cache.SetFormatted(drive, formatted);
@@ -259,7 +264,7 @@ public sealed class MftAnalyzer(HistoryOptions options, IVolumeOpener volumes, V
         var status = reader.Statistics.UnreadableBytes > 0 || reader.Problems.Count > 0 ? CollectionStatus.Partial : CollectionStatus.Collected;
         await context.Writer.AddCoverageAsync(Coverage(context, artifact, status, reader.Statistics.Records, limitations), ct).ConfigureAwait(false);
         context.Progress.Report(new ModuleProgress(Id, ModuleState.Running,
-            $"{drive}: записей MFT {reader.Statistics.Records.ToString("N0", Ru)} (разобрано {parsed.ToString("N0", Ru)}, пустых {empty.ToString("N0", Ru)}, повреждённых {invalid.ToString("N0", Ru)}); " +
+            $"{drive}: записей MFT {reader.Statistics.Records.ToString("N0", Ru)} (разобрано {parsed.ToString("N0", Ru)}, из них свободных {free.ToString("N0", Ru)}, пустых {empty.ToString("N0", Ru)}, повреждённых {invalid.ToString("N0", Ru)}); " +
             $"записано удалённых {deletedRecorded.ToString("N0", Ru)}, существующих {liveRecorded.ToString("N0", Ru)}, из них с расхождением времени {anomalies.ToString("N0", Ru)}."));
     }
 

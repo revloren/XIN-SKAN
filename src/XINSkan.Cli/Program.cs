@@ -233,9 +233,13 @@ internal static class Program
         Group("Уверенность", e => e.Confidence.ToString());
         Group("Расхождение времени MFT", e => Attr(e, "Mft.TimeAnomaly"));
         Group("Ограничения", e => e.Limitations.Count == 0 ? "нет" : string.Join("+", e.Limitations.Select(l => l.Code).Where(c => c != "FS.SI_TIMES").DefaultIfEmpty("только FS.SI_TIMES")));
-        foreach (var e in evidence.Where(e => e.EventType == EvidenceEventType.Deleted).Take(15))
+        foreach (var g in evidence.Where(e => e.EventType == EvidenceEventType.Deleted).GroupBy(e => e.ModuleId))
         {
-            Console.WriteLine($"    удалено: {e.Target.RecordedPath}");
+            // Most recent first; records without a time (MFT) after them.
+            foreach (var e in g.OrderByDescending(e => e.Timestamp?.ValueUtc ?? DateTimeOffset.MinValue).Take(15))
+            {
+                Console.WriteLine($"    удалено ({g.Key}): {e.Target.RecordedPath}");
+            }
         }
 
         Console.WriteLine("  Папки с наибольшим числом записей:");

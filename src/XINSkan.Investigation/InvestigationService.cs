@@ -148,6 +148,8 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
                     new FileHunterAnalyzer(request.FileHunter, lister, files, platform.Signatures),
                     new MftAnalyzer(HistoryOptions.From(request.FileHunter), new AuditingVolumeOpener(platform.Volumes, audit), history),
                     new UsnAnalyzer(HistoryOptions.From(request.FileHunter), new AuditingJournalSource(platform.Journal, audit), history),
+                    new RecycleBinAnalyzer(HistoryOptions.From(request.FileHunter), lister, files),
+                    new MinecraftLogsAnalyzer(HistoryOptions.From(request.FileHunter), lister, files, TimeZoneInfo.Local),
                 ];
 
                 var runner = new InvestigationRunner(counting, permissions, time, progress);

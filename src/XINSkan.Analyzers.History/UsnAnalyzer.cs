@@ -135,14 +135,14 @@ public sealed class UsnAnalyzer(HistoryOptions options, IUsnJournalSource journa
             var history = group.OrderBy(r => r.Usn).ToList();
             var places = history.Select(r => (Record: r, Path: resolver.Resolve(r.Parent, r.Name))).ToList();
             var matches = places.Select(p => (p.Record, p.Path, Match: scope.Match(p.Path.Path))).ToList();
-            var relevant = matches.Any(m => m.Match.InScope && (RelevantExtensions.Contains(Path.GetExtension(m.Record.Name)) || m.Match.InMinecraftTree));
-            if (!relevant)
+            var relevance = Relevance(matches);
+            if (relevance == FileRelevance.None)
             {
                 continue;
             }
 
             recordedFiles++;
-            foreach (var e in Lifecycle(context, drive, artifact, matches))
+            foreach (var e in Lifecycle(context, drive, artifact, matches, relevance))
             {
                 await context.Writer.AddEvidenceAsync(e, ct).ConfigureAwait(false);
                 events++;
@@ -249,8 +249,57 @@ public sealed class UsnAnalyzer(HistoryOptions options, IUsnJournalSource journa
         CollectedAtUtc = context.Time.GetUtcNow(),
     };
 
-    private IEnumerable<Evidence> Lifecycle(AnalyzerContext context, string drive, string artifact, List<(UsnRecord Record, ResolvedPath Path, ScopeMatch Match)> h)
+    private enum FileRelevance
     {
+        None,
+
+        /// <summary>Only deletions and renames are recorded (programs and archives updated by installers).</summary>
+        DeleteAndRename,
+
+        /// <summary>The whole life of the file is recorded.</summary>
+        Full,
+    }
+
+    private static readonly HashSet<string> MinecraftSpecific = new(StringComparer.OrdinalIgnoreCase) { ".jar", ".mrpack", ".class" };
+
+    private static readonly HashSet<string> PartialDownload = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".crdownload", ".part", ".partial", ".opdownload", ".download",
+    };
+
+    /// <summary>
+    /// Full life: anything in a Minecraft folder, any Java archive in the checked area, any archive or program in a
+    /// download location. Elsewhere in the area, programs, DLLs and ZIPs are created and changed by installers and
+    /// updaters by the thousand; for them only deletions and renames are recorded.
+    /// </summary>
+    private static FileRelevance Relevance(List<(UsnRecord Record, ResolvedPath Path, ScopeMatch Match)> places)
+    {
+        var result = FileRelevance.None;
+        foreach (var (r, _, m) in places)
+        {
+            if (!m.InScope)
+            {
+                continue;
+            }
+
+            var ext = Path.GetExtension(r.Name);
+            if (m.InMinecraftTree || MinecraftSpecific.Contains(ext) || (m.InDropLocation && RelevantExtensions.Contains(ext)))
+            {
+                return FileRelevance.Full;
+            }
+
+            if (RelevantExtensions.Contains(ext))
+            {
+                result = FileRelevance.DeleteAndRename;
+            }
+        }
+
+        return result;
+    }
+
+    private IEnumerable<Evidence> Lifecycle(AnalyzerContext context, string drive, string artifact, List<(UsnRecord Record, ResolvedPath Path, ScopeMatch Match)> h, FileRelevance relevance)
+    {
+        var full = relevance == FileRelevance.Full;
         (UsnRecord Record, ResolvedPath Path)? renameFrom = null;
         var createSeen = false;
         var dataChanges = new List<UsnRecord>();
@@ -258,7 +307,7 @@ public sealed class UsnAnalyzer(HistoryOptions options, IUsnJournalSource journa
         var streamChanges = new List<UsnRecord>();
         foreach (var (r, path, match) in h)
         {
-            if ((r.Reason & UsnReason.FileCreate) != 0 && !createSeen)
+            if ((r.Reason & UsnReason.FileCreate) != 0 && !createSeen && full)
             {
                 createSeen = true;
                 yield return Event(context, drive, artifact, r, path, match, EvidenceEventType.Created,
@@ -276,8 +325,11 @@ public sealed class UsnAnalyzer(HistoryOptions options, IUsnJournalSource journa
                 var moved = from.Record.Parent != r.Parent;
                 var oldExt = Path.GetExtension(from.Record.Name);
                 var newExt = Path.GetExtension(r.Name);
-                var extensionChanged = !oldExt.Equals(newExt, StringComparison.OrdinalIgnoreCase)
-                                       && (RelevantExtensions.Contains(oldExt) || RelevantExtensions.Contains(newExt));
+
+                // Hiding is losing a telling extension (.jar → .txt). Gaining one is how downloads and installers
+                // finish (.crdownload → .jar, .tmp → .dll) and is not a sign of anything.
+                var extensionChanged = RelevantExtensions.Contains(oldExt) && !RelevantExtensions.Contains(newExt);
+                var downloadFinished = PartialDownload.Contains(oldExt) && RelevantExtensions.Contains(newExt);
                 var attrs = new Dictionary<string, string>(StringComparer.Ordinal)
                 {
                     ["Usn.OldName"] = from.Record.Name,
@@ -287,6 +339,21 @@ public sealed class UsnAnalyzer(HistoryOptions options, IUsnJournalSource journa
                 if (extensionChanged)
                 {
                     attrs["Usn.ExtensionChanged"] = $"{oldExt} → {newExt}";
+                }
+
+                if (downloadFinished)
+                {
+                    attrs["Usn.DownloadCompleted"] = $"{oldExt} → {newExt}";
+                    yield return Event(context, drive, artifact, r, path, match, EvidenceEventType.Downloaded,
+                        $"Загрузка завершена: {from.Record.Name} → {path.Path}.", Confidence.Informational,
+                        "Браузер сохраняет загрузку под временным расширением и переименовывает её по завершении; журнал изменений записал этот момент.",
+                        attrs);
+                    continue;
+                }
+
+                if (!full && !extensionChanged)
+                {
+                    continue; // installers rename their temporary files into DLLs and programs all the time
                 }
 
                 var what = moved ? "Перемещён" : "Переименован";
@@ -299,17 +366,22 @@ public sealed class UsnAnalyzer(HistoryOptions options, IUsnJournalSource journa
                     attrs);
             }
 
-            if ((r.Reason & DataChange) != 0 && (r.Reason & UsnReason.Close) != 0)
+            if (!full)
+            {
+                // Programs and archives outside Minecraft folders and download locations: only renames (above)
+                // and deletions (below).
+            }
+            else if ((r.Reason & DataChange) != 0 && (r.Reason & UsnReason.Close) != 0)
             {
                 dataChanges.Add(r);
             }
 
-            if ((r.Reason & UsnReason.BasicInfoChange) != 0 && (r.Reason & UsnReason.Close) != 0)
+            if (full && (r.Reason & UsnReason.BasicInfoChange) != 0 && (r.Reason & UsnReason.Close) != 0)
             {
                 basicChanges.Add(r);
             }
 
-            if ((r.Reason & StreamChanges) != 0 && (r.Reason & UsnReason.Close) != 0)
+            if (full && (r.Reason & StreamChanges) != 0 && (r.Reason & UsnReason.Close) != 0)
             {
                 streamChanges.Add(r);
             }

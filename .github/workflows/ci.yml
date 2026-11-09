@@ -77,6 +77,13 @@ jobs:
         timeout-minutes: 15
         run: |
           $out = Join-Path $env:RUNNER_TEMP 'xinskan-out'
+          # A known deletion on the live system volume, a few seconds before the check: does the MFT pass see it
+          # without any flush (the USN module always should)?
+          $probe = Join-Path $env:USERPROFILE 'Downloads\xinskan-probe-deleted.jar'
+          New-Item -ItemType Directory -Force -Path (Split-Path $probe) | Out-Null
+          Set-Content -Path $probe -Value 'probe'
+          Remove-Item $probe
+          Start-Sleep -Seconds 10
           dotnet src/XINSkan.Cli/bin/Release/net10.0/xinskan.dll investigate --output $out --operator CI
           $code = $LASTEXITCODE
           Write-Host "investigate exit code: $code"
@@ -90,8 +97,13 @@ jobs:
           $after = Get-ChildItem $first.FullName -File | Get-FileHash | ForEach-Object Hash
           if (Compare-Object $before $after) { Write-Error "The second run changed the first investigation folder"; exit 1 }
           foreach ($folder in Get-ChildItem $out -Directory) {
-            dotnet src/XINSkan.Cli/bin/Release/net10.0/xinskan.dll verify $folder.FullName
+            $text = dotnet src/XINSkan.Cli/bin/Release/net10.0/xinskan.dll verify $folder.FullName | Out-String
+            Write-Host $text
             if ($LASTEXITCODE -ne 0) { Write-Error "verify failed"; exit 1 }
+            foreach ($m in 'mft', 'usn') {
+              $seen = $text -match "удалено \($m\): .*xinskan-probe-deleted\.jar"
+              Write-Host "probe deletion seen by ${m}: $seen"
+            }
           }
           Get-ChildItem $first.FullName | Format-Table Name, Length, Attributes
           Get-MpComputerStatus | Format-List RealTimeProtectionEnabled, OnAccessProtectionEnabled, AMRunningMode
