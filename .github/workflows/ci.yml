@@ -34,6 +34,15 @@ jobs:
       - name: Build (warnings are errors)
         run: dotnet build XINSkan.slnx -c Release --no-restore
 
+      - name: Reference NTFS samples (MFT library test corpus, reviewed commit)
+        shell: pwsh
+        run: |
+          $dir = Join-Path $env:RUNNER_TEMP 'mft-samples'
+          git -c core.autocrlf=false clone --quiet --filter=blob:none --no-checkout https://github.com/EricZimmerman/MFT.git $dir
+          git -c core.autocrlf=false -C $dir checkout 3eecafae50ac8935b239cf3ded690b11af5020f4 -- MFT.Test/TestFiles/tdungan MFT.Test/TestFiles/xw MFT.Test/TestFiles/NIST
+          "XINSKAN_NTFS_SAMPLES=$dir/MFT.Test/TestFiles" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "XINSKAN_REQUIRE_SAMPLES=1" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
       - name: Test
         run: dotnet test XINSkan.slnx -c Release --no-build --logger "trx;LogFileName=results.trx" --logger "console;verbosity=detailed" --results-directory TestResults
 

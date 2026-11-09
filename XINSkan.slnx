@@ -5,6 +5,7 @@
     <Project Path="src/XINSkan.Platform.Windows/XINSkan.Platform.Windows.csproj" />
     <Project Path="src/XINSkan.Security/XINSkan.Security.csproj" />
     <Project Path="src/XINSkan.Storage/XINSkan.Storage.csproj" />
+    <Project Path="src/XINSkan.Ntfs/XINSkan.Ntfs.csproj" />
     <Project Path="src/XINSkan.Analyzers.FileHunter/XINSkan.Analyzers.FileHunter.csproj" />
     <Project Path="src/XINSkan.Investigation/XINSkan.Investigation.csproj" />
     <Project Path="src/XINSkan.Cli/XINSkan.Cli.csproj" />
@@ -17,5 +18,6 @@
     <Project Path="tests/XINSkan.AppTests/XINSkan.AppTests.csproj" />
     <Project Path="tests/XINSkan.FileHunterTests/XINSkan.FileHunterTests.csproj" />
     <Project Path="tests/XINSkan.InvestigationTests/XINSkan.InvestigationTests.csproj" />
+    <Project Path="tests/XINSkan.NtfsTests/XINSkan.NtfsTests.csproj" />
   </Folder>
 </Solution>

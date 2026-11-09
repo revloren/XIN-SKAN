@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>XINSkan.Ntfs</RootNamespace>
+    <Description>NTFS structures parsed from bytes: MFT records, data runs, USN records, path index. No I/O of its own.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="XINSkan.NtfsTests" />
+    <InternalsVisibleTo Include="XINSkan.UnitTests" />
+  </ItemGroup>
+</Project>

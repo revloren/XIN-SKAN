@@ -63,6 +63,8 @@ public static class Assert
 
     public static void EndsWith(string expected, string? actual, StringComparison comparison = StringComparison.Ordinal) { if (actual is null || !actual.EndsWith(expected, comparison)) Fail($"'{actual}' does not end with '{expected}'."); }
 
+    public static T Single<T>(IEnumerable<T> collection, Predicate<T> filter) { var m = collection.Where(x => filter(x)).ToList(); if (m.Count != 1) Fail($"Expected one matching item, found {m.Count}."); return m[0]; }
+
     public static void Matches(string pattern, string? actual) { if (actual is null || !System.Text.RegularExpressions.Regex.IsMatch(actual, pattern)) Fail($"'{actual}' does not match '{pattern}'."); }
 
     public static void Same(object? expected, object? actual) { if (!ReferenceEquals(expected, actual)) Fail("Objects are not the same instance."); }
