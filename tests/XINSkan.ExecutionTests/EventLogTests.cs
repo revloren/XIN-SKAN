@@ -101,6 +101,12 @@ public sealed class EventLogTests
                 ("Old Value", ""), ("New Value", @"HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths\C:\Users\player\AppData\Roaming\.minecraft = 0x0"))))
             .Add(EventLogAnalyzer.Defender, Events.Xml(EventLogAnalyzer.Defender, 5007, "Microsoft-Windows-Windows Defender", At, Events.Data(
                 ("Old Value", @"HKLM\SOFTWARE\Microsoft\Windows Defender\Scan\AvgCPULoadFactor = 0x32"), ("New Value", @"HKLM\SOFTWARE\Microsoft\Windows Defender\Scan\AvgCPULoadFactor = 0x14"))))
+            .Add(EventLogAnalyzer.Defender, Events.Xml(EventLogAnalyzer.Defender, 5007, "Microsoft-Windows-Windows Defender", At, Events.Data(
+                ("Old Value", ""), ("New Value", @"HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions\DisableAutoExclusions = 0x1"))))
+            .Add("Application", Events.Xml("Application", 1000, "Application Error", At, Events.Data(
+                ("", "javaw.exe"), ("", "1"), ("", "x"), ("", "unknown"), ("", ""), ("", ""), ("", "80131623"), ("", ""), ("", ""), ("", ""), ("", @"C:\Program Files\Java\bin\javaw.exe"), ("", "unknown"))))
+            .Add("Security", Events.Xml("Security", 4688, "Microsoft-Windows-Security-Auditing", At, Events.Data(("NewProcessName", "Registry"))))
+            .Add("Security", Events.Xml("Security", 4688, "Microsoft-Windows-Security-Auditing", At, Events.Data(("NewProcessName", "MemCompression"))))
             .Add(EventLogAnalyzer.Defender, Events.Xml(EventLogAnalyzer.Defender, 5001, "Microsoft-Windows-Windows Defender", At, Events.Data()))
             .Add(EventLogAnalyzer.Defender, "<broken");
 
@@ -120,7 +126,11 @@ public sealed class EventLogTests
         Assert.Equal(Confidence.Low, driver.Confidence);
         Assert.Equal("KDU", driver.Attributes["Service.Name"]);
 
-        var crash = sink.Evidence.Single(e => e.Attributes["EventLog.EventId"] == "1000" && e.EventType == EvidenceEventType.Executed);
+        // Real CI data showed "unknown" crash modules (CLR FailFast), pseudo-processes ("Registry") and
+        // DisableAutoExclusions under the exclusions key: none of them is recorded as a path.
+        Assert.Equal(2, sink.Evidence.Count(e => e.Attributes["EventLog.EventId"] == "1000" && e.EventType == EvidenceEventType.Executed));
+        Assert.DoesNotContain(sink.Evidence, e => e.Target.RecordedPath is "unknown" or "Registry" or "MemCompression" or "");
+        var crash = sink.Evidence.Single(e => e.Attributes["EventLog.EventId"] == "1000" && e.EventType == EvidenceEventType.Executed && e.Attributes["Crash.Module"] == "inject.dll");
         Assert.Equal(@"C:\Program Files\Java\jre\bin\javaw.exe", crash.Target.RecordedPath);
         Assert.Equal("inject.dll", crash.Attributes["Crash.Module"]);
         var injected = sink.Evidence.Single(e => e.EventType == EvidenceEventType.Loaded);

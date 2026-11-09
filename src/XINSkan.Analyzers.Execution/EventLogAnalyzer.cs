@@ -220,7 +220,8 @@ public sealed class EventLogAnalyzer(HistoryOptions options, IEventLogSource log
             $"Сбой {app}" + (module is null ? "." : $" в модуле {module}."), attrs);
 
         // A crash inside a DLL from a user folder: that DLL was loaded into the program (injection is one reason).
-        if (modulePath is not null)
+        // The CLR reports "unknown" for FailFast and similar: not a path.
+        if (modulePath is not null && (modulePath.Contains(@":\", StringComparison.Ordinal) || modulePath.StartsWith('\\')))
         {
             var (mPath, mResolved, _) = c.Resolver.Resolve(modulePath);
             var m = c.Scope.Match(mPath);
@@ -278,6 +279,13 @@ public sealed class EventLogAnalyzer(HistoryOptions options, IEventLogSource log
         var target = slash < 0 ? string.Empty : rest[(slash + 1)..];
         var eq = target.LastIndexOf(" = ", StringComparison.Ordinal);
         target = eq < 0 ? target : target[..eq];
+
+        // Only entries under an exclusion list; "Exclusions\DisableAutoExclusions = 0x1" is a setting, not an exclusion.
+        if (target.Length == 0 || !ExclusionLists.Contains(kind))
+        {
+            yield break;
+        }
+
         yield return Make(c, Defender, e, EvidenceEventType.Observed, new ObjectRef { RecordedPath = target, FileName = ProgramRelevance.FileName(target) }, added ? Confidence.Low : Confidence.Informational,
             added
                 ? "Исключение Защитника не даёт ему проверять папку или файл. Так прячут читы от удаления, но исключения добавляют и для игр, сборок модов, программ разработки."
@@ -285,6 +293,8 @@ public sealed class EventLogAnalyzer(HistoryOptions options, IEventLogSource log
             $"{(added ? "Добавлено" : "Удалено")} исключение Microsoft Defender ({kind}): {target}.",
             new Dictionary<string, string>(StringComparer.Ordinal) { ["Defender.ExclusionType"] = kind, ["Defender.Change"] = added ? "added" : "removed" });
     }
+
+    private static readonly HashSet<string> ExclusionLists = new(StringComparer.OrdinalIgnoreCase) { "Paths", "Extensions", "Processes", "IpAddresses", "TemporaryPaths" };
 
     /// <summary>The first file path of a Defender detection ("file:_C:\…; containerfile:_C:\…").</summary>
     internal static string? DefenderPath(string raw)

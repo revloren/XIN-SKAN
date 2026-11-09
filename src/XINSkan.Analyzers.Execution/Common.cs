@@ -26,7 +26,8 @@ public sealed partial class VolumeResolver(IReadOnlyList<KnownVolume> volumes)
     public (string Path, bool Resolved, string? Serial) Resolve(string path)
     {
         ArgumentNullException.ThrowIfNull(path);
-        if (path.Length >= 2 && path[1] == ':')
+        // A drive path, or an absolute path of the platform's own file system (tests run on Linux).
+        if ((path.Length >= 2 && path[1] == ':') || path.StartsWith('/'))
         {
             return (path, true, null);
         }
@@ -80,7 +81,9 @@ internal static class ProgramRelevance
 
         if (!resolved)
         {
-            return "программа на томе, который сейчас не подключён";
+            // Only a real volume path can point to an unmounted volume; "Registry", "MemCompression" and other
+            // pseudo-process names, or "unknown", are not paths.
+            return path.StartsWith('\\') && path.IndexOf('\\', 1) > 0 ? "программа на томе, который сейчас не подключён" : null;
         }
 
         if (removable)
