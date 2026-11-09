@@ -256,3 +256,42 @@
 - Нет отчёта-хронологии (этап 12).
 
 **Осталось.** Этап 8 — Minecraft Integrity; этап 9 — проверенная база клиентов и признаков (после неё возможен уровень High).
+
+## Этап 8 — Minecraft Integrity (частично) — 2026-11-09
+
+**Реализовано.** Подробно — `docs/MINECRAFT_INTEGRITY.md`.
+
+- `XINSkan.Analyzers.Minecraft`:
+  - лаунчеры в профилях: официальный, Prism/PolyMC/MultiMC (и переносные в папках оператора), CurseForge, ATLauncher, Modrinth App; TLauncher, Lunar, Badlion и Feather — только факт установки, это сказано в записи;
+  - экземпляры: версия, загрузчик, параметры JVM, путь к Java, последний запуск; чужие профили — только с разрешением.
+- Сверка файлов игры с их собственными файлами версий:
+  - JAR клиента (у Prism — `mainJar`);
+  - библиотеки (`downloads.artifact` или поле `sha1` в стиле Fabric);
+  - главный класс и `arguments.jvm`.
+- Хеш — SHA-1, потому что его публикуют Mojang и загрузчики; бюджет чтения 4 ГБ, исчерпание записывается.
+- Уровни:
+  - изменённый клиент с URL Mojang в файле версии — Medium (прямой признак, одна запись);
+  - тот же клиент без URL Mojang, отличающаяся библиотека, неизвестный главный класс, параметры JVM, загружающие код (`-javaagent` и др.), — Low, с безобидными причинами.
+- Корреляция: два новых правила — `AGENT_CONFIRMED` (агент прописан в лаунчере и загружался) и `MODIFIED_FILE_LOADED` (изменённый файл игры загружался). Оба Medium при двух семействах.
+
+**Файлы.** `src/XINSkan.Analyzers.Minecraft/**`, `src/XINSkan.Correlation/{CorrelationEngine,EvidenceFacts}.cs`, `src/XINSkan.Investigation/{InvestigationService.cs,XINSkan.Investigation.csproj}`, `src/XINSkan.App/{Services/ModuleCatalog.cs,ViewModels/ViewModels.cs}`, `tests/XINSkan.MinecraftTests/**`, `tests/XINSkan.CorrelationTests/CorrelationEngineTests.cs`, `tests/XINSkan.AppTests/AppDataTests.cs`, `tools/offline-tests/OfflineTests.csproj`, `.github/workflows/ci.yml`, `docs/{MINECRAFT_INTEGRITY,CORRELATION,PROGRESS}.md`, `README.md`, `XINSkan.slnx`.
+
+**Тесты.** CI-запуск 42666347311: 444 из 444 (модульные 96, Execution 62, History 59, безопасность 57, NTFS 43, File Hunter 43, оболочка 26, хранилище 17, Minecraft 15, корреляция 13, сервис проверки 7, интерфейс 6).
+
+- Синтетика:
+  - официальный лаунчер: кавычки в `javaArgs`, профиль «последний выпуск»;
+  - ванильная версия: совпадающий клиент, отличающаяся и отсутствующая библиотеки; изменённый клиент → Medium;
+  - Fabric с наследованием; «клиент» со своим главным классом и `-noverify`;
+  - Prism, CurseForge, ATLauncher, Modrinth App, Lunar, переносной MultiMC, чужой профиль.
+- Устойчивость: повреждённые JSON, пути с `..` в именах Maven, исчерпанный бюджет.
+- **Настоящие файлы Mojang (CI):** версия 1.20.1 скачана по манифесту (SHA-1 файла версии сверен с манифестом), разобрано 88 библиотек. Клиент совпал (SHA-1 `0c3ec587…`), 8 скачанных библиотек совпали, 80 не скачанных отмечены как отсутствующие. Главный класс известен, лишних параметров JVM нет. Один изменённый байт клиента найден и получил Medium.
+- Машина CI: Minecraft не установлен — модуль это записал («лаунчеры не найдены»), ложных записей нет.
+
+**Ограничения.**
+
+- Сверка идёт с локальными файлами версий; сверка с хешами Mojang — этап 9.
+- Форматы Prism, CurseForge, ATLauncher, Modrinth App проверены на образцах по документации, а не на настоящих установках (`MC.FORMATS` в покрытии).
+- Не разбираются `app.db` Modrinth App и настройки Lunar, Badlion, Feather, TLauncher.
+- Содержимое модов здесь не анализируется: моды и их метаданные — в File Hunter; признаки функций — этап 10.
+
+**Осталось.** Этап 9 — проверенная база клиентов и признаков. С ней станут возможны сверка с хешами Mojang и уровень High.
