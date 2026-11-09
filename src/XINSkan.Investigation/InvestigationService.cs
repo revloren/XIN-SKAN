@@ -29,6 +29,9 @@ public sealed record PlatformServices(
     /// <summary>Change journal access for the History Engine.</summary>
     public IUsnJournalSource Journal { get; init; } = NoUsnJournal.Instance;
 
+    /// <summary>ShellBags of the current user.</summary>
+    public IShellBagSource ShellBags { get; init; } = NoShellBags.Instance;
+
     /// <summary>The read-only Windows implementations, for the system XIN SKAN runs on.</summary>
     [SupportedOSPlatform("windows")]
     public static PlatformServices ForWindows() => new(
@@ -40,6 +43,7 @@ public sealed record PlatformServices(
     {
         Volumes = WindowsVolumeOpener.Instance,
         Journal = WindowsUsnJournalSource.Instance,
+        ShellBags = WindowsShellBagSource.Instance,
     };
 }
 
@@ -150,6 +154,9 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
                     new UsnAnalyzer(HistoryOptions.From(request.FileHunter), new AuditingJournalSource(platform.Journal, audit), history),
                     new RecycleBinAnalyzer(HistoryOptions.From(request.FileHunter), lister, files),
                     new MinecraftLogsAnalyzer(HistoryOptions.From(request.FileHunter), lister, files, TimeZoneInfo.Local),
+                    new LnkAnalyzer(HistoryOptions.From(request.FileHunter), lister, files),
+                    new JumpListAnalyzer(HistoryOptions.From(request.FileHunter), lister, files),
+                    new ShellBagsAnalyzer(new AuditingShellBagSource(platform.ShellBags, audit)),
                 ];
 
                 var runner = new InvestigationRunner(counting, permissions, time, progress);

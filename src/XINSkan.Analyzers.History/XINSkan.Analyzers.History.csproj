@@ -8,6 +8,7 @@
     <ProjectReference Include="..\XINSkan.Models\XINSkan.Models.csproj" />
     <ProjectReference Include="..\XINSkan.Core\XINSkan.Core.csproj" />
     <ProjectReference Include="..\XINSkan.Ntfs\XINSkan.Ntfs.csproj" />
+    <ProjectReference Include="..\XINSkan.ShellFormats\XINSkan.ShellFormats.csproj" />
     <ProjectReference Include="..\XINSkan.Analyzers.FileHunter\XINSkan.Analyzers.FileHunter.csproj" />
   </ItemGroup>
   <ItemGroup>

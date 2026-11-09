@@ -126,3 +126,22 @@ public sealed class AuditingJournalSource(IUsnJournalSource inner, AuditLogger l
         return inner.Read(drive, info, cancellationToken);
     }
 }
+
+/// <summary>Records each ShellBags tree that is read (the root key; its subkeys are read the same way).</summary>
+public sealed class AuditingShellBagSource(IShellBagSource inner, AuditLogger log) : IShellBagSource
+{
+    public IReadOnlyList<(string Name, byte[] Data)>? Values(string key) => inner.Values(key);
+
+    public IReadOnlyList<string>? SubKeys(string key)
+    {
+        var result = inner.SubKeys(key);
+        if (ShellBagsAnalyzer.Roots.Contains(key, StringComparer.OrdinalIgnoreCase))
+        {
+            log.Record("read-registry", @"HKCU\" + key, "KEY_READ (with subkeys)", result is null ? "not-found" : "ok");
+        }
+
+        return result;
+    }
+
+    public long? LastWriteTime(string key) => inner.LastWriteTime(key);
+}

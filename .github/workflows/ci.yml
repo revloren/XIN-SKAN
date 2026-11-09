@@ -55,6 +55,19 @@ jobs:
           "XINSKAN_NTFS_SAMPLES=$dir" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "XINSKAN_REQUIRE_SAMPLES=1" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
+      - name: Reference shell samples (Lnk and JumpList corpora, reviewed commits)
+        shell: pwsh
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP 'shell-samples'
+          foreach ($repo in @(@('Lnk', 'dab1c8ab9c1c18d2cf89a4938ab95794d17d3a44'), @('JumpList', 'c125c8e008e62255afb3bd176e00efa171d5c1b4'))) {
+            $dir = Join-Path $root $repo[0]
+            git -c core.autocrlf=false init --quiet $dir
+            git -c core.autocrlf=false -C $dir fetch --quiet --depth 1 "https://github.com/EricZimmerman/$($repo[0]).git" $repo[1]
+            git -c core.autocrlf=false -C $dir checkout --quiet FETCH_HEAD
+            if ((git -C $dir rev-parse HEAD) -ne $repo[1]) { Write-Error "$($repo[0]) is not at the reviewed commit"; exit 1 }
+          }
+          "XINSKAN_SHELL_SAMPLES=$root" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
       - name: Test
         run: dotnet test XINSkan.slnx -c Release --no-build --logger "trx;LogFileName=results.trx" --logger "console;verbosity=detailed" --results-directory TestResults
 

@@ -120,7 +120,7 @@ public class ReadOnlyEnforcementTests
 
         // Open for reading, query/read device data, read volume and file information, verify a signature offline.
         Assert.Subset(
-            new HashSet<string>(StringComparer.Ordinal) { "CreateFileW", "DeviceIoControl", "GetVolumeInformationW", "GetFileInformationByHandle", "WinVerifyTrust" },
+            new HashSet<string>(StringComparer.Ordinal) { "CreateFileW", "DeviceIoControl", "GetVolumeInformationW", "GetFileInformationByHandle", "WinVerifyTrust", "RegQueryInfoKeyW" },
             entryPoints);
         Assert.NotEmpty(entryPoints);
     }

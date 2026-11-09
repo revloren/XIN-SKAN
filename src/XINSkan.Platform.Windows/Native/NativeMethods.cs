@@ -110,4 +110,20 @@ internal static partial class NativeMethods
         out uint fileSystemFlags,
         char* fileSystemNameBuffer,
         uint fileSystemNameSize);
+
+    /// <summary>Reads key metadata only (here: the last write time). Read access; changes nothing.</summary>
+    [LibraryImport("advapi32.dll", EntryPoint = "RegQueryInfoKeyW")]
+    internal static unsafe partial int RegQueryInfoKey(
+        Microsoft.Win32.SafeHandles.SafeRegistryHandle key,
+        char* className,
+        uint* classNameLength,
+        IntPtr reserved,
+        uint* subKeys,
+        uint* maxSubKeyLength,
+        uint* maxClassLength,
+        uint* values,
+        uint* maxValueNameLength,
+        uint* maxValueLength,
+        uint* securityDescriptorLength,
+        long* lastWriteTime);
 }

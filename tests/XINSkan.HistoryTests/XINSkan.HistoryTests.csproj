@@ -21,12 +21,14 @@
     <ProjectReference Include="..\..\src\XINSkan.Platform.Windows\XINSkan.Platform.Windows.csproj" />
     <ProjectReference Include="..\..\src\XINSkan.Analyzers.FileHunter\XINSkan.Analyzers.FileHunter.csproj" />
     <ProjectReference Include="..\..\src\XINSkan.Analyzers.History\XINSkan.Analyzers.History.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.ShellFormats\XINSkan.ShellFormats.csproj" />
     <ProjectReference Include="..\..\src\XINSkan.Investigation\XINSkan.Investigation.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\XINSkan.SecurityTests\Windows\TestVhd.cs" Link="Windows\TestVhd.cs" />
     <Compile Include="..\XINSkan.NtfsTests\Support\TestImages.cs" Link="Support\TestImages.cs" />
     <Compile Include="..\XINSkan.FileHunterTests\Support\Fixtures.cs" Link="Support\Fixtures.cs" />
+    <Compile Include="..\XINSkan.ShellFormatsTests\ShellBuilders.cs" Link="Support\ShellBuilders.cs" />
     <EmbeddedResource Include="..\XINSkan.NtfsTests\TestData\*.gz" LogicalName="%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

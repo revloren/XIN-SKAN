@@ -6,6 +6,7 @@
     <Project Path="src/XINSkan.Security/XINSkan.Security.csproj" />
     <Project Path="src/XINSkan.Storage/XINSkan.Storage.csproj" />
     <Project Path="src/XINSkan.Ntfs/XINSkan.Ntfs.csproj" />
+    <Project Path="src/XINSkan.ShellFormats/XINSkan.ShellFormats.csproj" />
     <Project Path="src/XINSkan.Analyzers.FileHunter/XINSkan.Analyzers.FileHunter.csproj" />
     <Project Path="src/XINSkan.Analyzers.History/XINSkan.Analyzers.History.csproj" />
     <Project Path="src/XINSkan.Investigation/XINSkan.Investigation.csproj" />
@@ -21,5 +22,6 @@
     <Project Path="tests/XINSkan.InvestigationTests/XINSkan.InvestigationTests.csproj" />
     <Project Path="tests/XINSkan.NtfsTests/XINSkan.NtfsTests.csproj" />
     <Project Path="tests/XINSkan.HistoryTests/XINSkan.HistoryTests.csproj" />
+    <Project Path="tests/XINSkan.ShellFormatsTests/XINSkan.ShellFormatsTests.csproj" />
   </Folder>
 </Solution>

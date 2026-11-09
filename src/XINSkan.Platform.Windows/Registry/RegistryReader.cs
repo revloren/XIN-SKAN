@@ -43,6 +43,24 @@ public static class RegistryReader
         return key?.GetSubKeyNames();
     }
 
+    /// <summary>
+    /// Last write time of a key (UTC FILETIME), or null when the key does not exist. Windows updates it when a
+    /// value or subkey of the key changes; for ShellBags this is close to the last time a folder's view was saved.
+    /// </summary>
+    public static unsafe long? ReadLastWriteTime(RegistryHive hive, string subKey)
+    {
+        using var root = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64);
+        using var key = root.OpenSubKey(subKey);
+        if (key is null)
+        {
+            return null;
+        }
+
+        long time;
+        var rc = Native.NativeMethods.RegQueryInfoKey(key.Handle, null, null, IntPtr.Zero, null, null, null, null, null, null, null, &time);
+        return rc == 0 ? time : null;
+    }
+
     public static bool KeyExists(RegistryHive hive, string subKey)
     {
         using var root = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64);

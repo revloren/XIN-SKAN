@@ -13,7 +13,7 @@ public class FactAttribute : Attribute
 }
 
 [AttributeUsage(AttributeTargets.Method)]
-public sealed class TheoryAttribute : FactAttribute;
+public class TheoryAttribute : FactAttribute;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public sealed class InlineDataAttribute(params object?[] data) : Attribute
