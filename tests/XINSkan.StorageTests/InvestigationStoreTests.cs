@@ -142,7 +142,113 @@ public sealed class InvestigationStoreTests : IDisposable
         var info = reader.ReadInfo();
         Assert.Equal(id, info.InvestigationId);
         Assert.Equal("Тестовый оператор", info.Operator);
-        Assert.Equal(1, reader.SchemaVersion());
+        Assert.Equal(2, reader.SchemaVersion());
+        Assert.Null(reader.ReadCorrelationRun()); // correlation not written: none is reported
+        Assert.Empty(reader.ReadFindings());
+    }
+
+    private static CorrelationResult Correlation(Ulid inv, Evidence a, Evidence b)
+    {
+        var objectId = Ulid.NewUlid(T0.AddSeconds(1));
+        return new CorrelationResult(
+            [
+                new CorrelatedObject
+                {
+                    ObjectId = objectId,
+                    InvestigationId = inv,
+                    DisplayPath = a.Target.RecordedPath,
+                    NormalizedPath = a.Target.NormalizedPath,
+                    FileName = a.Target.FileName,
+                    Volume = "C:",
+                    MftEntry = 0xFFFF_FFFF_FFFFUL,
+                    MftSequence = 65535,
+                    Sha256 = a.ObjectSha256,
+                    OtherPaths = [@"C:\USERS\ИГРОК\DOWNLOADS\CHEAT.JAR"],
+                    FirstUtc = T0.AddHours(-2),
+                    LastUtc = T0,
+                    SourceFamilies = ["prefetch", "usn"],
+                    Members = [new ObjectMember(a.EvidenceId, LinkKind.MftReference), new ObjectMember(b.EvidenceId, LinkKind.Path)],
+                },
+            ],
+            [
+                new Finding
+                {
+                    FindingId = Ulid.NewUlid(T0.AddSeconds(2)),
+                    InvestigationId = inv,
+                    RuleId = "HIDDEN_BY_RENAME",
+                    Confidence = Confidence.Medium,
+                    Title = "Заголовок",
+                    Description = "Описание с кириллицей",
+                    Rationale = "Обоснование",
+                    Limitations = [new Limitation("CORR.X", "Ограничение")],
+                    FirstUtc = T0.AddHours(-2),
+                    LastUtc = T0,
+                    ObjectId = objectId,
+                    IndependentFamilies = ["prefetch", "usn"],
+                    Members = [new FindingMember(a.EvidenceId, "basis"), new FindingMember(b.EvidenceId, "context")],
+                },
+            ],
+            [new Limitation("CORR.NO_IDENTIFICATION", "Не определяет читы.")]);
+    }
+
+    [Fact]
+    public async Task Correlation_round_trips_and_cannot_be_changed()
+    {
+        var (sink, store, id) = NewStore();
+        var a = Rich(id, "usn", 1);
+        var b = Rich(id, "prefetch", 2);
+        await store.AddEvidenceAsync(a, CancellationToken.None);
+        await store.AddEvidenceAsync(b, CancellationToken.None); // still pending: written before the correlation that references it
+        var original = Correlation(id, a, b);
+        await store.AddCorrelationAsync(original, 2, CancellationToken.None);
+        store.Dispose();
+
+        var db = Path.Combine(sink.Root, InvestigationStore.DatabaseFileName);
+        using (var reader = InvestigationReader.Open(db))
+        {
+            var run = reader.ReadCorrelationRun()!.Value;
+            Assert.Equal(2, run.EvidenceRead);
+            Assert.Equal(1, run.Objects);
+            Assert.Equal(1, run.Findings);
+            Assert.Equal("CORR.NO_IDENTIFICATION", Assert.Single(run.Limitations).Code);
+
+            var o = Assert.Single(reader.ReadObjects());
+            var expected = original.Objects[0];
+            Assert.Equal(expected.ObjectId, o.ObjectId);
+            Assert.Equal(expected.DisplayPath, o.DisplayPath);
+            Assert.Equal(expected.MftEntry, o.MftEntry);
+            Assert.Equal(expected.MftSequence, o.MftSequence);
+            Assert.Equal(expected.Sha256, o.Sha256);
+            Assert.Equal(expected.OtherPaths, o.OtherPaths);
+            Assert.Equal(expected.SourceFamilies, o.SourceFamilies);
+            Assert.Equal(expected.FirstUtc, o.FirstUtc);
+            Assert.Equal(expected.Members.OrderBy(m => m.EvidenceId.Value, StringComparer.Ordinal), o.Members.OrderBy(m => m.EvidenceId.Value, StringComparer.Ordinal));
+
+            var f = Assert.Single(reader.ReadFindings());
+            var ef = original.Findings[0];
+            Assert.Equal(ef.FindingId, f.FindingId);
+            Assert.Equal(Confidence.Medium, f.Confidence);
+            Assert.Equal(ef.Description, f.Description);
+            Assert.Equal(ef.ObjectId, f.ObjectId);
+            Assert.Equal(ef.IndependentFamilies, f.IndependentFamilies);
+            Assert.Equal("CORR.X", Assert.Single(f.Limitations).Code);
+            Assert.Equal(2, f.Members.Count);
+            Assert.Empty(f.Validate());
+        }
+
+        foreach (var sql in new[]
+        {
+            "UPDATE Findings SET Confidence = 'High';", "DELETE FROM Findings;", "DELETE FROM FindingMembers;",
+            "UPDATE CorrelatedObjects SET DisplayPath = 'x';", "DELETE FROM ObjectMembers;", "DELETE FROM CorrelationRuns;",
+        })
+        {
+            using var c = new SqliteConnection($"Data Source={db};Pooling=False");
+            c.Open();
+            using var cmd = c.CreateCommand();
+            cmd.CommandText = sql;
+            var ex = Assert.Throws<SqliteException>(() => cmd.ExecuteNonQuery());
+            Assert.Contains("immutable", ex.Message, StringComparison.Ordinal);
+        }
     }
 
     [Theory]

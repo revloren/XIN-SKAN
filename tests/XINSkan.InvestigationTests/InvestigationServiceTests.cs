@@ -92,6 +92,7 @@ public sealed class InvestigationServiceTests : IDisposable
         Assert.Equal("investigation-end", audit[^1].Action);
         Assert.Equal("ok", audit[^1].Result);
         Assert.Contains(audit, a => a.Action == "probe");
+        Assert.Contains(audit, a => a.Action == "correlation" && a.Result == "ok");
         var opened = audit.Where(a => a.Action == "open-file").Select(a => a.Target).ToHashSet(StringComparer.Ordinal);
         foreach (var f in _p.ExpectedFiles)
         {

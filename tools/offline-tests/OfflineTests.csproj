@@ -23,6 +23,7 @@
     <Compile Include="../../tests/XINSkan.ShellFormatsTests/**/*.cs" Exclude="../../tests/XINSkan.ShellFormatsTests/obj/**;../../tests/XINSkan.ShellFormatsTests/bin/**" />
     <Compile Include="../../tests/XINSkan.HistoryTests/**/*.cs" Exclude="../../tests/XINSkan.HistoryTests/obj/**;../../tests/XINSkan.HistoryTests/bin/**" />
     <Compile Include="../../tests/XINSkan.ExecutionTests/**/*.cs" Exclude="../../tests/XINSkan.ExecutionTests/obj/**;../../tests/XINSkan.ExecutionTests/bin/**" />
+    <Compile Include="../../tests/XINSkan.CorrelationTests/**/*.cs" Exclude="../../tests/XINSkan.CorrelationTests/obj/**;../../tests/XINSkan.CorrelationTests/bin/**" />
     <Compile Include="../../tests/XINSkan.InvestigationTests/**/*.cs" Exclude="../../tests/XINSkan.InvestigationTests/obj/**;../../tests/XINSkan.InvestigationTests/bin/**;../../tests/XINSkan.InvestigationTests/**/*WithSqlite*.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -41,5 +42,6 @@
     <ProjectReference Include="../../src/XINSkan.ShellFormats/XINSkan.ShellFormats.csproj" />
     <ProjectReference Include="../../src/XINSkan.ExecutionFormats/XINSkan.ExecutionFormats.csproj" />
     <ProjectReference Include="../../src/XINSkan.Analyzers.Execution/XINSkan.Analyzers.Execution.csproj" />
+    <ProjectReference Include="../../src/XINSkan.Correlation/XINSkan.Correlation.csproj" />
   </ItemGroup>
 </Project>

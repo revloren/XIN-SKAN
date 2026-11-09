@@ -88,6 +88,26 @@ public sealed class UsnOnNtfsTests(ITestOutputHelper output)
         Assert.Contains(usn, e => e.Target.FileName == "stomped.jar" && e.Attributes.ContainsKey("Usn.BasicInfoChanges"));
         Assert.DoesNotContain(usn, e => e.Target.FileName == "$UsnJrnl"); // journal created with the volume
 
+        // Correlation on what Windows wrote: the MFT record and the journal entries of stomped.jar are one object,
+        // and the two independent signs of a programmatic time change give a Medium finding.
+        var correlation = new XINSkan.Correlation.CorrelationEngine(Ulid.NewUlid(DateTimeOffset.UtcNow), DateTimeOffset.UtcNow, TimeProvider.System)
+            .Run(sink.Evidence.Select(XINSkan.Correlation.EvidenceFacts.From).ToList());
+        foreach (var f in correlation.Findings)
+        {
+            output.WriteLine($"finding {f.RuleId} {f.Confidence} [{string.Join("+", f.IndependentFamilies)}] {f.Description}");
+        }
+
+        var stompedObject = correlation.Objects.Single(o => o.FileName == "stomped.jar");
+        Assert.Contains("mft", stompedObject.SourceFamilies);
+        Assert.Contains("usn", stompedObject.SourceFamilies);
+        Assert.Contains(stompedObject.Members, m => m.Link == LinkKind.MftReference);
+        var timestomp = correlation.Findings.Single(f => f.RuleId == "TIMESTOMP_CONFIRMED");
+        Assert.Equal(Confidence.Medium, timestomp.Confidence);
+        Assert.Equal(stompedObject.ObjectId, timestomp.ObjectId);
+
+        // The renamed homework.txt lost ".jar", but nothing shows it ran: no "hidden by rename" finding.
+        Assert.DoesNotContain(correlation.Findings, f => f.RuleId == "HIDDEN_BY_RENAME");
+
         // Read-Only: reading the journal does not add to it.
         Assert.Equal(usnBefore, usnAfter);
     }

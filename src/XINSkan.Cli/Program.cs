@@ -146,6 +146,9 @@ internal static class Program
             Console.WriteLine($"  Модуль {m.ModuleId}: {m.State}; записей {m.EvidenceCount}, покрытие {m.CoverageCount}, ошибок {m.Errors.Count}{(m.Reason is null ? string.Empty : "; " + m.Reason)}");
         }
 
+        Console.WriteLine($"  Корреляция:   объектов {outcome.Correlation.Objects.Count.ToString("N0", Ru)}, находок {outcome.Correlation.Findings.Count.ToString("N0", Ru)}");
+        PrintFindings(outcome.Correlation.Findings);
+
         foreach (var c in outcome.Permissions.Capabilities.Where(c => !c.Available).OrderBy(c => c.Capability))
         {
             Console.WriteLine($"  Недоступно: {c.Capability} — {c.Reason}");
@@ -205,6 +208,19 @@ internal static class Program
             }
 
             PrintSummary(reader.ReadEvidence().ToList());
+            if (reader.ReadCorrelationRun() is { } run)
+            {
+                Console.WriteLine($"  Корреляция: прочитано записей {run.EvidenceRead.ToString("N0", Ru)}, объектов {run.Objects.ToString("N0", Ru)}, находок {run.Findings.ToString("N0", Ru)}.");
+                PrintFindings(reader.ReadFindings());
+                foreach (var l in run.Limitations)
+                {
+                    Console.WriteLine($"    ограничение {l.Code}: {l.Text}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("  Корреляция: в этой базе её нет (схема 1 или проверка прервана до неё).");
+            }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or Microsoft.Data.Sqlite.SqliteException or FormatException)
         {
@@ -256,6 +272,18 @@ internal static class Program
                      .OrderByDescending(g => g.Count()).Take(8))
         {
             Console.WriteLine($"    {g.Count(),6}  {g.Key}");
+        }
+    }
+
+    private static void PrintFindings(IReadOnlyList<Finding> findings)
+    {
+        foreach (var g in findings.GroupBy(f => (f.RuleId, f.Confidence)).OrderByDescending(g => (int)g.Key.Confidence))
+        {
+            Console.WriteLine($"    {g.Key.Confidence} {g.Key.RuleId}: {g.Count()}");
+            foreach (var f in g.Take(5))
+            {
+                Console.WriteLine($"      {f.FirstUtc?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "время неизвестно"} [{string.Join("+", f.IndependentFamilies)}] {f.Description}");
+            }
         }
     }
 

@@ -54,6 +54,13 @@ public sealed class InvestigationWithSqliteTests : IDisposable
         Assert.Equal(outcome.InvestigationId, reader.ReadInfo().InvestigationId);
         Assert.Equal("Модератор", reader.ReadInfo().Operator);
 
+        // Correlation ran over every stored record and its result is in the same database.
+        var correlation = reader.ReadCorrelationRun();
+        Assert.NotNull(correlation);
+        Assert.Equal(outcome.EvidenceWritten, correlation.Value.EvidenceRead);
+        Assert.Equal(outcome.Correlation.Objects.Count, reader.ReadObjects().Count);
+        Assert.Equal(outcome.Correlation.Findings.Count, reader.ReadFindings().Count);
+
         var stored = reader.ReadEvidence().ToList();
         var module = reader.ReadModuleResults().Single(m => m.ModuleId == FileHunterAnalyzer.ModuleId);
         Assert.Equal(FileHunterAnalyzer.ModuleId, module.ModuleId);

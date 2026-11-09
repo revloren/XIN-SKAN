@@ -16,7 +16,7 @@
 
 | Таблица | Содержание |
 | --- | --- |
-| `SchemaInfo` | Версия схемы (1) и время создания |
+| `SchemaInfo` | Версия схемы (2) и время создания |
 | `Investigations` | Заголовок проверки: ID, время начала, версия, оператор, компьютер, ОС, часовой пояс |
 | `Evidence` | Свидетельства по схеме v1 (`docs/EVIDENCE_SCHEMA.md`); структурированные поля — JSON |
 | `SourceCoverage` | Покрытие источников |
@@ -24,8 +24,11 @@
 | `ModuleErrors` | Ошибки, не остановившие модуль |
 | `FileEvents` (представление) | Свидетельства о файлах: Existed, Created, Modified, Renamed, Moved, Deleted, Accessed, Downloaded |
 | `ExecutionEvents` (представление) | Свидетельства о запуске: Executed, ExecutedLikely, Loaded |
+| `CorrelationRuns` | Схема 2: когда выполнена корреляция, сколько записей прочитано, объектов и находок, её ограничения |
+| `CorrelatedObjects`, `ObjectMembers` | Схема 2: файл, описанный несколькими записями, и его записи (связь по ссылке MFT или пути) |
+| `Findings`, `FindingMembers` | Схема 2: находки правил корреляции (`docs/CORRELATION.md`) и их записи-основания и записи-контекст |
 
-Таблицы ТЗ `NetworkEvents`, `NetworkConnections`, `NetworkApplications`, `TrafficStatistics`, `CheatSignatures`, `FeatureSignatures`, `HashSignatures`, `Applications`, `Correlations`, `Reports` появятся в миграциях соответствующих этапов. `AuditLog` хранится не в базе, а отдельным файлом с цепочкой хешей (`docs/SECURITY.md`), чтобы его целостность не зависела от базы.
+Таблица ТЗ `Correlations` реализована в схеме 2 как четыре таблицы выше. Таблицы корреляции тоже только дополняются (триггеры), а пишутся одной транзакцией после всех модулей, когда записи, на которые они ссылаются, уже в базе (внешние ключи на `Evidence`). Базы схемы 1 читаются как есть: таблиц корреляции в них нет, и читатель так и сообщает. Таблицы `NetworkEvents`, `NetworkConnections`, `NetworkApplications`, `TrafficStatistics`, `CheatSignatures`, `FeatureSignatures`, `HashSignatures`, `Applications`, `Reports` появятся в миграциях соответствующих этапов. `AuditLog` хранится не в базе, а отдельным файлом с цепочкой хешей (`docs/SECURITY.md`), чтобы его целостность не зависела от базы.
 
 ## Индексы
 

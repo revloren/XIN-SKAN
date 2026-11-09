@@ -300,7 +300,12 @@ public sealed class InvestigationViewModel : ObservableObject
             ? $"Манифест SHA-256 {o.ManifestSha256}."
             : $"Самопроверка манифеста не прошла: {o.SelfCheck.Count} расхождений.";
         ResultIsProblem = o.SelfCheck.Count > 0 || o.Run.Modules.Any(m => m.State is ModuleState.Failed);
-        ResultText = $"{head} {modules}. Папка: {o.Folder}. {check} Записи — сведения о найденных объектах, а не выводы о нарушении.";
+        var findings = o.Correlation.Findings;
+        var correlation = findings.Count == 0
+            ? $"Корреляция: связано объектов {o.Correlation.Objects.Count.ToString("N0", Ru)}, находок нет."
+            : $"Корреляция: связано объектов {o.Correlation.Objects.Count.ToString("N0", Ru)}, находок {findings.Count.ToString("N0", Ru)} (" +
+              string.Join(", ", findings.GroupBy(f => f.Confidence).OrderByDescending(g => (int)g.Key).Select(g => $"{ConfidenceText(g.Key)} — {g.Count()}")) + ").";
+        ResultText = $"{head} {modules}. {correlation} Папка: {o.Folder}. {check} Записи и находки — сведения и закономерности, а не выводы о нарушении.";
     }
 
     private static string ModuleName(string id) => id switch
@@ -319,6 +324,15 @@ public sealed class InvestigationViewModel : ObservableObject
         "eventlogs" => "Журналы событий",
         "userassist" => "UserAssist",
         _ => id,
+    };
+
+    private static string ConfidenceText(Confidence c) => c switch
+    {
+        Confidence.High => "высокая",
+        Confidence.Medium => "средняя",
+        Confidence.Low => "низкая",
+        Confidence.Inconclusive => "неопределённая",
+        _ => "сведения",
     };
 
     private static string StateText(ModuleState s) => s switch

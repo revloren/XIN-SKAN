@@ -44,7 +44,7 @@ public static class ModuleCatalog
         new("File Hunter", "Существующие файлы: имена, хеши, подписи, метаданные", ModuleReadiness.Ready, 4),
         new("History Engine", "MFT, USN Journal, Корзина, LNK, Jump Lists, ShellBags, логи Minecraft. Ещё нет: теневые копии (ждут решения владельца)", ModuleReadiness.Partial, 5),
         new("Execution Engine", "Prefetch, BAM, Amcache, UserAssist, журналы событий. Ещё нет: SRUM", ModuleReadiness.Partial, 6),
-        new("Корреляция", "Связи между свидетельствами и единая хронология", ModuleReadiness.Planned, 7),
+        new("Корреляция", "Связь записей одного файла по номеру MFT и пути, семь опубликованных правил, находки Low/Medium. Ещё нет: связь по содержимому (SHA-1 Amcache), отчёт-хронология", ModuleReadiness.Partial, 7),
         new("Minecraft Integrity", "Экземпляры, моды, профили лаунчеров", ModuleReadiness.Planned, 8),
         new("База клиентов и признаков", "Известные клиенты, псевдонимы, функции, проверенные хеши", ModuleReadiness.Planned, 9),
         new("Network Monitor", "Соединения и трафик по процессам — только с согласия", ModuleReadiness.Planned, 10),

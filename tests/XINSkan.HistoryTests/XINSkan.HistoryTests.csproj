@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\src\XINSkan.Analyzers.History\XINSkan.Analyzers.History.csproj" />
     <ProjectReference Include="..\..\src\XINSkan.ShellFormats\XINSkan.ShellFormats.csproj" />
     <ProjectReference Include="..\..\src\XINSkan.Investigation\XINSkan.Investigation.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Correlation\XINSkan.Correlation.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\XINSkan.SecurityTests\Windows\TestVhd.cs" Link="Windows\TestVhd.cs" />

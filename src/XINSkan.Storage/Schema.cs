@@ -6,12 +6,12 @@ namespace XINSkan.Storage;
 /// </summary>
 /// <remarks>
 /// The specification's FileEvents and ExecutionEvents tables are views over Evidence filtered by event type,
-/// so each fact is stored once. Network, signature, correlation and report tables are added by the stages
-/// that produce them (see docs/STORAGE.md).
+/// so each fact is stored once. Version 2 (stage 7) adds the correlation tables; network, signature and report
+/// tables are added by the stages that produce them (see docs/STORAGE.md).
 /// </remarks>
 internal static class Schema
 {
-    public const int Version = 1;
+    public const int Version = 2;
 
     public const string Create = """
         PRAGMA foreign_keys = ON;
@@ -109,6 +109,66 @@ internal static class Schema
             Location        TEXT
         );
 
+        CREATE TABLE CorrelationRuns (
+            Id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            InvestigationId TEXT NOT NULL REFERENCES Investigations(InvestigationId),
+            CompletedUtcTicks INTEGER NOT NULL,
+            EvidenceRead    INTEGER NOT NULL,
+            ObjectCount     INTEGER NOT NULL,
+            FindingCount    INTEGER NOT NULL,
+            Limitations     TEXT NOT NULL
+        );
+
+        CREATE TABLE CorrelatedObjects (
+            ObjectId        TEXT PRIMARY KEY,
+            InvestigationId TEXT NOT NULL REFERENCES Investigations(InvestigationId),
+            DisplayPath     TEXT,
+            NormalizedPath  TEXT,
+            FileName        TEXT,
+            Volume          TEXT,
+            MftEntry        INTEGER,
+            MftSequence     INTEGER,
+            Sha256          TEXT,
+            OtherPaths      TEXT NOT NULL,
+            FirstUtcTicks   INTEGER,
+            LastUtcTicks    INTEGER,
+            SourceFamilies  TEXT NOT NULL
+        );
+
+        CREATE TABLE ObjectMembers (
+            ObjectId        TEXT NOT NULL REFERENCES CorrelatedObjects(ObjectId),
+            EvidenceId      TEXT NOT NULL REFERENCES Evidence(EvidenceId),
+            Link            TEXT NOT NULL,
+            PRIMARY KEY (ObjectId, EvidenceId)
+        );
+
+        CREATE TABLE Findings (
+            FindingId       TEXT PRIMARY KEY,
+            InvestigationId TEXT NOT NULL REFERENCES Investigations(InvestigationId),
+            RuleId          TEXT NOT NULL,
+            Confidence      TEXT NOT NULL,
+            Title           TEXT NOT NULL,
+            Description     TEXT NOT NULL,
+            Rationale       TEXT NOT NULL,
+            Limitations     TEXT NOT NULL,
+            FirstUtcTicks   INTEGER,
+            LastUtcTicks    INTEGER,
+            ObjectId        TEXT REFERENCES CorrelatedObjects(ObjectId),
+            IndependentFamilies TEXT NOT NULL,
+            VerifiedIdentification INTEGER NOT NULL
+        );
+
+        CREATE TABLE FindingMembers (
+            FindingId       TEXT NOT NULL REFERENCES Findings(FindingId),
+            EvidenceId      TEXT NOT NULL REFERENCES Evidence(EvidenceId),
+            Role            TEXT NOT NULL,
+            PRIMARY KEY (FindingId, EvidenceId)
+        );
+
+        CREATE INDEX IX_ObjectMembers_Evidence  ON ObjectMembers(EvidenceId);
+        CREATE INDEX IX_FindingMembers_Evidence ON FindingMembers(EvidenceId);
+        CREATE INDEX IX_Findings_Rule           ON Findings(RuleId);
+
         CREATE VIEW FileEvents AS
             SELECT * FROM Evidence
             WHERE EventType IN ('Existed', 'Created', 'Modified', 'Renamed', 'Moved', 'Deleted', 'Accessed', 'Downloaded');
@@ -133,6 +193,26 @@ internal static class Schema
             BEGIN SELECT RAISE(ABORT, 'Module errors are immutable'); END;
         CREATE TRIGGER ModuleErrors_NoDelete BEFORE DELETE ON ModuleErrors
             BEGIN SELECT RAISE(ABORT, 'Module errors are immutable'); END;
+        CREATE TRIGGER CorrelationRuns_NoUpdate BEFORE UPDATE ON CorrelationRuns
+            BEGIN SELECT RAISE(ABORT, 'Correlation is immutable'); END;
+        CREATE TRIGGER CorrelationRuns_NoDelete BEFORE DELETE ON CorrelationRuns
+            BEGIN SELECT RAISE(ABORT, 'Correlation is immutable'); END;
+        CREATE TRIGGER CorrelatedObjects_NoUpdate BEFORE UPDATE ON CorrelatedObjects
+            BEGIN SELECT RAISE(ABORT, 'Correlation is immutable'); END;
+        CREATE TRIGGER CorrelatedObjects_NoDelete BEFORE DELETE ON CorrelatedObjects
+            BEGIN SELECT RAISE(ABORT, 'Correlation is immutable'); END;
+        CREATE TRIGGER ObjectMembers_NoUpdate BEFORE UPDATE ON ObjectMembers
+            BEGIN SELECT RAISE(ABORT, 'Correlation is immutable'); END;
+        CREATE TRIGGER ObjectMembers_NoDelete BEFORE DELETE ON ObjectMembers
+            BEGIN SELECT RAISE(ABORT, 'Correlation is immutable'); END;
+        CREATE TRIGGER Findings_NoUpdate BEFORE UPDATE ON Findings
+            BEGIN SELECT RAISE(ABORT, 'Correlation is immutable'); END;
+        CREATE TRIGGER Findings_NoDelete BEFORE DELETE ON Findings
+            BEGIN SELECT RAISE(ABORT, 'Correlation is immutable'); END;
+        CREATE TRIGGER FindingMembers_NoUpdate BEFORE UPDATE ON FindingMembers
+            BEGIN SELECT RAISE(ABORT, 'Correlation is immutable'); END;
+        CREATE TRIGGER FindingMembers_NoDelete BEFORE DELETE ON FindingMembers
+            BEGIN SELECT RAISE(ABORT, 'Correlation is immutable'); END;
         CREATE TRIGGER Investigations_NoUpdate BEFORE UPDATE ON Investigations
             BEGIN SELECT RAISE(ABORT, 'Investigation header is immutable'); END;
         CREATE TRIGGER Investigations_NoDelete BEFORE DELETE ON Investigations

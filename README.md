@@ -4,7 +4,7 @@ Windows-приложение для исследования цифровых с
 
 ## Состояние
 
-Проект на ранней стадии. Готово только то, что перечислено в [docs/PROGRESS.md](docs/PROGRESS.md) с пройденными тестами. Подключены File Hunter (существующие файлы), History Engine (удалённые, переименованные и открывавшиеся файлы, журнал изменений, Корзина, логи Minecraft, ярлыки, Jump Lists, ShellBags всех пользователей) и Execution Engine (следы запуска: Prefetch, BAM, Amcache, UserAssist, журналы событий). Они собирают факты и отдельные косвенные признаки (Low), но **не делают выводов о нарушении**: для этого нужна корреляция независимых источников (этап 7).
+Проект на ранней стадии. Готово только то, что перечислено в [docs/PROGRESS.md](docs/PROGRESS.md) с пройденными тестами. Подключены File Hunter (существующие файлы), History Engine (удалённые, переименованные и открывавшиеся файлы, журнал изменений, Корзина, логи Minecraft, ярлыки, Jump Lists, ShellBags всех пользователей) и Execution Engine (следы запуска: Prefetch, BAM, Amcache, UserAssist, журналы событий). Они собирают факты и отдельные косвенные признаки (Low), но **не делают выводов о нарушении**: корреляция (этап 7) связывает записи одного файла и находит закономерности уровня Low/Medium, а High требует проверенной идентификации (этап 9).
 
 | Этап | Состояние |
 | --- | --- |
@@ -16,7 +16,7 @@ Windows-приложение для исследования цифровых с
 | 4. File Hunter | Готово — [docs/FILE_HUNTER.md](docs/FILE_HUNTER.md) |
 | 5. History Engine | Частично — [docs/HISTORY_ENGINE.md](docs/HISTORY_ENGINE.md) (нет теневых копий: ждут решения владельца) |
 | 6. Execution Engine | Частично — [docs/EXECUTION_ENGINE.md](docs/EXECUTION_ENGINE.md) (нет SRUM) |
-| 7. Evidence Correlation | Не начат |
+| 7. Evidence Correlation | Частично — [docs/CORRELATION.md](docs/CORRELATION.md) (нет связи по содержимому и отчёта-хронологии) |
 
 ## Структура
 
@@ -32,6 +32,7 @@ src/XINSkan.Analyzers.FileHunter  существующие файлы: соде�
 src/XINSkan.Analyzers.History     MFT, USN, Корзина, логи Minecraft, LNK, Jump Lists, ShellBags
 src/XINSkan.ExecutionFormats      разбор Prefetch, XPRESS Huffman, кустов реестра (regf) с журналами
 src/XINSkan.Analyzers.Execution   Prefetch, BAM, Amcache, UserAssist, журналы событий, кусты пользователей
+src/XINSkan.Correlation           связь записей одного файла, правила находок, политика уровней
 src/XINSkan.Investigation     одна проверка целиком: папка, аудит, база, анализаторы, манифест
 src/XINSkan.Cli               командная строка: xinskan investigate / verify
 src/XINSkan.App               интерфейс WPF (показывает только настоящие данные)

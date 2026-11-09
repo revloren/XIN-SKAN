@@ -16,7 +16,7 @@ namespace XINSkan.Storage;
 /// <see cref="OutputSink"/> before SQLite opens it. SQLite therefore never creates or deletes files outside the
 /// sink's accounting, and the integrity manifest lists every file in the folder.
 /// </remarks>
-public sealed class InvestigationStore : IInvestigationSink, IDisposable
+public sealed class InvestigationStore : IInvestigationSink, ICorrelationSink, IDisposable
 {
     public const string DatabaseFileName = "evidence.db";
     public const string JournalFileName = "evidence.db-journal";
@@ -169,6 +169,121 @@ public sealed class InvestigationStore : IInvestigationSink, IDisposable
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             FlushLocked(result);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    /// <summary>
+    /// Writes the correlation of this investigation in one durable transaction, after everything pending: objects
+    /// and findings reference evidence that is already in the database.
+    /// </summary>
+    public async ValueTask AddCorrelationAsync(CorrelationResult result, long evidenceRead, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            FlushLocked(null);
+            if (!string.Equals(_synchronous, "FULL", StringComparison.Ordinal))
+            {
+                Execute(_connection, "PRAGMA synchronous = FULL;");
+                _synchronous = "FULL";
+            }
+
+            using var tx = _connection.BeginTransaction();
+            foreach (var o in result.Objects)
+            {
+                using var cmd = _connection.CreateCommand();
+                cmd.Transaction = tx;
+                cmd.CommandText = """
+                    INSERT INTO CorrelatedObjects (ObjectId, InvestigationId, DisplayPath, NormalizedPath, FileName, Volume, MftEntry, MftSequence, Sha256,
+                        OtherPaths, FirstUtcTicks, LastUtcTicks, SourceFamilies)
+                    VALUES ($id, $inv, $display, $norm, $name, $vol, $entry, $seq, $sha, $other, $first, $last, $families);
+                    """;
+                cmd.Parameters.AddWithValue("$id", o.ObjectId.Value);
+                cmd.Parameters.AddWithValue("$inv", o.InvestigationId.Value);
+                cmd.Parameters.AddWithValue("$display", (object?)o.DisplayPath ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$norm", (object?)o.NormalizedPath ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$name", (object?)o.FileName ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$vol", (object?)o.Volume ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$entry", o.MftEntry is { } e ? (object)(long)e : DBNull.Value);
+                cmd.Parameters.AddWithValue("$seq", o.MftSequence is { } q ? (object)(long)q : DBNull.Value);
+                cmd.Parameters.AddWithValue("$sha", (object?)o.Sha256?.Hex ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$other", Rows.Strings(o.OtherPaths));
+                cmd.Parameters.AddWithValue("$first", (object?)o.FirstUtc?.UtcTicks ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$last", (object?)o.LastUtc?.UtcTicks ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$families", Rows.Strings(o.SourceFamilies));
+                cmd.ExecuteNonQuery();
+
+                foreach (var m in o.Members)
+                {
+                    using var member = _connection.CreateCommand();
+                    member.Transaction = tx;
+                    member.CommandText = "INSERT INTO ObjectMembers (ObjectId, EvidenceId, Link) VALUES ($o, $e, $l);";
+                    member.Parameters.AddWithValue("$o", o.ObjectId.Value);
+                    member.Parameters.AddWithValue("$e", m.EvidenceId.Value);
+                    member.Parameters.AddWithValue("$l", m.Link.ToString());
+                    member.ExecuteNonQuery();
+                }
+            }
+
+            foreach (var f in result.Findings)
+            {
+                using var cmd = _connection.CreateCommand();
+                cmd.Transaction = tx;
+                cmd.CommandText = """
+                    INSERT INTO Findings (FindingId, InvestigationId, RuleId, Confidence, Title, Description, Rationale, Limitations,
+                        FirstUtcTicks, LastUtcTicks, ObjectId, IndependentFamilies, VerifiedIdentification)
+                    VALUES ($id, $inv, $rule, $conf, $title, $desc, $why, $lim, $first, $last, $obj, $families, $verified);
+                    """;
+                cmd.Parameters.AddWithValue("$id", f.FindingId.Value);
+                cmd.Parameters.AddWithValue("$inv", f.InvestigationId.Value);
+                cmd.Parameters.AddWithValue("$rule", f.RuleId);
+                cmd.Parameters.AddWithValue("$conf", f.Confidence.ToString());
+                cmd.Parameters.AddWithValue("$title", f.Title);
+                cmd.Parameters.AddWithValue("$desc", f.Description);
+                cmd.Parameters.AddWithValue("$why", f.Rationale);
+                cmd.Parameters.AddWithValue("$lim", Rows.Limitations(f.Limitations));
+                cmd.Parameters.AddWithValue("$first", (object?)f.FirstUtc?.UtcTicks ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$last", (object?)f.LastUtc?.UtcTicks ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$obj", (object?)f.ObjectId?.Value ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$families", Rows.Strings(f.IndependentFamilies));
+                cmd.Parameters.AddWithValue("$verified", f.VerifiedIdentification ? 1 : 0);
+                cmd.ExecuteNonQuery();
+
+                foreach (var m in f.Members)
+                {
+                    using var member = _connection.CreateCommand();
+                    member.Transaction = tx;
+                    member.CommandText = "INSERT INTO FindingMembers (FindingId, EvidenceId, Role) VALUES ($f, $e, $r);";
+                    member.Parameters.AddWithValue("$f", f.FindingId.Value);
+                    member.Parameters.AddWithValue("$e", m.EvidenceId.Value);
+                    member.Parameters.AddWithValue("$r", m.Role);
+                    member.ExecuteNonQuery();
+                }
+            }
+
+            using (var run = _connection.CreateCommand())
+            {
+                run.Transaction = tx;
+                run.CommandText = """
+                    INSERT INTO CorrelationRuns (InvestigationId, CompletedUtcTicks, EvidenceRead, ObjectCount, FindingCount, Limitations)
+                    VALUES ($inv, $done, $read, $objects, $findings, $lim);
+                    """;
+                run.Parameters.AddWithValue("$inv", Info.InvestigationId.Value);
+                run.Parameters.AddWithValue("$done", _time.GetUtcNow().UtcTicks);
+                run.Parameters.AddWithValue("$read", evidenceRead);
+                run.Parameters.AddWithValue("$objects", result.Objects.Count);
+                run.Parameters.AddWithValue("$findings", result.Findings.Count);
+                run.Parameters.AddWithValue("$lim", Rows.Limitations(result.Limitations));
+                run.ExecuteNonQuery();
+            }
+
+            tx.Commit();
         }
         finally
         {

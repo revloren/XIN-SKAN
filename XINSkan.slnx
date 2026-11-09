@@ -11,6 +11,7 @@
     <Project Path="src/XINSkan.Analyzers.History/XINSkan.Analyzers.History.csproj" />
     <Project Path="src/XINSkan.ExecutionFormats/XINSkan.ExecutionFormats.csproj" />
     <Project Path="src/XINSkan.Analyzers.Execution/XINSkan.Analyzers.Execution.csproj" />
+    <Project Path="src/XINSkan.Correlation/XINSkan.Correlation.csproj" />
     <Project Path="src/XINSkan.Investigation/XINSkan.Investigation.csproj" />
     <Project Path="src/XINSkan.Cli/XINSkan.Cli.csproj" />
     <Project Path="src/XINSkan.App/XINSkan.App.csproj" />
@@ -26,5 +27,6 @@
     <Project Path="tests/XINSkan.HistoryTests/XINSkan.HistoryTests.csproj" />
     <Project Path="tests/XINSkan.ShellFormatsTests/XINSkan.ShellFormatsTests.csproj" />
     <Project Path="tests/XINSkan.ExecutionTests/XINSkan.ExecutionTests.csproj" />
+    <Project Path="tests/XINSkan.CorrelationTests/XINSkan.CorrelationTests.csproj" />
   </Folder>
 </Solution>

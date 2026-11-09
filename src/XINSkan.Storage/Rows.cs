@@ -33,6 +33,10 @@ internal static class Rows
     public static IReadOnlyDictionary<string, string> Attributes(string json) =>
         JsonSerializer.Deserialize<Dictionary<string, string>>(json, Json) ?? [];
 
+    public static string Strings(IEnumerable<string> list) => JsonSerializer.Serialize(list.ToList(), Json);
+
+    public static IReadOnlyList<string> Strings(string json) => JsonSerializer.Deserialize<List<string>>(json, Json) ?? [];
+
     public static string? Serial(ulong? serial) => serial?.ToString("X16", CultureInfo.InvariantCulture);
 
     public static ulong? Serial(string? hex) => hex is null ? null : ulong.Parse(hex, NumberStyles.HexNumber, CultureInfo.InvariantCulture);

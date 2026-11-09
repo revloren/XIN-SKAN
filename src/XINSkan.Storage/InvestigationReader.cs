@@ -180,6 +180,132 @@ public sealed class InvestigationReader : IDisposable
         return list;
     }
 
+    /// <summary>The correlation run, or null when the investigation has none (schema 1, or correlation did not run).</summary>
+    public (DateTimeOffset Completed, long EvidenceRead, long Objects, long Findings, IReadOnlyList<Limitation> Limitations)? ReadCorrelationRun()
+    {
+        if (SchemaVersion() < 2)
+        {
+            return null;
+        }
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "SELECT CompletedUtcTicks, EvidenceRead, ObjectCount, FindingCount, Limitations FROM CorrelationRuns ORDER BY Id DESC LIMIT 1;";
+        using var r = cmd.ExecuteReader();
+        return r.Read() ? (Rows.FromTicks(r.GetInt64(0)), r.GetInt64(1), r.GetInt64(2), r.GetInt64(3), Rows.Limitations(r.GetString(4))) : null;
+    }
+
+    /// <summary>Correlated objects with their members; empty for schema 1.</summary>
+    public IReadOnlyList<CorrelatedObject> ReadObjects()
+    {
+        if (SchemaVersion() < 2)
+        {
+            return [];
+        }
+
+        var members = new Dictionary<string, List<ObjectMember>>(StringComparer.Ordinal);
+        using (var m = _connection.CreateCommand())
+        {
+            m.CommandText = "SELECT ObjectId, EvidenceId, Link FROM ObjectMembers ORDER BY ObjectId, EvidenceId;";
+            using var r = m.ExecuteReader();
+            while (r.Read())
+            {
+                if (!members.TryGetValue(r.GetString(0), out var list))
+                {
+                    members[r.GetString(0)] = list = [];
+                }
+
+                list.Add(new ObjectMember(Ulid.Parse(r.GetString(1)), Enum.Parse<LinkKind>(r.GetString(2))));
+            }
+        }
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = """
+            SELECT ObjectId, InvestigationId, DisplayPath, NormalizedPath, FileName, Volume, MftEntry, MftSequence, Sha256,
+                   OtherPaths, FirstUtcTicks, LastUtcTicks, SourceFamilies
+            FROM CorrelatedObjects ORDER BY ObjectId;
+            """;
+        using var o = cmd.ExecuteReader();
+        var objects = new List<CorrelatedObject>();
+        while (o.Read())
+        {
+            objects.Add(new CorrelatedObject
+            {
+                ObjectId = Ulid.Parse(o.GetString(0)),
+                InvestigationId = Ulid.Parse(o.GetString(1)),
+                DisplayPath = Str(o, 2),
+                NormalizedPath = Str(o, 3),
+                FileName = Str(o, 4),
+                Volume = Str(o, 5),
+                MftEntry = o.IsDBNull(6) ? null : (ulong)o.GetInt64(6),
+                MftSequence = o.IsDBNull(7) ? null : (ushort)o.GetInt64(7),
+                Sha256 = o.IsDBNull(8) ? null : Sha256Hash.Parse(o.GetString(8)),
+                OtherPaths = Rows.Strings(o.GetString(9)),
+                FirstUtc = o.IsDBNull(10) ? null : Rows.FromTicks(o.GetInt64(10)),
+                LastUtc = o.IsDBNull(11) ? null : Rows.FromTicks(o.GetInt64(11)),
+                SourceFamilies = Rows.Strings(o.GetString(12)),
+                Members = members.GetValueOrDefault(o.GetString(0)) ?? [],
+            });
+        }
+
+        return objects;
+    }
+
+    /// <summary>Findings with their members, strongest first; empty for schema 1.</summary>
+    public IReadOnlyList<Finding> ReadFindings()
+    {
+        if (SchemaVersion() < 2)
+        {
+            return [];
+        }
+
+        var members = new Dictionary<string, List<FindingMember>>(StringComparer.Ordinal);
+        using (var m = _connection.CreateCommand())
+        {
+            m.CommandText = "SELECT FindingId, EvidenceId, Role FROM FindingMembers ORDER BY FindingId, EvidenceId;";
+            using var r = m.ExecuteReader();
+            while (r.Read())
+            {
+                if (!members.TryGetValue(r.GetString(0), out var list))
+                {
+                    members[r.GetString(0)] = list = [];
+                }
+
+                list.Add(new FindingMember(Ulid.Parse(r.GetString(1)), r.GetString(2)));
+            }
+        }
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = """
+            SELECT FindingId, InvestigationId, RuleId, Confidence, Title, Description, Rationale, Limitations,
+                   FirstUtcTicks, LastUtcTicks, ObjectId, IndependentFamilies, VerifiedIdentification
+            FROM Findings ORDER BY FindingId;
+            """;
+        using var f = cmd.ExecuteReader();
+        var findings = new List<Finding>();
+        while (f.Read())
+        {
+            findings.Add(new Finding
+            {
+                FindingId = Ulid.Parse(f.GetString(0)),
+                InvestigationId = Ulid.Parse(f.GetString(1)),
+                RuleId = f.GetString(2),
+                Confidence = Enum.Parse<Confidence>(f.GetString(3)),
+                Title = f.GetString(4),
+                Description = f.GetString(5),
+                Rationale = f.GetString(6),
+                Limitations = Rows.Limitations(f.GetString(7)),
+                FirstUtc = f.IsDBNull(8) ? null : Rows.FromTicks(f.GetInt64(8)),
+                LastUtc = f.IsDBNull(9) ? null : Rows.FromTicks(f.GetInt64(9)),
+                ObjectId = f.IsDBNull(10) ? null : Ulid.Parse(f.GetString(10)),
+                IndependentFamilies = Rows.Strings(f.GetString(11)),
+                VerifiedIdentification = f.GetInt64(12) != 0,
+                Members = members.GetValueOrDefault(f.GetString(0)) ?? [],
+            });
+        }
+
+        return findings.OrderByDescending(x => x.Confidence == Confidence.Inconclusive ? -1 : (int)x.Confidence).ThenBy(x => x.FirstUtc).ToList();
+    }
+
     /// <summary>Count of rows in a view or table defined by the schema (used by tests and diagnostics).</summary>
     public long Count(StorageView view)
     {

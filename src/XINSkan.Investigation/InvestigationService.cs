@@ -4,6 +4,7 @@ using System.Runtime.Versioning;
 using XINSkan.Analyzers.FileHunter;
 using XINSkan.Analyzers.Execution;
 using XINSkan.Analyzers.History;
+using XINSkan.Correlation;
 using XINSkan.Ntfs;
 using XINSkan.Core.IO;
 using XINSkan.Core.Permissions;
@@ -95,7 +96,11 @@ public sealed record InvestigationOutcome(
     Sha256Hash ManifestSha256,
     IReadOnlyList<IntegrityProblem> SelfCheck,
     OutputLocationAssessment OutputLocation,
-    PermissionSnapshot Permissions);
+    PermissionSnapshot Permissions)
+{
+    /// <summary>What correlation found; empty when it did not run (cancelled or failed before it).</summary>
+    public CorrelationResult Correlation { get; init; } = new([], [], []);
+}
 
 /// <summary>Creates the evidence store inside the investigation folder (normally InvestigationStore.Create).</summary>
 public delegate IInvestigationSink StoreFactory(OutputSink output, InvestigationInfo info);
@@ -103,7 +108,7 @@ public delegate IInvestigationSink StoreFactory(OutputSink output, Investigation
 /// <summary>
 /// Runs one investigation end to end. The order is fixed so that a folder is either complete and covered by its
 /// manifest, or visibly unfinished:
-/// new folder → audit log → store → permissions → analyzers → close store → close audit → manifest → seal.
+/// new folder → audit log → store → permissions → analyzers → correlation → close store → close audit → manifest → seal.
 /// </summary>
 /// <remarks>
 /// Cancellation is not a failure: records collected so far are saved and the folder is closed with a manifest.
@@ -138,6 +143,7 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
 
         InvestigationRunResult run;
         long written;
+        CorrelationResult correlation;
         PermissionSnapshot permissions;
         using (var audit = new AuditLogger(output.CreateNew(AuditFileName), time))
         {
@@ -188,6 +194,9 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
                 var runner = new InvestigationRunner(counting, permissions, time, progress);
                 run = await runner.RunAsync(id, analyzers, cancellationToken).ConfigureAwait(false);
                 written = counting.Evidence;
+
+                // Correlation reads only what the analyzers wrote; a cancelled run is correlated as far as it got.
+                correlation = await CorrelateAsync(id, started, store, counting, audit, progress, run.Cancelled).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -214,7 +223,42 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
         }
 
         var selfCheck = IntegrityManifest.Verify(output.Root);
-        return new InvestigationOutcome(id, output.Root, run, written, manifest, selfCheck, location, permissions);
+        return new InvestigationOutcome(id, output.Root, run, written, manifest, selfCheck, location, permissions) { Correlation = correlation };
+    }
+
+    private async Task<CorrelationResult> CorrelateAsync(Ulid id, DateTimeOffset started, IInvestigationSink store, CountingSink counting, AuditLogger audit, IProgress<ModuleProgress>? progress, bool cancelled)
+    {
+        var facts = counting.Facts;
+        progress?.Report(new ModuleProgress("correlation", ModuleState.Running, $"Корреляция {facts.Count:N0} записей…"));
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        CorrelationResult result;
+        try
+        {
+            result = new CorrelationEngine(id, started, time).Run(facts);
+        }
+#pragma warning disable CA1031 // A defect in a rule must not lose the collected evidence: it is recorded and correlation is skipped.
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            audit.Record("correlation-failed", "evidence", "read-only", "error", $"{ex.GetType().Name}: {ex.Message}");
+            result = new CorrelationResult([], [], [new Limitation("CORR.FAILED", $"Корреляция не выполнена из-за ошибки: {ex.Message}. Собранные записи сохранены.")]);
+        }
+
+        if (cancelled)
+        {
+            result = result with { Limitations = [.. result.Limitations, new Limitation("CORR.CANCELLED", "Проверка была отменена: корреляция выполнена по тому, что успели собрать модули.")] };
+        }
+
+        if (store is ICorrelationSink sink)
+        {
+            await sink.AddCorrelationAsync(result, facts.Count, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        audit.Record("correlation", "evidence", "read-only", "ok",
+            $"records {facts.Count}; objects {result.Objects.Count}; findings {result.Findings.Count}; {clock.Elapsed.TotalSeconds:F1} s");
+        progress?.Report(new ModuleProgress("correlation", ModuleState.Completed,
+            $"Объектов {result.Objects.Count:N0}, находок {result.Findings.Count:N0} ({clock.Elapsed.TotalSeconds:F1} с)."));
+        return result;
     }
 
     /// <summary>Volumes the analyzers read from, so the output policy can warn when results land on one of them.</summary>
@@ -245,17 +289,34 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
         }
     }
 
-    /// <summary>Counts records the store accepted.</summary>
+    /// <summary>Counts records the store accepted and keeps what correlation needs of each.</summary>
     private sealed class CountingSink(IInvestigationSink inner) : IInvestigationSink
     {
+        private readonly List<EvidenceFacts> _facts = [];
         private long _evidence;
 
         public long Evidence => Interlocked.Read(ref _evidence);
+
+        public List<EvidenceFacts> Facts
+        {
+            get
+            {
+                lock (_facts)
+                {
+                    return [.. _facts];
+                }
+            }
+        }
 
         public async ValueTask AddEvidenceAsync(Evidence evidence, CancellationToken cancellationToken)
         {
             await inner.AddEvidenceAsync(evidence, cancellationToken).ConfigureAwait(false);
             Interlocked.Increment(ref _evidence);
+            var facts = EvidenceFacts.From(evidence);
+            lock (_facts)
+            {
+                _facts.Add(facts);
+            }
         }
 
         public ValueTask AddCoverageAsync(SourceCoverage coverage, CancellationToken cancellationToken) => inner.AddCoverageAsync(coverage, cancellationToken);

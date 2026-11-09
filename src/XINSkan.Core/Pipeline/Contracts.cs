@@ -46,6 +46,12 @@ public interface IInvestigationSink
     ValueTask CheckpointAsync(ModuleResult result, CancellationToken cancellationToken);
 }
 
+/// <summary>A sink that can also keep the correlation of the investigation (objects and findings).</summary>
+public interface ICorrelationSink
+{
+    ValueTask AddCorrelationAsync(CorrelationResult result, long evidenceRead, CancellationToken cancellationToken);
+}
+
 public sealed record AnalyzerContext(
     Ulid InvestigationId,
     string ModuleId,
