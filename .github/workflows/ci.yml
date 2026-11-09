@@ -60,10 +60,20 @@ jobs:
           $code = $LASTEXITCODE
           Write-Host "investigate exit code: $code"
           if ($code -ge 2) { exit 1 }
-          $folder = Get-ChildItem $out -Directory | Select-Object -First 1
-          dotnet src/XINSkan.Cli/bin/Release/net10.0/xinskan.dll verify $folder.FullName
-          if ($LASTEXITCODE -ne 0) { Write-Error "verify failed"; exit 1 }
-          Get-ChildItem $folder.FullName | Format-Table Name, Length, Attributes
+          # Second run on the now-warm disk: separates XIN SKAN's own cost from the first read of a fresh VM
+          # disk and on-access antivirus scanning. It also shows the first folder is left untouched.
+          $first = Get-ChildItem $out -Directory | Select-Object -First 1
+          $before = Get-ChildItem $first.FullName -File | Get-FileHash | ForEach-Object Hash
+          dotnet src/XINSkan.Cli/bin/Release/net10.0/xinskan.dll investigate --output $out --operator CI-warm
+          if ($LASTEXITCODE -ge 2) { exit 1 }
+          $after = Get-ChildItem $first.FullName -File | Get-FileHash | ForEach-Object Hash
+          if (Compare-Object $before $after) { Write-Error "The second run changed the first investigation folder"; exit 1 }
+          foreach ($folder in Get-ChildItem $out -Directory) {
+            dotnet src/XINSkan.Cli/bin/Release/net10.0/xinskan.dll verify $folder.FullName
+            if ($LASTEXITCODE -ne 0) { Write-Error "verify failed"; exit 1 }
+          }
+          Get-ChildItem $first.FullName | Format-Table Name, Length, Attributes
+          Get-MpComputerStatus | Format-List RealTimeProtectionEnabled, OnAccessProtectionEnabled, AMRunningMode
 
       - name: Upload test results
         if: always()
