@@ -50,7 +50,7 @@ public sealed class HistoryScope
                 if (current || _otherProfiles)
                 {
                     inScope = slash >= 0;
-                    profile = name;
+                    profile = OriginalSegment(path, _users.Split('\\').Length) ?? name;
                     drop = slash >= 0 && IsDrop(n, profileRoot);
                 }
                 else if (slash >= 0)
@@ -72,6 +72,13 @@ public sealed class HistoryScope
         }
 
         return new ScopeMatch(inScope || mc is not null, mc is not null, drop, mc, profile);
+    }
+
+    /// <summary>The path segment at <paramref name="index"/> as written (the normalised form is upper case).</summary>
+    private static string? OriginalSegment(string path, int index)
+    {
+        var parts = path.Replace('/', '\\').Split('\\', StringSplitOptions.RemoveEmptyEntries);
+        return index < parts.Length ? parts[index] : null;
     }
 
     /// <summary>The ".minecraft" folder the path is in, if any (anywhere on the volume).</summary>

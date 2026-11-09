@@ -62,6 +62,7 @@ public sealed class InvestigationServiceTests : IDisposable
         var mft = outcome.Run.Modules.Single(m => m.ModuleId == XINSkan.Analyzers.History.MftAnalyzer.ModuleId);
         Assert.Equal(ModuleState.Skipped, mft.State);
         Assert.Contains("RawVolumeRead", mft.Reason, StringComparison.Ordinal);
+        Assert.Equal(ModuleState.Skipped, outcome.Run.Modules.Single(m => m.ModuleId == XINSkan.Analyzers.History.UsnAnalyzer.ModuleId).State);
 
         // The folder is new, named after the run, and holds exactly what the run created.
         Assert.StartsWith(Path.Combine(_out, "XINSKAN-"), outcome.Folder, StringComparison.Ordinal);

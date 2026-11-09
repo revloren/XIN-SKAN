@@ -216,7 +216,7 @@ public sealed class TimeAnomalyTests
 public sealed class HistoryScopeTests
 {
     private static HistoryScope Scope(bool others = false) =>
-        new(@"C:\Users", @"C:\Users\player", others, [@"C:\Windows\Temp"], [@"D:\Games"]);
+        new(@"C:\Users", @"C:\Users\Player", others, [@"C:\Windows\Temp"], [@"D:\Games"]);
 
     [Theory]
     [InlineData(@"C:\Users\player\Downloads\a.jar", true, false, true)]
@@ -237,6 +237,10 @@ public sealed class HistoryScopeTests
         var m = Scope().Match(path);
         Assert.Equal((inScope, minecraft, drop), (m.InScope, m.InMinecraftTree, m.InDropLocation));
     }
+
+    [Fact]
+    public void The_profile_name_keeps_its_case() =>
+        Assert.Equal("Player", Scope().Match(@"C:\Users\Player\Downloads\a.jar").Profile);
 
     [Fact]
     public void Other_profiles_count_when_left_out_and_are_in_scope_with_access()

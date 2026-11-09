@@ -20,10 +20,22 @@ public interface IVolumeOpener
 public sealed class VolumeHistoryCache
 {
     private readonly Dictionary<string, MftIndex> _indexes = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, DateTimeOffset> _formatted = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, ulong> _serials = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Volume serial as Windows reports it (low 32 bits of the NTFS serial).</summary>
+    public void SetSerial(string drive, ulong serial) => _serials[drive] = serial;
+
+    public ulong? Serial(string drive) => _serials.TryGetValue(drive, out var s) ? s : null;
 
     public void Set(string drive, MftIndex index) => _indexes[drive] = index;
 
     public MftIndex? Get(string drive) => _indexes.GetValueOrDefault(drive);
+
+    /// <summary>Creation time of $MFT itself (record 0): when the volume was formatted, usually the Windows install.</summary>
+    public void SetFormatted(string drive, DateTimeOffset time) => _formatted[drive] = time;
+
+    public DateTimeOffset? Formatted(string drive) => _formatted.TryGetValue(drive, out var t) ? t : null;
 }
 
 public sealed record HistoryOptions
@@ -132,6 +144,7 @@ public sealed class MftAnalyzer(HistoryOptions options, IVolumeOpener volumes, V
         }
 
         var serial = reader.Boot.VolumeSerial & 0xFFFF_FFFF;
+        cache.SetSerial(drive, serial);
         var scope = new HistoryScope(options.UsersRoot, options.CurrentProfile, context.Permissions.Has(Capability.OtherUserProfiles), options.TempFolders, options.ExtraRoots);
         var index = new MftIndex(reader.RecordCount, drive);
         var candidates = new List<Candidate>();
@@ -150,6 +163,11 @@ public sealed class MftAnalyzer(HistoryOptions options, IVolumeOpener volumes, V
             }
 
             parsed++;
+            if (r.Entry == 0 && r.StandardInformation is { } mftInfo && NtfsTime.ToUtc(mftInfo.Times.Created) is { } formatted)
+            {
+                cache.SetFormatted(drive, formatted);
+            }
+
             if (!r.FixupOk)
             {
                 torn++;

@@ -30,7 +30,14 @@ public sealed class MftOnNtfsTests(ITestOutputHelper output)
         Directory.CreateDirectory(mods);
         Directory.CreateDirectory(Path.Combine(profile, "Downloads"));
 
+        // Timestomped: SetFileTime changes $STANDARD_INFORMATION only.
+        var stomped = Path.Combine(profile, "Downloads", "stomped.jar");
+        File.WriteAllBytes(stomped, Jar.FabricMod("s", "S", "1"));
+        File.SetCreationTimeUtc(stomped, new DateTime(2015, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+
         // Deleted mod with its download origin; its sequence number is read from a live handle before deletion.
+        // Deleted last: Windows hands a freed record to the next new file at once (seen in the first CI run,
+        // where stomped.jar took the record of the deleted mod), so nothing is created after the deletion.
         var cheat = Path.Combine(mods, "cheat-client.jar");
         File.WriteAllBytes(cheat, Jar.FabricMod("cheat", "Cheat", "1"));
         File.WriteAllText(cheat + ":Zone.Identifier", "[ZoneTransfer]\r\nZoneId=3\r\nHostUrl=https://example.org/cheat-client.jar\r\n");
@@ -43,11 +50,6 @@ public sealed class MftOnNtfsTests(ITestOutputHelper output)
         }
 
         File.Delete(cheat);
-
-        // Timestomped: SetFileTime changes $STANDARD_INFORMATION only.
-        var stomped = Path.Combine(profile, "Downloads", "stomped.jar");
-        File.WriteAllBytes(stomped, Jar.FabricMod("s", "S", "1"));
-        File.SetCreationTimeUtc(stomped, new DateTime(2015, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         // The MFT is read from the disk, not from the file system cache: flush what Windows still holds.
         Flush(vhd.Letter);

@@ -26,6 +26,9 @@ public sealed record PlatformServices(
     /// <summary>Raw volume access for the History Engine. Without it the MFT module reports the volume as unreadable.</summary>
     public IVolumeOpener Volumes { get; init; } = NoVolumeAccess.Instance;
 
+    /// <summary>Change journal access for the History Engine.</summary>
+    public IUsnJournalSource Journal { get; init; } = NoUsnJournal.Instance;
+
     /// <summary>The read-only Windows implementations, for the system XIN SKAN runs on.</summary>
     [SupportedOSPlatform("windows")]
     public static PlatformServices ForWindows() => new(
@@ -36,6 +39,7 @@ public sealed record PlatformServices(
         WindowsFileSource.AccessDescription)
     {
         Volumes = WindowsVolumeOpener.Instance,
+        Journal = WindowsUsnJournalSource.Instance,
     };
 }
 
@@ -143,6 +147,7 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
                 [
                     new FileHunterAnalyzer(request.FileHunter, lister, files, platform.Signatures),
                     new MftAnalyzer(HistoryOptions.From(request.FileHunter), new AuditingVolumeOpener(platform.Volumes, audit), history),
+                    new UsnAnalyzer(HistoryOptions.From(request.FileHunter), new AuditingJournalSource(platform.Journal, audit), history),
                 ];
 
                 var runner = new InvestigationRunner(counting, permissions, time, progress);

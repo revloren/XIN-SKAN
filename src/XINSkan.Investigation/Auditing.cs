@@ -98,3 +98,31 @@ public sealed class AuditingVolumeOpener(IVolumeOpener inner, AuditLogger log) :
         }
     }
 }
+
+/// <summary>Records each change journal query and read in the audit log.</summary>
+public sealed class AuditingJournalSource(IUsnJournalSource inner, AuditLogger log) : IUsnJournalSource
+{
+    private const string Access = "FSCTL_QUERY_USN_JOURNAL / FSCTL_READ_USN_JOURNAL (read only)";
+
+    public UsnJournalInfo Query(string drive)
+    {
+        var target = $@"\\.\{drive}\$Extend\$UsnJrnl";
+        try
+        {
+            var info = inner.Query(drive);
+            log.Record("query-journal", target, Access, "ok", $"id {info.JournalId:X}, USN {info.FirstUsn}..{info.NextUsn}");
+            return info;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or System.ComponentModel.Win32Exception)
+        {
+            log.Record("query-journal", target, Access, AuditResults.Of(ex), ex.Message);
+            throw;
+        }
+    }
+
+    public IEnumerable<ReadOnlyMemory<byte>> Read(string drive, UsnJournalInfo info, CancellationToken cancellationToken)
+    {
+        log.Record("read-journal", $@"\\.\{drive}\$Extend\$UsnJrnl", Access, "started", $"USN {info.FirstUsn}..{info.NextUsn}");
+        return inner.Read(drive, info, cancellationToken);
+    }
+}
