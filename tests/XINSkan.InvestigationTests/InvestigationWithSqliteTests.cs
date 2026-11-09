@@ -54,17 +54,18 @@ public sealed class InvestigationWithSqliteTests : IDisposable
         Assert.Equal(outcome.InvestigationId, reader.ReadInfo().InvestigationId);
         Assert.Equal("Модератор", reader.ReadInfo().Operator);
 
+        var stored = reader.ReadEvidence().ToList();
         var module = reader.ReadModuleResults().Single(m => m.ModuleId == FileHunterAnalyzer.ModuleId);
         Assert.Equal(FileHunterAnalyzer.ModuleId, module.ModuleId);
         Assert.Equal(ModuleState.Completed, module.State);
-        Assert.Equal(outcome.EvidenceWritten, module.EvidenceCount);
+        Assert.Equal(outcome.EvidenceWritten, reader.ReadModuleResults().Sum(m => m.EvidenceCount));
+        Assert.Equal(stored.Count(e => e.ModuleId == FileHunterAnalyzer.ModuleId), module.EvidenceCount);
         Assert.NotEmpty(reader.ReadCoverage());
 
-        var stored = reader.ReadEvidence().ToList();
         var mod = stored.Single(e => e.Target.NormalizedPath == PathNormalizer.Normalize(Path.Combine(_p.MinecraftDir, "mods", "test-client.jar")));
         Assert.Equal("testclient", mod.Attributes["Mod.Id"]);
         Assert.NotNull(mod.ObjectSha256);
-        Assert.All(stored, e => Assert.Equal(Confidence.Informational, e.Confidence));
+        Assert.All(stored.Where(e => e.ModuleId == FileHunterAnalyzer.ModuleId), e => Assert.Equal(Confidence.Informational, e.Confidence));
 
         // Reading the closed investigation did not change it.
         Assert.Empty(IntegrityManifest.Verify(outcome.Folder));
