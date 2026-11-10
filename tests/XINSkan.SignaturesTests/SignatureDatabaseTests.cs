@@ -70,7 +70,7 @@ public sealed class SignatureDatabaseTests
         Assert.Equal(Of("Groza"), Of("GrozaClient"));
         Assert.NotEqual(Of("Rich"), Of("RichPremium"));
         Assert.NotEqual(Of("Raven"), Of("Raven XD"));
-        Assert.NotEqual(Of("Kami"), "kami-blue");
+        Assert.NotEqual("kami-blue", Of("Kami"));
         Assert.Equal(Of("Baritone"), Of("Cabaletta"));
 
         var verified = db.Clients.Where(c => c.Status == "verified").Select(c => c.Id).Order(StringComparer.Ordinal).ToList();
@@ -78,7 +78,22 @@ public sealed class SignatureDatabaseTests
         Assert.All(db.Clients.Where(c => c.Status == "verified"), c => Assert.Contains(c.Sources, s => s.Url?.StartsWith("https://github.com/", StringComparison.Ordinal) == true && s.Commit is { Length: 40 }));
         Assert.All(db.Clients.Where(c => c.Status != "verified"), c => Assert.Empty(c.Identifiers.ModIds.Concat(c.Identifiers.Packages)));
         Assert.Equal(new[] { "wurst" }, db.Clients.Single(c => c.Id == "wurst").Identifiers.ModIds);
-        Assert.Empty(db.Hashes); // no hash without a real file from a stated source
+
+        // Every hash is of a file downloaded from a release of a verified project, and says which file and where from.
+        Assert.Equal(57, db.Hashes.Count);
+        Assert.All(db.Hashes, h =>
+        {
+            Assert.Equal("verified", db.Clients.Single(c => c.Id == h.ClientId).Status);
+            Assert.Matches("^[0-9a-f]{64}$", h.Sha256);
+            Assert.EndsWith(".jar", h.FileName, StringComparison.Ordinal);
+            Assert.StartsWith("https://github.com/", h.Source.Url, StringComparison.Ordinal);
+            Assert.Contains("/releases/download/", h.Source.Url, StringComparison.Ordinal);
+            Assert.EndsWith("/" + h.FileName, h.Source.Url, StringComparison.Ordinal);
+            Assert.True(h.Size > 0);
+        });
+        var baritone = db.Hashes.Single(h => h.FileName == "baritone-standalone-fabric-1.20.0.jar");
+        Assert.Equal("baritone", baritone.ClientId);
+        Assert.Equal("v1.20.0", baritone.Version);
 
         var groza = db.Clients.Single(c => c.Id == "groza");
         Assert.Equal(new[] { "Groza" }, groza.AmbiguousVariants);
@@ -230,6 +245,17 @@ public sealed class MatcherTests
         Assert.Equal(SignatureMatchKind.PossibleMatch, tools.Single().Kind);
         var groza = Builtin.Match([Fact(@"C:\Users\p\Downloads\GrozaClient.jar")]);
         Assert.Equal(SignatureMatchKind.NameMatch, groza.Single().Kind); // the specific spelling
+    }
+
+    [Fact]
+    public void A_real_release_hash_in_the_built_in_database_is_an_exact_match_whatever_the_file_is_called()
+    {
+        var db = DatabaseLoader.Embedded();
+        var known = db.Hashes.Single(h => h.FileName == "3arthh4ck-1.8.5-release.jar");
+        var facts = new[] { Fact(@"C:\Users\p\AppData\Roaming\.minecraft\mods\optifine-fix.jar", sha: Sha256Hash.Parse(known.Sha256)) };
+        var m = Assert.Single(new Matcher(db).Match(facts));
+        Assert.Equal(SignatureMatchKind.ExactHashMatch, m.Kind);
+        Assert.Equal("3arthh4ck", m.ClientId);
     }
 
     [Fact]

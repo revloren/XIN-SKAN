@@ -1,4 +1,689 @@
 {
   "schema": 1,
-  "entries": []
+  "entries": [
+    {
+      "sha256": "6044d08949f4bf75c24e3b513207a31e476c965a8f12e6f16b75b5bf7f8351d7",
+      "clientId": "baritone",
+      "fileName": "baritone-api-1.20.0.jar",
+      "version": "v1.20.0",
+      "size": 629030,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.20.0 от 2026-09-23; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-api-1.20.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "49adfc063cfbfd0b6f08e9d814359807baa2d1768c0d39d6c5968268547cbca6",
+      "clientId": "baritone",
+      "fileName": "baritone-api-fabric-1.20.0.jar",
+      "version": "v1.20.0",
+      "size": 4821430,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.20.0 от 2026-09-23; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-api-fabric-1.20.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "67037ea5c0e98e8e28b324e101bdeeb73e744118dbdb9dbf928e36f505d16d3b",
+      "clientId": "baritone",
+      "fileName": "baritone-api-forge-1.20.0.jar",
+      "version": "v1.20.0",
+      "size": 4829584,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.20.0 от 2026-09-23; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-api-forge-1.20.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "b6e8ac6de02d589c891039297d1173a64ad254aa34f097055795bbe526b057b0",
+      "clientId": "baritone",
+      "fileName": "baritone-api-neoforge-1.20.0.jar",
+      "version": "v1.20.0",
+      "size": 4829672,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.20.0 от 2026-09-23; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-api-neoforge-1.20.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "7978f03fc51c281e3cee45ceb634046becc9ec39c7b5db4df3463a7123a89c13",
+      "clientId": "baritone",
+      "fileName": "baritone-standalone-1.20.0.jar",
+      "version": "v1.20.0",
+      "size": 550974,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.20.0 от 2026-09-23; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-standalone-1.20.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "63d78d9f6cd2e66983b5b4e0d6c79f5c52a9d3321b0fcd2117f5856ce7276dc7",
+      "clientId": "baritone",
+      "fileName": "baritone-standalone-fabric-1.20.0.jar",
+      "version": "v1.20.0",
+      "size": 4743374,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.20.0 от 2026-09-23; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-standalone-fabric-1.20.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "bbfa7a898ad05d61f6e1fffebd1721cf5414c9fc54ec9e8094b1c69f3b5a0c43",
+      "clientId": "baritone",
+      "fileName": "baritone-standalone-forge-1.20.0.jar",
+      "version": "v1.20.0",
+      "size": 4751525,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.20.0 от 2026-09-23; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-standalone-forge-1.20.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "e8efc21cd2dd134aeff9d09f024fa04b2390a94ba60cbcc7bde13f31c9c91fdb",
+      "clientId": "baritone",
+      "fileName": "baritone-standalone-neoforge-1.20.0.jar",
+      "version": "v1.20.0",
+      "size": 4751613,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.20.0 от 2026-09-23; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-standalone-neoforge-1.20.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "22a3ef366fc6d78fb2e0eaa265c7e25bb5a9b2123f4146cae34122c6f80b9a5c",
+      "clientId": "baritone",
+      "fileName": "baritone-unoptimized-1.20.0.jar",
+      "version": "v1.20.0",
+      "size": 869766,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.20.0 от 2026-09-23; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-unoptimized-1.20.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "7836a235f37339897425ec303b5c0d7f3cf9d99dbdaa1952240b5099aafd8776",
+      "clientId": "baritone",
+      "fileName": "baritone-unoptimized-fabric-1.20.0.jar",
+      "version": "v1.20.0",
+      "size": 5061920,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.20.0 от 2026-09-23; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-unoptimized-fabric-1.20.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "f418a1c9a439f17c83ca8952e8bbd056bf909257a319d0407bda991ccb094fdf",
+      "clientId": "baritone",
+      "fileName": "baritone-unoptimized-forge-1.20.0.jar",
+      "version": "v1.20.0",
+      "size": 5070501,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.20.0 от 2026-09-23; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-unoptimized-forge-1.20.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "befae152267588dfad4144daefe1cf19045b5b91f9477d95b2a5c3ff22cdec85",
+      "clientId": "baritone",
+      "fileName": "baritone-unoptimized-neoforge-1.20.0.jar",
+      "version": "v1.20.0",
+      "size": 5070589,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.20.0 от 2026-09-23; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-unoptimized-neoforge-1.20.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "edf6235d7925c15ebf1bdc8ebb03654dc548e23e6299ff1ca5137de7f31e2fc7",
+      "clientId": "baritone",
+      "fileName": "baritone-api-1.12.0.jar",
+      "version": "v1.12.0",
+      "size": 600558,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.12.0 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-api-1.12.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "b3b36aa3d74c4df053d147ee9254b70c15f4d1e5e11a2766141a146eea3bd60b",
+      "clientId": "baritone",
+      "fileName": "baritone-api-fabric-1.12.0.jar",
+      "version": "v1.12.0",
+      "size": 4810436,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.12.0 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-api-fabric-1.12.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "159d83fa657c87a513aecddc4fb6b4d12ce7809a6b1cf6072056974b63e8dca0",
+      "clientId": "baritone",
+      "fileName": "baritone-api-forge-1.12.0.jar",
+      "version": "v1.12.0",
+      "size": 4825007,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.12.0 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-api-forge-1.12.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "2c2fdc342bfe6ba5bd5fe9656188e27e3ea89371c77163f05050807e59ee443c",
+      "clientId": "baritone",
+      "fileName": "baritone-api-neoforge-1.12.0.jar",
+      "version": "v1.12.0",
+      "size": 4825068,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.12.0 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-api-neoforge-1.12.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "4b084d054ad282c51eca8b748d4321c73b9f444bb5a3d788ad39a26e0e677af7",
+      "clientId": "baritone",
+      "fileName": "baritone-standalone-1.12.0.jar",
+      "version": "v1.12.0",
+      "size": 520431,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.12.0 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-standalone-1.12.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "b7559a9767c95aeafb7d932c7570fc79cf66c1e5ee74182d78787dad8a480110",
+      "clientId": "baritone",
+      "fileName": "baritone-standalone-fabric-1.12.0.jar",
+      "version": "v1.12.0",
+      "size": 4730398,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.12.0 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-standalone-fabric-1.12.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "f38b715005c31628c716894434d564adec65d765985e676d4a2a98c787314be8",
+      "clientId": "baritone",
+      "fileName": "baritone-standalone-forge-1.12.0.jar",
+      "version": "v1.12.0",
+      "size": 4747005,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.12.0 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-standalone-forge-1.12.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "b66427db0f40cd65ee24921908ebbf9c3612d4150362f600f2d17aed194db855",
+      "clientId": "baritone",
+      "fileName": "baritone-standalone-neoforge-1.12.0.jar",
+      "version": "v1.12.0",
+      "size": 4747066,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.12.0 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-standalone-neoforge-1.12.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "be75ec6ad14a98db0db4aba03c5930413f7dc6f3d44694f92c38d859112b349e",
+      "clientId": "baritone",
+      "fileName": "baritone-unoptimized-1.12.0.jar",
+      "version": "v1.12.0",
+      "size": 834942,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.12.0 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-unoptimized-1.12.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "a5e64ea7d196f7305666b52b2561fff5e8239c0d439ed31fc067ca29113e6911",
+      "clientId": "baritone",
+      "fileName": "baritone-unoptimized-fabric-1.12.0.jar",
+      "version": "v1.12.0",
+      "size": 5046549,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.12.0 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-unoptimized-fabric-1.12.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "2e4dee5cebe694065d2b1c8e842c19e3b26e0312071fe48f6a5458d7e102d357",
+      "clientId": "baritone",
+      "fileName": "baritone-unoptimized-forge-1.12.0.jar",
+      "version": "v1.12.0",
+      "size": 5064608,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.12.0 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-unoptimized-forge-1.12.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "4ad2aa21a9a88683ef5c2158ee73eef902be159bbac44c0bd853f5fd708821bf",
+      "clientId": "baritone",
+      "fileName": "baritone-unoptimized-neoforge-1.12.0.jar",
+      "version": "v1.12.0",
+      "size": 5064669,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.12.0 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-unoptimized-neoforge-1.12.0.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "a030f6d4d3b2e83d7bd2e247f7b9fda646ce171be86495c832bb475cd5c135b5",
+      "clientId": "baritone",
+      "fileName": "baritone-api-1.11.3.jar",
+      "version": "v1.11.3",
+      "size": 600613,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.11.3 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-api-1.11.3.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "f9a9b17a41d7d7ad22c759058b14fd01e3319663282e66f99e18153237fa6767",
+      "clientId": "baritone",
+      "fileName": "baritone-api-fabric-1.11.3.jar",
+      "version": "v1.11.3",
+      "size": 4810562,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.11.3 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-api-fabric-1.11.3.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "0d4459811668e9f69aeb2f7d75b83693db562fe5057ef6927f23c637b8b2e8ee",
+      "clientId": "baritone",
+      "fileName": "baritone-api-forge-1.11.3.jar",
+      "version": "v1.11.3",
+      "size": 4825204,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.11.3 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-api-forge-1.11.3.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "7f9f40952c49e78388e4e9ceaa6fd91a5b662238e06c997b3de5438177f99d8d",
+      "clientId": "baritone",
+      "fileName": "baritone-api-neoforge-1.11.3.jar",
+      "version": "v1.11.3",
+      "size": 4825266,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.11.3 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-api-neoforge-1.11.3.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "4621d6e415f0b52d683c9d7a80dfa35769f2c5f9606322c52b617e1c04afd290",
+      "clientId": "baritone",
+      "fileName": "baritone-standalone-1.11.3.jar",
+      "version": "v1.11.3",
+      "size": 520351,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.11.3 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-standalone-1.11.3.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "e9d555e53e2bbef4b3f39ae31effd9970763aee6e870e815d6a3e268f34e73f6",
+      "clientId": "baritone",
+      "fileName": "baritone-standalone-fabric-1.11.3.jar",
+      "version": "v1.11.3",
+      "size": 4730355,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.11.3 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-standalone-fabric-1.11.3.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "a65b0c6ddebd2a85b10ce866dc89dc4a3afd593d3eea811ba41f649e79a8467e",
+      "clientId": "baritone",
+      "fileName": "baritone-standalone-forge-1.11.3.jar",
+      "version": "v1.11.3",
+      "size": 4746991,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.11.3 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-standalone-forge-1.11.3.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "a6b3bb3df1a1bdead9ca86035c8778c379718aaafeac90d1a6348bdcbf93159d",
+      "clientId": "baritone",
+      "fileName": "baritone-standalone-neoforge-1.11.3.jar",
+      "version": "v1.11.3",
+      "size": 4747053,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.11.3 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-standalone-neoforge-1.11.3.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "6a0846386c8e19745d79f685eff042ca1c511b53a19b541526fc08c813d2619a",
+      "clientId": "baritone",
+      "fileName": "baritone-unoptimized-1.11.3.jar",
+      "version": "v1.11.3",
+      "size": 834954,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.11.3 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-unoptimized-1.11.3.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "02239bff27955bd842c2e132c2860689bc1190f2ca37b7f379213d8874d75903",
+      "clientId": "baritone",
+      "fileName": "baritone-unoptimized-fabric-1.11.3.jar",
+      "version": "v1.11.3",
+      "size": 5046582,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.11.3 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-unoptimized-fabric-1.11.3.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "2084634bda7e7724086fbb3a4b7bb9dc9e4e858e50aaf6d55e9d9216120fcf6e",
+      "clientId": "baritone",
+      "fileName": "baritone-unoptimized-forge-1.11.3.jar",
+      "version": "v1.11.3",
+      "size": 5064744,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.11.3 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-unoptimized-forge-1.11.3.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "538161c3dbca9f5c3102eb7ac3cf39b84492e71c900b0e3a94ab216ee36816a3",
+      "clientId": "baritone",
+      "fileName": "baritone-unoptimized-neoforge-1.11.3.jar",
+      "version": "v1.11.3",
+      "size": 5064806,
+      "source": {
+        "title": "GitHub Releases cabaletta/baritone, выпуск v1.11.3 от 2026-09-01; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-unoptimized-neoforge-1.11.3.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "d1b46d449915ecdb5d41c0bbb18714ba1facb495d7de0459d8f7487121a67fe6",
+      "clientId": "bleachhack",
+      "fileName": "bleachhack-1.17.1.jar",
+      "version": "1.2.6",
+      "size": 868108,
+      "source": {
+        "title": "GitHub Releases BleachDev/BleachHack, выпуск 1.2.6 от 2022-03-13; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/BleachDev/BleachHack/releases/download/1.2.6/bleachhack-1.17.1.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "45b1669a4422e35a3badaed31c8e15a496684c21e32758611f3c6feeac684354",
+      "clientId": "bleachhack",
+      "fileName": "bleachhack-1.18.2.jar",
+      "version": "1.2.6",
+      "size": 866807,
+      "source": {
+        "title": "GitHub Releases BleachDev/BleachHack, выпуск 1.2.6 от 2022-03-13; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/BleachDev/BleachHack/releases/download/1.2.6/bleachhack-1.18.2.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "effe59186121bb283e7953ad0cec2ddcea4ba803f398c97ae1973b8a305621ad",
+      "clientId": "bleachhack",
+      "fileName": "bleachhack-1.19.1.jar",
+      "version": "1.2.6",
+      "size": 850610,
+      "source": {
+        "title": "GitHub Releases BleachDev/BleachHack, выпуск 1.2.6 от 2022-03-13; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/BleachDev/BleachHack/releases/download/1.2.6/bleachhack-1.19.1.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "bffbdfb0f6e1e8e3eeeefb1a9d4d54e435606285a0d249ac39e56310769661a7",
+      "clientId": "bleachhack",
+      "fileName": "bleachhack-1.19.3.jar",
+      "version": "1.2.6",
+      "size": 1176950,
+      "source": {
+        "title": "GitHub Releases BleachDev/BleachHack, выпуск 1.2.6 от 2022-03-13; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/BleachDev/BleachHack/releases/download/1.2.6/bleachhack-1.19.3.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "96c69c3658565fc9dada2c39d361e9061ad8c4fee1e3d62752a823e9f188b243",
+      "clientId": "bleachhack",
+      "fileName": "bleachhack-1.19.4.jar",
+      "version": "1.2.6",
+      "size": 1180919,
+      "source": {
+        "title": "GitHub Releases BleachDev/BleachHack, выпуск 1.2.6 от 2022-03-13; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/BleachDev/BleachHack/releases/download/1.2.6/bleachhack-1.19.4.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "b257863e4e2d9a1e4205b3c1a1dd9368a2a6038ae79e50f0393f16421be2fdcb",
+      "clientId": "bleachhack",
+      "fileName": "bleachhack-1.19.jar",
+      "version": "1.2.6",
+      "size": 850228,
+      "source": {
+        "title": "GitHub Releases BleachDev/BleachHack, выпуск 1.2.6 от 2022-03-13; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/BleachDev/BleachHack/releases/download/1.2.6/bleachhack-1.19.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "12326e656878f1c09e88f684e10ada335236681e3360a3a9dd094135ce05bec7",
+      "clientId": "bleachhack",
+      "fileName": "bleachhack-1.20.4.jar",
+      "version": "1.2.6",
+      "size": 1168727,
+      "source": {
+        "title": "GitHub Releases BleachDev/BleachHack, выпуск 1.2.6 от 2022-03-13; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/BleachDev/BleachHack/releases/download/1.2.6/bleachhack-1.20.4.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "91f16a43f85db7726e2694df12db7bc85156e9ba8047fe6eedfefda37f244ed3",
+      "clientId": "bleachhack",
+      "fileName": "bleachhack-1.17.1.jar",
+      "version": "1.2.5",
+      "size": 1494693,
+      "source": {
+        "title": "GitHub Releases BleachDev/BleachHack, выпуск 1.2.5 от 2021-12-21; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/BleachDev/BleachHack/releases/download/1.2.5/bleachhack-1.17.1.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "9c5d85a0fd41f6090d437dd49b7ecb9c3b314b4bac21012cf4487e72d33417c5",
+      "clientId": "bleachhack",
+      "fileName": "bleachhack-1.18.1.jar",
+      "version": "1.2.5",
+      "size": 1493941,
+      "source": {
+        "title": "GitHub Releases BleachDev/BleachHack, выпуск 1.2.5 от 2021-12-21; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/BleachDev/BleachHack/releases/download/1.2.5/bleachhack-1.18.1.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "5716bc3d651e87495ec913587481d0f2ce2e68b6819d276ee51daa576c57b55b",
+      "clientId": "bleachhack",
+      "fileName": "bleachhack-1.17.1.jar",
+      "version": "1.2.4",
+      "size": 1622778,
+      "source": {
+        "title": "GitHub Releases BleachDev/BleachHack, выпуск 1.2.4 от 2021-12-05; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/BleachDev/BleachHack/releases/download/1.2.4/bleachhack-1.17.1.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "443fa741416a106a597631fd3661287c1b75698a9271f30de6253df717680621",
+      "clientId": "bleachhack",
+      "fileName": "bleachhack-1.18.1.jar",
+      "version": "1.2.4",
+      "size": 1621885,
+      "source": {
+        "title": "GitHub Releases BleachDev/BleachHack, выпуск 1.2.4 от 2021-12-05; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/BleachDev/BleachHack/releases/download/1.2.4/bleachhack-1.18.1.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "d52dee5b488ff2bd6e85cfea3b5c72238960d56d579b3243810b768c6486d75b",
+      "clientId": "bleachhack",
+      "fileName": "bleachhack-1.18.jar",
+      "version": "1.2.4",
+      "size": 1621883,
+      "source": {
+        "title": "GitHub Releases BleachDev/BleachHack, выпуск 1.2.4 от 2021-12-05; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/BleachDev/BleachHack/releases/download/1.2.4/bleachhack-1.18.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "76315e9082d7feae78e5a979537cb15491e33364ab9be90c74a65e132066521f",
+      "clientId": "kami-blue",
+      "fileName": "kamiblue-2.04.21-3c581c22b.jar",
+      "version": "2.04.21-3c581c22b",
+      "size": 8863924,
+      "source": {
+        "title": "GitHub Releases kami-blue/client, выпуск 2.04.21-3c581c22b от 2021-04-21; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/kami-blue/client/releases/download/2.04.21-3c581c22b/kamiblue-2.04.21-3c581c22b.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "23174cdcc44ddbdbcc5934422ad79acf1ea1da85cdebff706dba27bf3e63db3f",
+      "clientId": "kami-blue",
+      "fileName": "kamiblue-2.04.01.jar",
+      "version": "2.04.01",
+      "size": 8817515,
+      "source": {
+        "title": "GitHub Releases kami-blue/client, выпуск 2.04.01 от 2021-04-02; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/kami-blue/client/releases/download/2.04.01/kamiblue-2.04.01.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "0b865c24503e29a151b855c22cf4d9aaad52edccc89bb9fd040572a02aee7972",
+      "clientId": "kami-blue",
+      "fileName": "kamiblue-2.03.01.jar",
+      "version": "2.03.01",
+      "size": 8839920,
+      "source": {
+        "title": "GitHub Releases kami-blue/client, выпуск 2.03.01 от 2021-03-02; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/kami-blue/client/releases/download/2.03.01/kamiblue-2.03.01.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "3c3613ed5696d11553acedde3cdc841995b93f8545774400eeab447a5e8cf9d9",
+      "clientId": "salhack",
+      "fileName": "salhack-github-2.05-release.jar",
+      "version": "2.05",
+      "size": 7300013,
+      "source": {
+        "title": "GitHub Releases ionar2/spidermod (репозиторий ionar2/salhack переименован в ionar2/spidermod), выпуск 2.05 от 2020-05-28; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/ionar2/spidermod/releases/download/2.05/salhack-github-2.05-release.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "cb1f6e1c8f0256e2a638f8006c1775351b13952dc9e08eb0885bc0a032530530",
+      "clientId": "salhack",
+      "fileName": "salhack-github-2.04-release.jar",
+      "version": "2.04.3",
+      "size": 7255258,
+      "source": {
+        "title": "GitHub Releases ionar2/spidermod (репозиторий ionar2/salhack переименован в ionar2/spidermod), выпуск 2.04.3 от 2020-05-25; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/ionar2/spidermod/releases/download/2.04.3/salhack-github-2.04-release.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "aefa091e26f4fa5a9edcf956df7626932663f85d62b2887c5de0e72236b3fe88",
+      "clientId": "salhack",
+      "fileName": "salhack-github-2.04-release.jar",
+      "version": "2.04.2",
+      "size": 7253070,
+      "source": {
+        "title": "GitHub Releases ionar2/spidermod (репозиторий ionar2/salhack переименован в ionar2/spidermod), выпуск 2.04.2 от 2020-05-25; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/ionar2/spidermod/releases/download/2.04.2/salhack-github-2.04-release.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "4dc4aa60efa151dbe57af74a1d6e5a913d4aaadf9ea2079558b2b99619b42220",
+      "clientId": "3arthh4ck",
+      "fileName": "3arthh4ck-1.8.5-release.jar",
+      "version": "1.8.5",
+      "size": 7910119,
+      "source": {
+        "title": "GitHub Releases 3arthqu4ke/3arthh4ck, выпуск 1.8.5 от 2022-09-30; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/3arthqu4ke/3arthh4ck/releases/download/1.8.5/3arthh4ck-1.8.5-release.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "d74c3703d67b9dfb7d091814617f77f255ef83ffe2966992e5a2cdf607f4279b",
+      "clientId": "3arthh4ck",
+      "fileName": "3arthh4ck-1.8.4-release.jar",
+      "version": "1.8.4",
+      "size": 7894957,
+      "source": {
+        "title": "GitHub Releases 3arthqu4ke/3arthh4ck, выпуск 1.8.4 от 2022-09-20; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/3arthqu4ke/3arthh4ck/releases/download/1.8.4/3arthh4ck-1.8.4-release.jar",
+        "checked": "2026-11-10"
+      }
+    },
+    {
+      "sha256": "2f4c54ffb42c97c3d4f27026b86536429cce62666f203f18ab71dce7726c9b25",
+      "clientId": "3arthh4ck",
+      "fileName": "3arthh4ck-1.8.3-release.jar",
+      "version": "1.8.3",
+      "size": 7890963,
+      "source": {
+        "title": "GitHub Releases 3arthqu4ke/3arthh4ck, выпуск 1.8.3 от 2022-09-08; файл скачан и посчитан в CI XIN SKAN, запуск 42761154386",
+        "url": "https://github.com/3arthqu4ke/3arthh4ck/releases/download/1.8.3/3arthh4ck-1.8.3-release.jar",
+        "checked": "2026-11-10"
+      }
+    }
+  ]
 }
