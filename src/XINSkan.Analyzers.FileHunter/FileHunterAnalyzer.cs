@@ -519,8 +519,11 @@ public sealed class FileHunterAnalyzer : IAnalyzer
         }
     }
 
-    private static void AddArchiveAttributes(Dictionary<string, string> attrs, ArchiveFacts a)
+    /// <summary>The attributes an archive's facts become in a File Hunter record (also used by tests on real JARs).</summary>
+    public static void AddArchiveAttributes(Dictionary<string, string> attrs, ArchiveFacts a)
     {
+        ArgumentNullException.ThrowIfNull(attrs);
+        ArgumentNullException.ThrowIfNull(a);
         attrs["Archive.Entries"] = a.DeclaredEntries.ToString(CultureInfo.InvariantCulture);
         attrs["Archive.Classes"] = a.ClassCount.ToString(CultureInfo.InvariantCulture);
         if (a.TopPackages.Count > 0)
@@ -565,6 +568,16 @@ public sealed class FileHunterAnalyzer : IAnalyzer
         if (a.NestedMods.Count > 0)
         {
             attrs["Jar.NestedMods"] = string.Join(", ", a.NestedMods.Take(20).Select(m => $"{m.Loader}:{m.Id ?? "?"}"));
+        }
+
+        if (a.FeatureClasses.Count > 0)
+        {
+            attrs["Jar.FeatureClasses"] = string.Join(", ", a.FeatureClasses);
+        }
+
+        if (a.ServerPlugin is not null)
+        {
+            attrs["Jar.ServerPlugin"] = a.ServerPlugin;
         }
     }
 

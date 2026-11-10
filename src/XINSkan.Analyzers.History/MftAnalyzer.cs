@@ -93,6 +93,9 @@ public sealed record HistoryOptions
     /// <summary>The Windows folder of the investigated system (Prefetch, Amcache, registry hives live under it).</summary>
     public string? WindowsFolder { get; init; }
 
+    /// <summary>How archives found in history sources (the Recycle Bin) are read; the same limits as File Hunter.</summary>
+    public XINSkan.Analyzers.FileHunter.Content.ArchiveLimits Archive { get; init; } = new();
+
     public static HistoryOptions From(XINSkan.Analyzers.FileHunter.FileHunterOptions fileHunter)
     {
         ArgumentNullException.ThrowIfNull(fileHunter);
@@ -104,6 +107,7 @@ public sealed record HistoryOptions
             CurrentProfile = fileHunter.CurrentProfile,
             TempFolders = fileHunter.TempFolders,
             ExtraRoots = fileHunter.ExtraRoots,
+            Archive = fileHunter.Archive,
 
             // C:\Windows\Temp is the system temp folder, so its parent is the Windows folder.
             WindowsFolder = fileHunter.TempFolders.Select(t => t.TrimEnd('\\', '/'))

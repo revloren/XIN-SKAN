@@ -18,6 +18,9 @@
         ],
         "packages": [
           "baritone"
+        ],
+        "dataPaths": [
+          "baritone/settings.txt"
         ]
       },
       "sources": [
@@ -28,6 +31,12 @@
         },
         {
           "title": "Исходный код Baritone: fabric/src/main/resources/fabric.mod.json (id \"baritone\"), forge/src/main/resources/META-INF/mods.toml (modId \"baritoe\" — так в исходнике), пакет baritone",
+          "url": "https://github.com/cabaletta/baritone",
+          "commit": "3ddc8652adaae1500e920d82e26026707a921566",
+          "checked": "2026-11-10"
+        },
+        {
+          "title": "Исходный код Baritone: api/utils/SettingsUtil.java (папка игры/baritone/settings.txt)",
           "url": "https://github.com/cabaletta/baritone",
           "commit": "3ddc8652adaae1500e920d82e26026707a921566",
           "checked": "2026-11-10"
@@ -71,6 +80,9 @@
         ],
         "packages": [
           "net.ccbluex.liquidbounce"
+        ],
+        "dataPaths": [
+          "LiquidBounce/modules.json"
         ]
       },
       "sources": [
@@ -81,6 +93,12 @@
         },
         {
           "title": "Исходный код LiquidBounce: src/main/resources/fabric.mod.json (id \"liquidbounce\"), пакет net.ccbluex.liquidbounce",
+          "url": "https://github.com/CCBlueX/LiquidBounce",
+          "commit": "48c4d482205ab973bbb3aea1945e597becbfc8f7",
+          "checked": "2026-11-10"
+        },
+        {
+          "title": "Исходный код LiquidBounce: config/ConfigSystem.kt (rootFolder = папка игры/LiquidBounce), config/types/Config.kt (<имя>.json), ModuleManager.kt (root \"modules\")",
           "url": "https://github.com/CCBlueX/LiquidBounce",
           "commit": "48c4d482205ab973bbb3aea1945e597becbfc8f7",
           "checked": "2026-11-10"
@@ -108,6 +126,9 @@
         ],
         "entrypoints": [
           "net.wurstclient.WurstInitializer"
+        ],
+        "dataPaths": [
+          "wurst/enabled-hacks.json"
         ]
       },
       "sources": [
@@ -118,6 +139,12 @@
         },
         {
           "title": "Исходный код Wurst7: src/main/resources/fabric.mod.json (id \"wurst\", name \"Wurst Client\"), пакет net.wurstclient",
+          "url": "https://github.com/Wurst-Imperium/Wurst7",
+          "commit": "ec0e22d2c5a472faacaa389f02dcc1e3c9a383d0",
+          "checked": "2026-11-10"
+        },
+        {
+          "title": "Исходный код Wurst: src/main/java/net/wurstclient/WurstClient.java (папка wurst в папке игры, enabled-hacks.json)",
           "url": "https://github.com/Wurst-Imperium/Wurst7",
           "commit": "ec0e22d2c5a472faacaa389f02dcc1e3c9a383d0",
           "checked": "2026-11-10"
@@ -1798,6 +1825,9 @@
         ],
         "packages": [
           "me.ionar.salhack"
+        ],
+        "dataPaths": [
+          "SalHack/Modules"
         ]
       },
       "sources": [
@@ -1808,6 +1838,12 @@
         },
         {
           "title": "Исходный код SalHack: src/main/resources/mcmod.info (modid \"salhack\"), пакет me.ionar.salhack",
+          "url": "https://github.com/ionar2/salhack",
+          "commit": "71540547486c11985d6533df45c71a6ad5b22841",
+          "checked": "2026-11-10"
+        },
+        {
+          "title": "Исходный код SalHack: managers/DirectoryManager.java (SalHack/Modules в рабочей папке игры)",
           "url": "https://github.com/ionar2/salhack",
           "commit": "71540547486c11985d6533df45c71a6ad5b22841",
           "checked": "2026-11-10"
@@ -2156,6 +2192,9 @@
         ],
         "entrypoints": [
           "meteordevelopment.meteorclient.MeteorClient"
+        ],
+        "dataPaths": [
+          "meteor-client/modules.nbt"
         ]
       },
       "sources": [
@@ -2166,6 +2205,12 @@
         },
         {
           "title": "Исходный код Meteor Client: src/main/resources/fabric.mod.json (id \"meteor-client\"), пакет meteordevelopment.meteorclient",
+          "url": "https://github.com/MeteorDevelopment/meteor-client",
+          "commit": "81448b4b2e3b1bae83df60e836c13109ab2d8a1d",
+          "checked": "2026-11-10"
+        },
+        {
+          "title": "Исходный код Meteor Client: MeteorClient.java (FOLDER = папка игры/meteor-client), systems/System.java (<имя>.nbt), Modules.java (имя modules)",
           "url": "https://github.com/MeteorDevelopment/meteor-client",
           "commit": "81448b4b2e3b1bae83df60e836c13109ab2d8a1d",
           "checked": "2026-11-10"
@@ -2278,6 +2323,10 @@
         ],
         "entrypoints": [
           "org.bleachhack.BleachHack"
+        ],
+        "dataPaths": [
+          "bleach/modules.json",
+          "bleach/clickgui.json"
         ]
       },
       "sources": [
@@ -2288,6 +2337,12 @@
         },
         {
           "title": "Исходный код BleachHack: src/main/resources/fabric.mod.json (id \"bleachhack\"), пакет org.bleachhack",
+          "url": "https://github.com/BleachDev/BleachHack",
+          "commit": "2a30d34be73aa62484bb1ede97a7f657044fe333",
+          "checked": "2026-11-10"
+        },
+        {
+          "title": "Исходный код BleachHack: util/io/BleachFileHelper.java (modules.json, clickgui.json), BleachFileMang.java (папка игры/bleach)",
           "url": "https://github.com/BleachDev/BleachHack",
           "commit": "2a30d34be73aa62484bb1ede97a7f657044fe333",
           "checked": "2026-11-10"
@@ -2334,11 +2389,20 @@
         ],
         "packages": [
           "org.kamiblue.client"
+        ],
+        "dataPaths": [
+          "kamiblue/config/modules"
         ]
       },
       "sources": [
         {
           "title": "Исходный код KAMI Blue: src/main/resources/mcmod.info (modid \"kamiblue\"), пакет org.kamiblue.client",
+          "url": "https://github.com/kami-blue/client",
+          "commit": "5a9e51a124cf18ec2e73b63a8dc2e2fbb0d3a43a",
+          "checked": "2026-11-10"
+        },
+        {
+          "title": "Исходный код KAMI Blue: KamiMod.kt (DIRECTORY = \"kamiblue/\"), setting/ModuleConfig.kt (config/modules)",
           "url": "https://github.com/kami-blue/client",
           "commit": "5a9e51a124cf18ec2e73b63a8dc2e2fbb0d3a43a",
           "checked": "2026-11-10"
@@ -2363,11 +2427,20 @@
         ],
         "packages": [
           "me.earth.earthhack"
+        ],
+        "dataPaths": [
+          "earthhack/modules"
         ]
       },
       "sources": [
         {
           "title": "Исходный код 3arthh4ck: src/main/resources/mcmod.info (modid \"earthhack\"), пакет me.earth.earthhack",
+          "url": "https://github.com/3arthqu4ke/3arthh4ck",
+          "commit": "211660641696fbd43edadc37471cdcb21dfa392d",
+          "checked": "2026-11-10"
+        },
+        {
+          "title": "Исходный код 3arthh4ck: impl/managers/config/helpers/AbstractConfigHelper.java (\"earthhack\" + путь), ModuleConfigHelper.java (путь modules)",
           "url": "https://github.com/3arthqu4ke/3arthh4ck",
           "commit": "211660641696fbd43edadc37471cdcb21dfa392d",
           "checked": "2026-11-10"

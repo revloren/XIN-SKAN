@@ -177,30 +177,36 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
                 var lister = new AuditingDirectoryLister(platform.Lister, audit);
                 var files = new AuditingFileSource(platform.Files, audit, platform.FileAccess);
                 var machine = new AuditingRegistryView(platform.Machine, audit);
+
+                // The signature database first: its feature catalog tells the archive reader which class names to keep.
+                var signatures = LoadSignatures(request.SignatureUpdateFolder ?? Path.Combine(AppContext.BaseDirectory, "signatures"), files, audit);
+                var hunter = signatures.Database is { } sdb
+                    ? request.FileHunter with { Archive = request.FileHunter.Archive with { FeatureVocabulary = sdb.FeatureVocabulary } }
+                    : request.FileHunter;
                 // File Hunter first (what exists now), then history; the MFT pass leaves its path index for later modules.
                 var history = new VolumeHistoryCache();
-                var options = HistoryOptions.From(request.FileHunter);
+                var options = HistoryOptions.From(hunter);
                 var locked = new ProtectedFileSource(files, new AuditingVolumeOpener(platform.Volumes, audit), history);
                 var userHives = new UserHives(options, lister, locked, machine);
                 IAnalyzer[] analyzers =
                 [
-                    new FileHunterAnalyzer(request.FileHunter, lister, files, platform.Signatures),
-                    new MftAnalyzer(HistoryOptions.From(request.FileHunter), new AuditingVolumeOpener(platform.Volumes, audit), history),
-                    new UsnAnalyzer(HistoryOptions.From(request.FileHunter), new AuditingJournalSource(platform.Journal, audit), history),
-                    new RecycleBinAnalyzer(HistoryOptions.From(request.FileHunter), lister, files),
-                    new MinecraftLogsAnalyzer(HistoryOptions.From(request.FileHunter), lister, files, TimeZoneInfo.Local),
-                    new LnkAnalyzer(HistoryOptions.From(request.FileHunter), lister, files),
-                    new JumpListAnalyzer(HistoryOptions.From(request.FileHunter), lister, files),
+                    new FileHunterAnalyzer(hunter, lister, files, platform.Signatures),
+                    new MftAnalyzer(HistoryOptions.From(hunter), new AuditingVolumeOpener(platform.Volumes, audit), history),
+                    new UsnAnalyzer(HistoryOptions.From(hunter), new AuditingJournalSource(platform.Journal, audit), history),
+                    new RecycleBinAnalyzer(HistoryOptions.From(hunter), lister, files),
+                    new MinecraftLogsAnalyzer(HistoryOptions.From(hunter), lister, files, TimeZoneInfo.Local),
+                    new LnkAnalyzer(HistoryOptions.From(hunter), lister, files),
+                    new JumpListAnalyzer(HistoryOptions.From(hunter), lister, files),
                     new ShellBagsAnalyzer(new AuditingShellBagSource(platform.ShellBags, audit), new OtherUserShellBags(userHives)),
-                    new PrefetchAnalyzer(HistoryOptions.From(request.FileHunter), lister, files, platform.VolumeDirectory, machine),
-                    new BamAnalyzer(HistoryOptions.From(request.FileHunter), machine, platform.VolumeDirectory),
+                    new PrefetchAnalyzer(HistoryOptions.From(hunter), lister, files, platform.VolumeDirectory, machine),
+                    new BamAnalyzer(HistoryOptions.From(hunter), machine, platform.VolumeDirectory),
                     new AmcacheAnalyzer(options, locked, platform.VolumeDirectory),
                     new UserAssistAnalyzer(options, new AuditingRegistryView(platform.CurrentUser, audit, "HKCU"), userHives, platform.VolumeDirectory),
                     new MinecraftIntegrityAnalyzer(
-                        new MinecraftOptions { UsersRoot = request.FileHunter.UsersRoot, CurrentProfile = request.FileHunter.CurrentProfile, ExtraRoots = request.FileHunter.ExtraRoots },
+                        new MinecraftOptions { UsersRoot = hunter.UsersRoot, CurrentProfile = hunter.CurrentProfile, ExtraRoots = hunter.ExtraRoots },
                         lister,
                         files),
-                    new EventLogAnalyzer(HistoryOptions.From(request.FileHunter), new AuditingEventLogSource(platform.EventLogs, audit), platform.VolumeDirectory),
+                    new EventLogAnalyzer(HistoryOptions.From(hunter), new AuditingEventLogSource(platform.EventLogs, audit), platform.VolumeDirectory),
                 ];
 
                 var runner = new InvestigationRunner(counting, permissions, time, progress);
@@ -208,7 +214,7 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
                 written = counting.Evidence;
 
                 // Correlation reads only what the analyzers wrote; a cancelled run is correlated as far as it got.
-                correlation = await CorrelateAsync(id, started, store, counting, audit, progress, run.Cancelled, request.SignatureUpdateFolder ?? Path.Combine(AppContext.BaseDirectory, "signatures"), files).ConfigureAwait(false);
+                correlation = await CorrelateAsync(id, started, store, counting, audit, progress, run.Cancelled, signatures).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -238,30 +244,49 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
         return new InvestigationOutcome(id, output.Root, run, written, manifest, selfCheck, location, permissions) { Correlation = correlation };
     }
 
-    private async Task<CorrelationResult> CorrelateAsync(Ulid id, DateTimeOffset started, IInvestigationSink store, CountingSink counting, AuditLogger audit, IProgress<ModuleProgress>? progress, bool cancelled, string updateFolder, IFileSource files)
+    private sealed record LoadedSignatures(SignatureDatabase? Database, SignatureDatabaseInfo? Info, Limitation? Limitation);
+
+    /// <summary>The built-in database, or a signed update; a database that cannot be loaded is a limitation, not a failure.</summary>
+    private static LoadedSignatures LoadSignatures(string updateFolder, IFileSource files, AuditLogger audit)
     {
-        var facts = counting.Facts;
-        progress?.Report(new ModuleProgress("correlation", ModuleState.Running, $"Корреляция {facts.Count:N0} записей…"));
-        var clock = System.Diagnostics.Stopwatch.StartNew();
-        // The signature database is loaded on its own: if it cannot be read, correlation still runs without it.
-        IReadOnlyList<SignatureMatch> matches = [];
-        SignatureDatabaseInfo? dbInfo = null;
-        Limitation? dbLimitation = null;
         try
         {
             var loaded = DatabaseLoader.Load(updateFolder, path => ReadSmall(files, path), TrustedKeys.Default);
             var db = loaded.Database;
             audit.Record("signature-database", db.Origin, "read-only", "ok",
-                $"version {db.Manifest.Version}; clients {db.Clients.Count} (verified {db.Clients.Count(c => c.Status == "verified")}); hashes {db.Hashes.Count}; {string.Join(" ", loaded.Notes)}");
-            matches = new Matcher(db).Match(facts);
-            dbInfo = db.Info() with { Problems = [.. db.Problems, .. loaded.Notes] };
+                $"version {db.Manifest.Version}; clients {db.Clients.Count} (verified {db.Clients.Count(c => c.Status == "verified")}); hashes {db.Hashes.Count}; features {db.Features.Count}; {string.Join(" ", loaded.Notes)}");
+            return new LoadedSignatures(db, db.Info() with { Problems = [.. db.Problems, .. loaded.Notes] }, null);
         }
-#pragma warning disable CA1031 // A broken database must not cost the correlation of the collected evidence.
+#pragma warning disable CA1031 // A broken database must not cost the investigation or the correlation of the collected evidence.
         catch (Exception ex)
 #pragma warning restore CA1031
         {
             audit.Record("signature-database", "embedded", "read-only", "error", $"{ex.GetType().Name}: {ex.Message}");
-            dbLimitation = new Limitation("SIG.UNAVAILABLE", $"База клиентов не загружена ({ex.Message}): совпадений с ней нет, уровень High невозможен.");
+            return new LoadedSignatures(null, null, new Limitation("SIG.UNAVAILABLE", $"База клиентов не загружена ({ex.Message}): совпадений с ней нет, уровень High невозможен."));
+        }
+    }
+
+    private async Task<CorrelationResult> CorrelateAsync(Ulid id, DateTimeOffset started, IInvestigationSink store, CountingSink counting, AuditLogger audit, IProgress<ModuleProgress>? progress, bool cancelled, LoadedSignatures signatures)
+    {
+        var facts = counting.Facts;
+        progress?.Report(new ModuleProgress("correlation", ModuleState.Running, $"Корреляция {facts.Count:N0} записей…"));
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        IReadOnlyList<SignatureMatch> matches = [];
+        var dbInfo = signatures.Info;
+        var dbLimitation = signatures.Limitation;
+        try
+        {
+            if (signatures.Database is { } db)
+            {
+                matches = new Matcher(db).Match(facts);
+            }
+        }
+#pragma warning disable CA1031 // A defect in matching must not cost the correlation of the collected evidence.
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            audit.Record("signature-match-failed", "evidence", "read-only", "error", $"{ex.GetType().Name}: {ex.Message}");
+            dbLimitation = new Limitation("SIG.MATCH_FAILED", $"Сопоставление с базой клиентов не выполнено ({ex.Message}): совпадений нет, уровень High невозможен.");
         }
 
         CorrelationResult result;

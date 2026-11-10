@@ -11,13 +11,14 @@ namespace XINSkan.SignaturesTests;
 /// <summary>Bundles built in memory: data files, a manifest with their hashes, a signature.</summary>
 internal static class Bundle
 {
-    public static Dictionary<string, byte[]> Make(string version, object clients, object? hashes = null, object? aliases = null)
+    public static Dictionary<string, byte[]> Make(string version, object clients, object? hashes = null, object? aliases = null, object? features = null)
     {
         var files = new Dictionary<string, byte[]>(StringComparer.Ordinal)
         {
             ["clients.json"] = JsonSerializer.SerializeToUtf8Bytes(new { schema = 1, entries = clients }),
             ["aliases.json"] = JsonSerializer.SerializeToUtf8Bytes(aliases ?? new { schema = 1, aliases = Array.Empty<object>() }),
             ["hashes.json"] = JsonSerializer.SerializeToUtf8Bytes(new { schema = 1, entries = hashes ?? Array.Empty<object>() }),
+            ["features.json"] = JsonSerializer.SerializeToUtf8Bytes(new { schema = 1, features = features ?? Array.Empty<object>() }),
         };
         files["manifest.json"] = JsonSerializer.SerializeToUtf8Bytes(new
         {

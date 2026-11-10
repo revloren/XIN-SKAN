@@ -15,6 +15,7 @@
     <EmbeddedResource Include="..\..\database\clients.json" LogicalName="database/clients.json" />
     <EmbeddedResource Include="..\..\database\aliases.json" LogicalName="database/aliases.json" />
     <EmbeddedResource Include="..\..\database\hashes.json" LogicalName="database/hashes.json" />
+    <EmbeddedResource Include="..\..\database\features.json" LogicalName="database/features.json" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="XINSkan.SignaturesTests" />

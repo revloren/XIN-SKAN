@@ -33,7 +33,7 @@ public sealed record EvidenceFacts(
         "Jvm.Flag", "Jvm.Where", "Sha1.Actual", "Version.Id", "Instance.Name",
 
         // Signature matching (stage 9): mod descriptors, JAR structure, PE version info, mods in game logs.
-        "Mod.Id", "Mod2.Id", "Mod3.Id", "Mod4.Id", "Mod5.Id", "Mod.Name", "Jar.NestedMods", "Jar.TopPackages",
+        "Mod.Id", "Mod2.Id", "Mod3.Id", "Mod4.Id", "Mod5.Id", "Mod.Name", "Jar.NestedMods", "Jar.TopPackages", "Jar.FeatureClasses", "Jar.ServerPlugin",
         "Manifest.Main-Class", "Manifest.Premain-Class", "Manifest.Agent-Class",
         "Pe.ProductName", "Pe.OriginalFilename", "Pe.InternalName", "Pe.FileDescription", "Game.Mods", "Game.NestedMods",
     ];

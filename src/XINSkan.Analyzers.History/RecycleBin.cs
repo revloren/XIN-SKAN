@@ -294,7 +294,7 @@ public sealed class RecycleBinAnalyzer(HistoryOptions options, IDirectoryLister 
             ArchiveFacts? archive = null;
             if (type == ContentType.Zip)
             {
-                archive = ArchiveInspector.Inspect(s, new ArchiveLimits());
+                archive = ArchiveInspector.Inspect(s, options.Archive);
             }
 
             return new ItemContent(type, s.Length, hash, archive, null);
@@ -343,6 +343,33 @@ public sealed class RecycleBinAnalyzer(HistoryOptions options, IDirectoryLister 
                 attrs["Mod.Id"] = mod.Id ?? "?";
                 attrs["Mod.Name"] = mod.Name ?? "?";
                 attrs["Mod.Version"] = mod.Version ?? "?";
+            }
+
+            // The same component facts File Hunter records, so a deleted client can be identified as well as a present one.
+            if (content.Archive is { } facts)
+            {
+                if (facts.TopPackages.Count > 0)
+                {
+                    attrs["Jar.TopPackages"] = string.Join(", ", facts.TopPackages);
+                }
+
+                foreach (var key in (string[])["Main-Class", "Premain-Class", "Agent-Class"])
+                {
+                    if (facts.Manifest?.GetValueOrDefault(key) is { } value)
+                    {
+                        attrs["Manifest." + key] = value;
+                    }
+                }
+
+                if (facts.FeatureClasses.Count > 0)
+                {
+                    attrs["Jar.FeatureClasses"] = string.Join(", ", facts.FeatureClasses);
+                }
+
+                if (facts.ServerPlugin is not null)
+                {
+                    attrs["Jar.ServerPlugin"] = facts.ServerPlugin;
+                }
             }
 
             if (content.Problem is not null)

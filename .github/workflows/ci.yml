@@ -107,6 +107,29 @@ jobs:
           }
           "XINSKAN_MC_SAMPLES=$root" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
+      - name: Real client JARs (release files of verified projects; legitimate mods and an anti-cheat plugin for comparison)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP 'client-samples'
+          New-Item -ItemType Directory -Force -Path (Join-Path $root 'cheat'), (Join-Path $root 'legit') | Out-Null
+          # The same files whose SHA-256 is in database/hashes.json.
+          $cheat = @(
+            'https://github.com/3arthqu4ke/3arthh4ck/releases/download/1.8.5/3arthh4ck-1.8.5-release.jar',
+            'https://github.com/kami-blue/client/releases/download/2.04.01/kamiblue-2.04.01.jar',
+            'https://github.com/BleachDev/BleachHack/releases/download/1.2.6/bleachhack-1.19.4.jar',
+            'https://github.com/ionar2/spidermod/releases/download/2.05/salhack-github-2.05-release.jar',
+            'https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-unoptimized-fabric-1.20.0.jar'
+          )
+          foreach ($u in $cheat) { Invoke-WebRequest -Uri $u -OutFile (Join-Path $root ('cheat\' + [IO.Path]::GetFileName($u))) }
+          # Latest release JARs of legitimate projects; a missing one is skipped, not faked.
+          foreach ($repo in 'CaffeineMC/sodium', 'MinecraftFreecam/Freecam', 'GrimAnticheat/Grim', 'TerraformersMC/ModMenu') {
+            try { gh release download --repo $repo --pattern '*.jar' --dir (Join-Path $root 'legit') --skip-existing } catch { Write-Host "skip $repo" }
+          }
+          Get-ChildItem -Recurse $root -Filter *.jar | ForEach-Object { "{0} {1}" -f $_.Length, $_.FullName }
+          "XINSKAN_CLIENT_SAMPLES=$root" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
       - name: Test
         run: dotnet test XINSkan.slnx -c Release --no-build --logger "trx;LogFileName=results.trx" --logger "console;verbosity=detailed" --results-directory TestResults
 

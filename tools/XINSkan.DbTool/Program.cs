@@ -92,7 +92,7 @@ internal static class Program
     private static int Check(string dir)
     {
         var db = SignatureDatabase.Load(File.ReadAllBytes(Path.Combine(dir, DatabaseLoader.ManifestFile)), n => File.Exists(Path.Combine(dir, n)) ? File.ReadAllBytes(Path.Combine(dir, n)) : null, dir, null);
-        Console.WriteLine($"База {db.Manifest.Version}: записей {db.Clients.Count} (проверенных {db.Clients.Count(c => c.Status == "verified")}), написаний {db.Aliases.Count}, хешей {db.Hashes.Count}.");
+        Console.WriteLine($"База {db.Manifest.Version}: записей {db.Clients.Count} (проверенных {db.Clients.Count(c => c.Status == "verified")}), написаний {db.Aliases.Count}, хешей {db.Hashes.Count}, функций {db.Features.Count} (проверенных {db.Features.Count(f => f.Status == "verified")}, сильных {db.Features.Count(f => f.Strength == "strong")}).");
         foreach (var p in db.Problems)
         {
             Console.WriteLine("  отклонено: " + p);

@@ -19,5 +19,6 @@
     <ProjectReference Include="..\..\src\XINSkan.Core\XINSkan.Core.csproj" />
     <ProjectReference Include="..\..\src\XINSkan.Correlation\XINSkan.Correlation.csproj" />
     <ProjectReference Include="..\..\src\XINSkan.Signatures\XINSkan.Signatures.csproj" />
+    <ProjectReference Include="..\..\src\XINSkan.Analyzers.FileHunter\XINSkan.Analyzers.FileHunter.csproj" />
   </ItemGroup>
 </Project>

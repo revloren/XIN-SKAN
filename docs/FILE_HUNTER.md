@@ -40,6 +40,8 @@ File Hunter записывает существующие файлы и папк
 | `Mod.Loader`, `Mod.Id`, `Mod.Name`, `Mod.Version` | из `fabric.mod.json`, `quilt.mod.json`, `META-INF/mods.toml`, `mcmod.info` |
 | `Manifest.*` | `Main-Class`, `Premain-Class`, `Agent-Class`, `Launcher-Agent-Class`, `Can-Retransform-Classes` и т. п. (Java-агент — признак для дальнейшего анализа, не вывод) |
 | `Jar.TopPackages`, `Jar.Nested`, `Jar.NestedMods` | основные пакеты классов; вложенные JAR и моды в них |
+| `Jar.FeatureClasses` | классы, названные как функции из каталога базы (`docs/SIGNATURE_DATABASE.md`), до 150; только имена, классы не читаются |
+| `Jar.ServerPlugin` | описатель серверного плагина (`plugin.yml` и др.), если он есть |
 | `Pe.Machine`, `Pe.Kind`, `Pe.DotNet`, `Pe.FileVersion`, `Pe.*` из ресурса версии | `OriginalFilename`, `ProductName`, `CompanyName` и др. — видно, если исполняемый файл переименован |
 | `Signature`, `SignatureDetail` | Authenticode: `Valid`, `NotSigned`, `Tampered`, `Untrusted`, `Error` |
 | `Zone.Id`, `Zone.HostUrl`, `Zone.ReferrerUrl` | из потока `Zone.Identifier` — откуда файл был скачан |

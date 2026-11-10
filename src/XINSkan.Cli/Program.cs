@@ -307,7 +307,7 @@ internal static class Program
         }, XINSkan.Signatures.TrustedKeys.Default);
         var db = loaded.Database;
         Console.WriteLine($"База сигнатур {db.Manifest.Version} ({(db.Origin == "embedded" ? "встроенная" : db.Origin)}), SHA-256 манифеста {db.ManifestSha256}");
-        Console.WriteLine($"  Записей {db.Clients.Count}: проверено по источникам {db.Clients.Count(c => c.Status == "verified")}, из списка заказчика {db.Clients.Count(c => c.Status == "user-list")}, кандидатов {db.Clients.Count(c => c.Status == "candidate")}; хешей {db.Hashes.Count}.");
+        Console.WriteLine($"  Записей {db.Clients.Count}: проверено по источникам {db.Clients.Count(c => c.Status == "verified")}, из списка заказчика {db.Clients.Count(c => c.Status == "user-list")}, кандидатов {db.Clients.Count(c => c.Status == "candidate")}; хешей {db.Hashes.Count}; функций {db.Features.Count} (подтверждено исходным кодом {db.Features.Count(f => f.Status == "verified")}, сильных признаков {db.Features.Count(f => f.Strength == "strong")}).");
         Console.WriteLine($"  Доверенных ключей для обновлений: {XINSkan.Signatures.TrustedKeys.Default.Count}.");
         foreach (var n in loaded.Notes.Concat(db.Problems))
         {

@@ -1,14 +1,15 @@
 using System.Globalization;
 using System.Text;
+using XINSkan.Core.Paths;
 using XINSkan.Correlation;
 using XINSkan.Models;
 
 namespace XINSkan.Signatures;
 
 /// <summary>
-/// Matches records against the database by four independent mechanisms: exact hash, component identifiers from the
-/// project's own source, names, and ambiguous names in a Minecraft context. Each match states what matched and
-/// how; no mechanism alone is a verdict.
+/// Matches records against the database by independent mechanisms: exact hash, component identifiers and data files
+/// from the project's own source, several feature names among a JAR's classes, names, and ambiguous names in a
+/// Minecraft context. Each match states what matched and how; no mechanism alone is a verdict.
 /// </summary>
 public sealed class Matcher
 {
@@ -16,6 +17,16 @@ public sealed class Matcher
     private readonly Dictionary<string, ClientEntry> _byId;
     private readonly Dictionary<string, HashEntry> _hashes;
     private readonly List<(string Normalized, string Variant, ClientEntry Client, bool Ambiguous, bool ExactFile)> _names = [];
+    private readonly Dictionary<string, FeatureEntry> _features = new(StringComparer.Ordinal);
+
+    /// <summary>A Multiple Feature Match needs this many distinct strong features…</summary>
+    public const int MinStrongFeatures = 3;
+
+    /// <summary>…from at least this many categories.</summary>
+    public const int MinFeatureCategories = 2;
+
+    /// <summary>Package segments of server anti-cheat checks, whose classes carry the very names they detect.</summary>
+    private static readonly HashSet<string> CheckSegments = new(StringComparer.Ordinal) { "check", "checks", "detection", "detections" };
 
     public Matcher(SignatureDatabase db)
     {
@@ -34,6 +45,14 @@ public sealed class Matcher
                     // Very short spellings mean nothing without context, whatever the list says.
                     _names.Add((n, v, c, c.AmbiguousVariants.Contains(v) || (n.Length < 4 && !exactFile), exactFile));
                 }
+            }
+        }
+
+        foreach (var f in db.Features)
+        {
+            foreach (var v in f.Variants.Append(f.Name))
+            {
+                _features.TryAdd(ClassNames.Key(v), f);
             }
         }
     }
@@ -155,6 +174,16 @@ public sealed class Matcher
                 Add(Make(f, client, client.Status == "verified" ? SignatureMatchKind.VerifiedComponentMatch : SignatureMatchKind.PossibleMatch, what, detail));
             }
 
+            foreach (var (client, what, detail, inGameDir) in DataPaths(f))
+            {
+                Add(Make(f, client, inGameDir ? SignatureMatchKind.VerifiedComponentMatch : SignatureMatchKind.NameMatch, what, detail));
+            }
+
+            if (FeatureSet(f) is { } features)
+            {
+                Add(features);
+            }
+
             var context = InMinecraftContext(f);
             foreach (var (text, field) in Names(f))
             {
@@ -239,6 +268,105 @@ public sealed class Matcher
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// A file or folder the client itself writes in the game directory ("wurst\enabled-hacks.json"). In a recognised
+    /// game directory it is a component match; elsewhere only a name match, because the place is not the client's.
+    /// </summary>
+    private IEnumerable<(ClientEntry Client, string What, string Detail, bool InGameDir)> DataPaths(EvidenceFacts f)
+    {
+        if (f.RecordedPath is not { Length: > 0 } recorded)
+        {
+            yield break;
+        }
+
+        var path = recorded.Replace('/', '\\').TrimEnd('\\');
+        foreach (var c in _db.Clients.Where(c => c.Status == "verified" && c.Identifiers.DataPaths.Count > 0))
+        {
+            foreach (var d in c.Identifiers.DataPaths)
+            {
+                var tail = "\\" + d.Replace('/', '\\');
+                var at = path.IndexOf(tail, StringComparison.OrdinalIgnoreCase);
+                if (at <= 0 || (at + tail.Length < path.Length && path[at + tail.Length] != '\\'))
+                {
+                    continue;
+                }
+
+                var parent = path[..at];
+                var parentName = LastSegment(parent);
+                var inGameDir = parentName.Equals(".minecraft", StringComparison.OrdinalIgnoreCase) || parentName.Equals("minecraft", StringComparison.OrdinalIgnoreCase)
+                                || string.Equals(f.Attr("MinecraftRoot")?.TrimEnd('\\', '/'), parent, StringComparison.OrdinalIgnoreCase);
+                yield return (c, d, inGameDir
+                    ? $"файл данных {d} в папке игры {parent} — его создаёт сам {c.Name} ({Cite(c)})."
+                    : $"путь содержит {d} — так называется файл данных {c.Name} ({Cite(c)}), но {parent} не опознана как папка игры.", inGameDir);
+                break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Several feature names among the classes of one JAR (<c>Jar.FeatureClasses</c>). A Multiple Feature Match needs
+    /// <see cref="MinStrongFeatures"/> distinct strong features from <see cref="MinFeatureCategories"/> categories and
+    /// no server-plugin descriptor; fewer, or a server plugin (anti-cheats name their checks after cheats), is only a
+    /// possible match. Classes in "check"/"detection" packages are skipped for the same reason.
+    /// </summary>
+    private SignatureMatch? FeatureSet(EvidenceFacts f)
+    {
+        var classes = Split(f.Attr("Jar.FeatureClasses"));
+        if (classes.Length == 0 || _features.Count == 0)
+        {
+            return null;
+        }
+
+        var hits = new Dictionary<string, (FeatureEntry Feature, string Class)>(StringComparer.Ordinal);
+        var skipped = 0;
+        foreach (var cls in classes)
+        {
+            if (ClassNames.PackageSegments(cls).Any(CheckSegments.Contains))
+            {
+                skipped++;
+                continue;
+            }
+
+            if (ClassNames.FeatureKey(cls + ".class") is { } key && _features.TryGetValue(key, out var feature))
+            {
+                hits.TryAdd(feature.Id, (feature, cls));
+            }
+        }
+
+        var strong = hits.Values.Where(h => h.Feature.Strength == "strong").ToList();
+        var weak = hits.Count - strong.Count;
+        var categories = strong.Select(h => h.Feature.Category).Distinct(StringComparer.Ordinal).Count();
+        var plugin = f.Attr("Jar.ServerPlugin");
+        var full = strong.Count >= MinStrongFeatures && categories >= MinFeatureCategories;
+        SignatureMatchKind kind;
+        if (full && plugin is null)
+        {
+            kind = SignatureMatchKind.MultipleFeatureMatch;
+        }
+        else if (full || strong.Count >= 2 || (strong.Count >= 1 && weak >= 2))
+        {
+            kind = SignatureMatchKind.PossibleMatch;
+        }
+        else
+        {
+            return null;
+        }
+
+        var ordered = hits.Values.OrderByDescending(h => h.Feature.Strength == "strong").ThenBy(h => h.Feature.Category, StringComparer.Ordinal).ThenBy(h => h.Feature.Name, StringComparer.Ordinal).ToList();
+        var nearest = hits.Values.SelectMany(h => h.Feature.Projects.Select(p => p.Client).Distinct(StringComparer.Ordinal))
+            .GroupBy(c => c, StringComparer.Ordinal).OrderByDescending(g => g.Count()).ThenBy(g => g.Key, StringComparer.Ordinal).FirstOrDefault();
+        var nearestText = nearest is null ? string.Empty
+            : $" Больше всего этих функций среди модулей {_byId.GetValueOrDefault(nearest.Key)?.Name ?? nearest.Key} ({nearest.Count()} из {hits.Count}) — это сходство набора, а не опознание.";
+        var detail = $"Классы JAR с названиями функций: {string.Join("; ", ordered.Take(12).Select(h => $"{h.Feature.Name} [{h.Feature.Category}, {(h.Feature.Strength == "strong" ? "сильный" : "слабый")}] — {h.Class}"))}"
+                     + (ordered.Count > 12 ? $" и ещё {ordered.Count - 12}" : string.Empty)
+                     + $". Сильных признаков {strong.Count} из {categories} категорий, слабых {weak}."
+                     + (plugin is null ? string.Empty : $" В JAR есть {plugin}: это серверный плагин, а античиты называют свои проверки так же, как читы.")
+                     + (skipped > 0 ? $" Пропущено классов в пакетах проверок (check, detection): {skipped}." : string.Empty)
+                     + nearestText;
+        return new SignatureMatch(f.Id, "feature-set", "Набор функций чит-клиента", "feature", strong.Count > 0 && strong.All(h => h.Feature.Status == "verified") ? "verified" : "user-list",
+            kind, string.Join(", ", ordered.Select(h => h.Feature.Name)), detail);
     }
 
     private static string Cite(ClientEntry c) =>

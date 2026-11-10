@@ -416,6 +416,7 @@ public sealed class CorrelationEngine(Ulid investigationId, DateTimeOffset inves
             {
                 SignatureMatchKind.ExactHashMatch or SignatureMatchKind.VerifiedComponentMatch when best.EntryStatus == "verified" => Confidence.Medium,
                 SignatureMatchKind.NameMatch when best.ClientKind is not ("launcher" or "generic") => Confidence.Low,
+                SignatureMatchKind.MultipleFeatureMatch => Confidence.Low,
                 _ => Confidence.Informational,
             };
             var status = best.EntryStatus switch
@@ -430,6 +431,7 @@ public sealed class CorrelationEngine(Ulid investigationId, DateTimeOffset inves
                 confidence switch
                 {
                     Confidence.Medium => "Прямое опознание одного объекта: точный SHA-256 файла из указанного источника или компонент (идентификатор мода, пакет, класс запуска), подтверждённый исходным кодом проекта. Само по себе — не вывод о нарушении: файл мог лежать без использования, а некоторые проекты легальны в одиночной игре.",
+                    Confidence.Low when best.Kind == SignatureMatchKind.MultipleFeatureMatch => "Несколько сильных названий функций чит-клиентов среди классов одного JAR из разных категорий. Названия функций — поисковые признаки: они не опознают конкретный клиент, а мод для одиночной игры или учебный проект может называть классы так же. Повод изучить файл, а не доказательство.",
                     Confidence.Low => "Совпадение по имени: файл можно переименовать, а безобидный файл — назвать так же. Это повод проверить объект, а не доказательство.",
                     _ => best.ClientKind is "launcher" or "generic"
                         ? "Название лаунчера или общий термин само по себе нарушением не считается."
@@ -437,6 +439,31 @@ public sealed class CorrelationEngine(Ulid investigationId, DateTimeOffset inves
                 },
                 directIdentification: Identifies(best));
             yield return finding with { MatchKind = best.Kind, ClientId = best.ClientId, VerifiedIdentification = Identifies(best) };
+        }
+
+        // FEATURE_SET_LOADED: a JAR with a Multiple Feature Match that was loaded or run, by another source.
+        foreach (var o in objects)
+        {
+            var members = objectFacts[o.ObjectId].Select(m => m.Fact).ToList();
+            var ids = members.Select(f => f.Id).ToHashSet();
+            var set = matches.FirstOrDefault(m => ids.Contains(m.EvidenceId) && m.Kind == SignatureMatchKind.MultipleFeatureMatch);
+            if (set is null || matches.Any(m => ids.Contains(m.EvidenceId) && Identifies(m)))
+            {
+                continue; // an identified client is reported by KNOWN_CLIENT_ACTIVITY instead
+            }
+
+            var carrier = byId[set.EvidenceId];
+            var loads = members.Where(f => IsExecution(f) && Family(f) != Family(carrier)).ToList();
+            if (loads.Count == 0)
+            {
+                continue;
+            }
+
+            yield return Make("FEATURE_SET_LOADED", Confidence.Medium, o, [carrier, .. loads.Take(MaxContext)], [],
+                "JAR с набором функций чит-клиента загружался",
+                $"{o.DisplayPath ?? o.FileName}: {set.Matched}; загрузка или запуск по независимым источникам ({string.Join(", ", loads.Select(Family).Distinct())}).",
+                "Содержимое файла (несколько сильных названий функций из разных категорий) и след его использования из другого семейства источников. Конкретный клиент не опознан, поэтому High невозможен; набор функций бывает и у модов для одиночной игры.")
+                with { MatchKind = SignatureMatchKind.MultipleFeatureMatch, ClientId = set.ClientId };
         }
 
         // KNOWN_CLIENT_ACTIVITY: a verified identification and, on the same object, activity from other sources.

@@ -30,6 +30,54 @@ public sealed record Identifiers
 
     /// <summary>Maven coordinates without version ("com.github.ImpactDevelopment:Impact").</summary>
     public IReadOnlyList<string> Libraries { get; init; } = [];
+
+    /// <summary>
+    /// Files and folders the client itself writes in the game directory, relative to it ("wurst/enabled-hacks.json"),
+    /// as read from its source.
+    /// </summary>
+    public IReadOnlyList<string> DataPaths { get; init; } = [];
+}
+
+/// <summary>A verified project in which a feature exists as a module, and where its source says so.</summary>
+public sealed record FeatureProject
+{
+    public required string Client { get; init; }
+
+    /// <summary>The module's name in that project ("Killaura", "ModuleKillAura").</summary>
+    public required string Module { get; init; }
+
+    public required string Path { get; init; }
+}
+
+/// <summary>A function of cheat clients (TZ section 10). Its names are search terms, never evidence on their own.</summary>
+public sealed record FeatureEntry
+{
+    public required string Id { get; init; }
+
+    public required string Name { get; init; }
+
+    /// <summary>combat, movement, visual, world, player, misc.</summary>
+    public required string Category { get; init; }
+
+    public IReadOnlyList<string> Variants { get; init; } = [];
+
+    /// <summary>
+    /// strong — a name a legitimate mod or library rarely gives a class (KillAura, Scaffold); weak — a name that also
+    /// means something ordinary (Timer, HUD, Speed, Freecam). Only strong ones count toward a Multiple Feature Match.
+    /// </summary>
+    public required string Strength { get; init; }
+
+    /// <summary>verified — found as a module in a verified project's source; user-list — only in the customer's list.</summary>
+    public required string Status { get; init; }
+
+    /// <summary>"10" — the customer's list (TZ section 10); "research" — added from the verified projects.</summary>
+    public required string List { get; init; }
+
+    public IReadOnlyList<FeatureProject> Projects { get; init; } = [];
+
+    public IReadOnlyList<SourceRecord> Sources { get; init; } = [];
+
+    public string? Note { get; init; }
 }
 
 /// <summary>A known client, tool, launcher or term.</summary>
@@ -123,7 +171,7 @@ public sealed record ManifestSignature
 /// <summary>A loaded, validated database.</summary>
 public sealed class SignatureDatabase
 {
-    public static readonly string[] DataFiles = ["clients.json", "aliases.json", "hashes.json"];
+    public static readonly string[] DataFiles = ["clients.json", "aliases.json", "hashes.json", "features.json"];
 
     internal static readonly JsonSerializerOptions Json = new()
     {
@@ -136,8 +184,10 @@ public sealed class SignatureDatabase
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
-    private SignatureDatabase(Manifest manifest, string manifestSha256, string origin, string? keyId, List<ClientEntry> clients, List<AliasEntry> aliases, List<HashEntry> hashes, List<string> problems)
+    private SignatureDatabase(Manifest manifest, string manifestSha256, string origin, string? keyId, List<ClientEntry> clients, List<AliasEntry> aliases, List<HashEntry> hashes, List<FeatureEntry> features, List<string> problems)
     {
+        Features = features;
+        FeatureVocabulary = features.SelectMany(f => f.Variants.Append(f.Name)).Select(XINSkan.Core.Paths.ClassNames.Key).Where(k => k.Length >= 3).ToHashSet(StringComparer.Ordinal);
         Manifest = manifest;
         ManifestSha256 = manifestSha256;
         Origin = origin;
@@ -167,6 +217,12 @@ public sealed class SignatureDatabase
     /// <summary>Records rejected by validation, with the reason.</summary>
     public IReadOnlyList<string> Problems { get; }
 
+    /// <summary>The feature catalog (TZ section 10).</summary>
+    public IReadOnlyList<FeatureEntry> Features { get; }
+
+    /// <summary>Keys of every feature spelling, for the archive reader to keep matching class names.</summary>
+    public IReadOnlySet<string> FeatureVocabulary { get; }
+
     public Models.SignatureDatabaseInfo Info() => new(
         Manifest.Version, Origin, ManifestSha256, KeyId, Clients.Count, Clients.Count(c => c.Status == "verified"), Hashes.Count, Problems);
 
@@ -175,6 +231,8 @@ public sealed class SignatureDatabase
     private sealed record AliasesFile(int Schema, List<AliasEntry> Aliases);
 
     private sealed record HashesFile(int Schema, List<HashEntry> Entries);
+
+    private sealed record FeaturesFile(int Schema, List<FeatureEntry> Features);
 
     /// <summary>
     /// Builds a database from bundle bytes after checking every file against the manifest. Records that break the
@@ -216,9 +274,11 @@ public sealed class SignatureDatabase
             var clients = JsonSerializer.Deserialize<ClientsFile>(data["clients.json"], Json)?.Entries ?? [];
             var aliases = JsonSerializer.Deserialize<AliasesFile>(data["aliases.json"], Json)?.Aliases ?? [];
             var hashes = JsonSerializer.Deserialize<HashesFile>(data["hashes.json"], Json)?.Entries ?? [];
+            var features = JsonSerializer.Deserialize<FeaturesFile>(data["features.json"], Json)?.Features ?? [];
             var problems = new List<string>();
             var valid = Validate(clients, aliases, hashes, problems);
-            return new SignatureDatabase(manifest, Sha256(manifestBytes), origin, keyId, valid.Clients, valid.Aliases, valid.Hashes, problems);
+            var goodFeatures = ValidateFeatures(features, valid.Clients, problems);
+            return new SignatureDatabase(manifest, Sha256(manifestBytes), origin, keyId, valid.Clients, valid.Aliases, valid.Hashes, goodFeatures, problems);
         }
         catch (JsonException ex)
         {
@@ -315,7 +375,65 @@ public sealed class SignatureDatabase
         return (goodClients, goodAliases, goodHashes);
     }
 
-    private static bool HasIdentifiers(Identifiers i) => i.ModIds.Count + i.Packages.Count + i.Entrypoints.Count + i.Libraries.Count > 0;
+    internal static List<FeatureEntry> ValidateFeatures(List<FeatureEntry> features, List<ClientEntry> clients, List<string> problems)
+    {
+        string[] categories = ["combat", "movement", "visual", "world", "player", "misc"];
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        var keys = new Dictionary<string, string>(StringComparer.Ordinal);
+        var good = new List<FeatureEntry>();
+        var verifiedClients = clients.Where(c => c.Status == "verified").Select(c => c.Id).ToHashSet(StringComparer.Ordinal);
+        foreach (var f in features)
+        {
+            string? why = null;
+            if (string.IsNullOrWhiteSpace(f.Id) || !ids.Add(f.Id))
+            {
+                why = "повтор или пустой идентификатор";
+            }
+            else if (!categories.Contains(f.Category) || f.Strength is not ("strong" or "weak") || f.Status is not ("verified" or "user-list") || f.List is not ("10" or "research"))
+            {
+                why = $"неизвестная категория «{f.Category}», сила «{f.Strength}», статус «{f.Status}» или список «{f.List}»";
+            }
+            else if (f.Variants.Count == 0 || f.Sources.Count == 0 || f.Sources.Any(s => !IsDate(s.Checked)))
+            {
+                why = "нет написаний, источника или даты проверки";
+            }
+            else if (f.Status == "verified" && (f.Projects.Count == 0 || f.Projects.Any(p => !verifiedClients.Contains(p.Client))
+                                                || !f.Sources.Any(s => s.Url?.StartsWith("https://", StringComparison.Ordinal) == true && s.Commit is { Length: 40 })))
+            {
+                why = "статус verified без проекта из проверенных записей или без источника с коммитом";
+            }
+            else if (f.Status != "verified" && f.Projects.Count > 0)
+            {
+                why = "подтверждённые проекты допустимы только у проверенной функции";
+            }
+            else if (f.List == "research" && f.Status != "verified")
+            {
+                why = "функция, добавленная по исследованию, должна быть подтверждена исходным кодом";
+            }
+            else if (f.Variants.Select(XINSkan.Core.Paths.ClassNames.Key).FirstOrDefault(k => keys.TryGetValue(k, out var other) && other != f.Id) is { } clash)
+            {
+                why = $"написание с ключом «{clash}» уже принадлежит функции {keys[clash]}";
+            }
+
+            if (why is null)
+            {
+                foreach (var k in f.Variants.Select(XINSkan.Core.Paths.ClassNames.Key))
+                {
+                    keys[k] = f.Id;
+                }
+
+                good.Add(f);
+            }
+            else
+            {
+                problems.Add($"Функция {f.Id}: {why}.");
+            }
+        }
+
+        return good;
+    }
+
+    private static bool HasIdentifiers(Identifiers i) => i.ModIds.Count + i.Packages.Count + i.Entrypoints.Count + i.Libraries.Count + i.DataPaths.Count > 0;
 
     private static bool IsDate(string? s) => DateOnly.TryParseExact(s, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out _);
 

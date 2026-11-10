@@ -18,7 +18,7 @@ Windows-приложение для исследования цифровых с
 | 6. Execution Engine | Частично — [docs/EXECUTION_ENGINE.md](docs/EXECUTION_ENGINE.md) (нет SRUM) |
 | 7. Evidence Correlation | Частично — [docs/CORRELATION.md](docs/CORRELATION.md) (нет связи по содержимому и отчёта-хронологии) |
 | 8. Minecraft Integrity | Частично — [docs/MINECRAFT_INTEGRITY.md](docs/MINECRAFT_INTEGRITY.md) (сверка с локальными файлами версий; с хешами Mojang — ждёт решения владельца) |
-| 9. База клиентов и признаков | Частично — [docs/SIGNATURE_DATABASE.md](docs/SIGNATURE_DATABASE.md) (список заказчика, 9 проектов проверены по исходному коду, 57 хешей выпусков, подписанные обновления; нет признаков функций) |
+| 9. База клиентов и признаков | Частично — [docs/SIGNATURE_DATABASE.md](docs/SIGNATURE_DATABASE.md) (список заказчика, 9 проектов проверены по исходному коду, 57 хешей выпусков, файлы данных клиентов, каталог 97 функций, подписанные обновления) |
 
 ## Структура
 

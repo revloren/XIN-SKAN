@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
+using XINSkan.Core.Paths;
 
 namespace XINSkan.Analyzers.FileHunter.Content;
 
@@ -30,6 +31,15 @@ public sealed record ArchiveFacts
     /// <summary>Mods declared by the embedded JARs that were inspected.</summary>
     public IReadOnlyList<ModMetadata> NestedMods { get; init; } = [];
 
+    /// <summary>
+    /// Classes whose name is in the feature catalog (<see cref="ArchiveLimits.FeatureVocabulary"/>), as entry paths
+    /// without ".class"; at most <see cref="ArchiveLimits.MaxFeatureClasses"/>. Names only — classes are never read.
+    /// </summary>
+    public IReadOnlyList<string> FeatureClasses { get; init; } = [];
+
+    /// <summary>The descriptor of a server plugin (plugin.yml, paper-plugin.yml, bungee.yml, velocity-plugin.json), if any.</summary>
+    public string? ServerPlugin { get; init; }
+
     /// <summary>What could not be read and why; empty when the archive was read completely within limits.</summary>
     public IReadOnlyList<string> Problems { get; init; } = [];
 }
@@ -43,6 +53,11 @@ public sealed record ArchiveLimits
     public long MaxNestedJarBytes { get; init; } = 32L * 1024 * 1024;
 
     public int MaxNestedJars { get; init; } = 32;
+
+    /// <summary>Keys of feature names (<see cref="ClassNames.FeatureKey"/>); null — class names are not collected.</summary>
+    public IReadOnlySet<string>? FeatureVocabulary { get; init; }
+
+    public int MaxFeatureClasses { get; init; } = 150;
 }
 
 /// <summary>
@@ -106,6 +121,9 @@ public static class ArchiveInspector
             var mods = new List<ModMetadata>();
             var nestedJars = new List<string>();
             var nestedMods = new List<ModMetadata>();
+            var featureClasses = new List<string>();
+            var featureClassesSeen = 0;
+            string? serverPlugin = null;
             IReadOnlyDictionary<string, string>? manifest = null;
 
             IReadOnlyList<ZipArchiveEntry> entries;
@@ -130,6 +148,15 @@ public static class ArchiveInspector
                         packages[prefix] = packages.GetValueOrDefault(prefix) + 1;
                     }
 
+                    if (limits.FeatureVocabulary is { } vocabulary && ClassNames.FeatureKey(name) is { } key && vocabulary.Contains(key))
+                    {
+                        featureClassesSeen++;
+                        if (featureClasses.Count < limits.MaxFeatureClasses)
+                        {
+                            featureClasses.Add(name[..^".class".Length]);
+                        }
+                    }
+
                     continue;
                 }
 
@@ -149,6 +176,9 @@ public static class ArchiveInspector
                         break;
                     case "MCMOD.INFO":
                         AddMod(mods, problems, e, limits, "forge-legacy", ParseMcmodInfo);
+                        break;
+                    case "PLUGIN.YML" or "PAPER-PLUGIN.YML" or "BUNGEE.YML" or "VELOCITY-PLUGIN.JSON":
+                        serverPlugin ??= name;
                         break;
                     case "META-INF/MANIFEST.MF":
                         var text = ReadText(e, limits, problems);
@@ -176,6 +206,11 @@ public static class ArchiveInspector
                 problems.Add($"Вложенных JAR: {nestedJars.Count}; разобраны первые {limits.MaxNestedJars}.");
             }
 
+            if (featureClassesSeen > featureClasses.Count)
+            {
+                problems.Add($"Классов с названиями функций: {featureClassesSeen}; записаны первые {featureClasses.Count}.");
+            }
+
             return new ArchiveFacts
             {
                 DeclaredEntries = declared.Value,
@@ -185,6 +220,8 @@ public static class ArchiveInspector
                 Manifest = manifest,
                 NestedJars = nestedJars,
                 NestedMods = nestedMods,
+                FeatureClasses = featureClasses,
+                ServerPlugin = serverPlugin,
                 Problems = problems,
             };
         }
