@@ -100,6 +100,12 @@ public sealed record Finding
     /// <summary>Whether the object was identified against verified signatures (stage 9). Required for High.</summary>
     public bool VerifiedIdentification { get; init; }
 
+    /// <summary>For signature findings: how the object matched the signature database.</summary>
+    public SignatureMatchKind? MatchKind { get; init; }
+
+    /// <summary>For signature findings: the database entry (client, tool) it matched.</summary>
+    public string? ClientId { get; init; }
+
     public required IReadOnlyList<FindingMember> Members { get; init; }
 
     public IReadOnlyList<string> Validate()
@@ -121,7 +127,11 @@ public sealed record Finding
         }
 
         var families = IndependentFamilies.Distinct(StringComparer.Ordinal).Count();
-        if (Confidence == Confidence.Medium && families < MinFamiliesForMedium)
+
+        // A direct identification of one object (its exact hash, or a component confirmed from the project's own
+        // source) may be Medium on its own; everything else needs two independent families for Medium.
+        var directIdentification = MatchKind is SignatureMatchKind.ExactHashMatch or SignatureMatchKind.VerifiedComponentMatch;
+        if (Confidence == Confidence.Medium && families < MinFamiliesForMedium && !directIdentification)
         {
             problems.Add($"Medium needs {MinFamiliesForMedium} independent source families, got {families}.");
         }
@@ -140,5 +150,31 @@ public sealed record Finding
     }
 }
 
+/// <summary>A record that matched the signature database (stage 9), before correlation places it on an object.</summary>
+public sealed record SignatureMatch(
+    Ulid EvidenceId,
+    string ClientId,
+    string ClientName,
+    string ClientKind,
+    string EntryStatus,
+    SignatureMatchKind Kind,
+    string Matched,
+    string Detail);
+
+/// <summary>Which signature database an investigation used.</summary>
+public sealed record SignatureDatabaseInfo(
+    string Version,
+    string Origin,
+    string ManifestSha256,
+    string? KeyId,
+    int Clients,
+    int VerifiedClients,
+    int Hashes,
+    IReadOnlyList<string> Problems);
+
 /// <summary>Everything correlation produced for one investigation.</summary>
-public sealed record CorrelationResult(IReadOnlyList<CorrelatedObject> Objects, IReadOnlyList<Finding> Findings, IReadOnlyList<Limitation> Limitations);
+public sealed record CorrelationResult(IReadOnlyList<CorrelatedObject> Objects, IReadOnlyList<Finding> Findings, IReadOnlyList<Limitation> Limitations)
+{
+    /// <summary>The signature database the matches came from; null when none was loaded.</summary>
+    public SignatureDatabaseInfo? Database { get; init; }
+}

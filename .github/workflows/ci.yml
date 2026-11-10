@@ -184,3 +184,24 @@ jobs:
             dotnet package search "$p" --exact-match --source https://api.nuget.org/v3/index.json --format json \
               | python3 -c "import sys,json; d=json.load(sys.stdin); v=[p['version'] for r in d.get('searchResult',[]) for p in r.get('packages',[])]; print('versions:', ', '.join(v[-5:]) if v else 'not found')"
           done
+
+  release-hashes:
+    # Informational: SHA-256 of the official release files of the projects verified in database/clients.json.
+    # The maintainer copies them into database/hashes.json with the release URL and the date (no hash without a source).
+    name: Release hashes of verified projects
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    continue-on-error: true
+    steps:
+      - name: Hash the JAR assets of the latest releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for repo in Wurst-Imperium/Wurst7 MeteorDevelopment/meteor-client CCBlueX/LiquidBounce cabaletta/baritone BleachDev/BleachHack kami-blue/client ionar2/salhack 3arthqu4ke/3arthh4ck; do
+            gh api "repos/$repo/releases?per_page=3" --jq '.[] | .tag_name as $t | .published_at as $p | .html_url as $h | .assets[] | select(.name | endswith(".jar")) | [$t, $p, $h, .name, .size, .browser_download_url] | @tsv' |
+            while IFS=$'\t' read -r tag published page name size url; do
+              curl -sSfL --max-time 120 -o asset.jar "$url" || { echo "FAILED $repo $url"; continue; }
+              sha=$(sha256sum asset.jar | cut -d' ' -f1)
+              echo "HASH	$repo	$tag	${published%%T*}	$name	$size	$sha	$url	$page"
+            done
+          done

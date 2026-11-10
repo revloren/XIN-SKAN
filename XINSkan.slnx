@@ -13,9 +13,13 @@
     <Project Path="src/XINSkan.Analyzers.Execution/XINSkan.Analyzers.Execution.csproj" />
     <Project Path="src/XINSkan.Analyzers.Minecraft/XINSkan.Analyzers.Minecraft.csproj" />
     <Project Path="src/XINSkan.Correlation/XINSkan.Correlation.csproj" />
+    <Project Path="src/XINSkan.Signatures/XINSkan.Signatures.csproj" />
     <Project Path="src/XINSkan.Investigation/XINSkan.Investigation.csproj" />
     <Project Path="src/XINSkan.Cli/XINSkan.Cli.csproj" />
     <Project Path="src/XINSkan.App/XINSkan.App.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/XINSkan.DbTool/XINSkan.DbTool.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/XINSkan.UnitTests/XINSkan.UnitTests.csproj" />
@@ -30,5 +34,6 @@
     <Project Path="tests/XINSkan.ExecutionTests/XINSkan.ExecutionTests.csproj" />
     <Project Path="tests/XINSkan.CorrelationTests/XINSkan.CorrelationTests.csproj" />
     <Project Path="tests/XINSkan.MinecraftTests/XINSkan.MinecraftTests.csproj" />
+    <Project Path="tests/XINSkan.SignaturesTests/XINSkan.SignaturesTests.csproj" />
   </Folder>
 </Solution>

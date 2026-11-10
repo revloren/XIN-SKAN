@@ -60,6 +60,9 @@ public sealed class InvestigationWithSqliteTests : IDisposable
         Assert.Equal(outcome.EvidenceWritten, correlation.Value.EvidenceRead);
         Assert.Equal(outcome.Correlation.Objects.Count, reader.ReadObjects().Count);
         Assert.Equal(outcome.Correlation.Findings.Count, reader.ReadFindings().Count);
+        var database = reader.ReadSignatureDatabase()!;
+        Assert.Equal("embedded", database.Origin); // the test folder has no signed update
+        Assert.True(database.Clients > 100);
 
         var stored = reader.ReadEvidence().ToList();
         var module = reader.ReadModuleResults().Single(m => m.ModuleId == FileHunterAnalyzer.ModuleId);

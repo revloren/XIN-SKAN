@@ -142,7 +142,7 @@ public sealed class InvestigationStoreTests : IDisposable
         var info = reader.ReadInfo();
         Assert.Equal(id, info.InvestigationId);
         Assert.Equal("Тестовый оператор", info.Operator);
-        Assert.Equal(2, reader.SchemaVersion());
+        Assert.Equal(3, reader.SchemaVersion());
         Assert.Null(reader.ReadCorrelationRun()); // correlation not written: none is reported
         Assert.Empty(reader.ReadFindings());
     }
@@ -185,10 +185,15 @@ public sealed class InvestigationStoreTests : IDisposable
                     LastUtc = T0,
                     ObjectId = objectId,
                     IndependentFamilies = ["prefetch", "usn"],
+                    MatchKind = SignatureMatchKind.VerifiedComponentMatch,
+                    ClientId = "wurst",
                     Members = [new FindingMember(a.EvidenceId, "basis"), new FindingMember(b.EvidenceId, "context")],
                 },
             ],
-            [new Limitation("CORR.NO_IDENTIFICATION", "Не определяет читы.")]);
+            [new Limitation("CORR.NO_IDENTIFICATION", "Не определяет читы.")])
+        {
+            Database = new SignatureDatabaseInfo("2026.11.10.1", "embedded", new string('a', 64), null, 107, 9, 0, ["заметка"]),
+        };
     }
 
     [Fact]
@@ -233,13 +238,20 @@ public sealed class InvestigationStoreTests : IDisposable
             Assert.Equal(ef.IndependentFamilies, f.IndependentFamilies);
             Assert.Equal("CORR.X", Assert.Single(f.Limitations).Code);
             Assert.Equal(2, f.Members.Count);
+            Assert.Equal(SignatureMatchKind.VerifiedComponentMatch, f.MatchKind);
+            Assert.Equal("wurst", f.ClientId);
             Assert.Empty(f.Validate());
+
+            var d = reader.ReadSignatureDatabase()!;
+            Assert.Equal("2026.11.10.1", d.Version);
+            Assert.Equal(107, d.Clients);
+            Assert.Equal(new[] { "заметка" }, d.Problems);
         }
 
         foreach (var sql in new[]
         {
             "UPDATE Findings SET Confidence = 'High';", "DELETE FROM Findings;", "DELETE FROM FindingMembers;",
-            "UPDATE CorrelatedObjects SET DisplayPath = 'x';", "DELETE FROM ObjectMembers;", "DELETE FROM CorrelationRuns;",
+            "UPDATE CorrelatedObjects SET DisplayPath = 'x';", "DELETE FROM ObjectMembers;", "DELETE FROM CorrelationRuns;", "DELETE FROM SignatureDatabases;",
         })
         {
             using var c = new SqliteConnection($"Data Source={db};Pooling=False");

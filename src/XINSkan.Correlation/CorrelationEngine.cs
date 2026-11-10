@@ -23,9 +23,13 @@ public sealed class CorrelationEngine(Ulid investigationId, DateTimeOffset inves
 
     private int _ambiguous;
 
-    public CorrelationResult Run(IReadOnlyList<EvidenceFacts> facts)
+    public CorrelationResult Run(IReadOnlyList<EvidenceFacts> facts) => Run(facts, []);
+
+    /// <param name="matches">Records that matched the signature database (stage 9).</param>
+    public CorrelationResult Run(IReadOnlyList<EvidenceFacts> facts, IReadOnlyList<SignatureMatch> matches)
     {
         ArgumentNullException.ThrowIfNull(facts);
+        ArgumentNullException.ThrowIfNull(matches);
         var groups = Link(facts);
         var objects = new List<CorrelatedObject>();
         var objectFacts = new Dictionary<Ulid, List<(EvidenceFacts Fact, LinkKind Link)>>();
@@ -43,6 +47,7 @@ public sealed class CorrelationEngine(Ulid investigationId, DateTimeOffset inves
             findings.AddRange(ObjectRules(o, members));
         }
 
+        findings.AddRange(SignatureFindings(facts, matches, objects, objectFacts));
         findings.AddRange(ExclusionRule(facts, objects, objectFacts));
         findings.AddRange(ConcealmentClusters(facts));
         findings.AddRange(RemovableRuns(facts));
@@ -58,7 +63,7 @@ public sealed class CorrelationEngine(Ulid investigationId, DateTimeOffset inves
 
         var limitations = new List<Limitation>
         {
-            new("CORR.NO_IDENTIFICATION", "Корреляция связывает записи и находит закономерности, но не определяет, что объект — чит: это задача проверенной базы (этап 9). Поэтому High здесь не ставится."),
+            new("CORR.NO_IDENTIFICATION", "Корреляция связывает записи и находит закономерности. Что объект — известный клиент, она узнаёт только из базы сигнатур: High ставится лишь при точном хеше или компоненте, подтверждённом исходным кодом проекта, вместе с двумя другими независимыми источниками."),
             new("CORR.SHORT_NAMES", "Короткие имена 8.3 (RUNNER~1), переменные окружения и точки соединения не раскрываются: такие пути связываются только по номеру записи MFT."),
         };
         if (_ambiguous > 0)
@@ -375,6 +380,130 @@ public sealed class CorrelationEngine(Ulid investigationId, DateTimeOffset inves
         }
     }
 
+    // ----- Signature database (stage 9) -----
+
+    private static bool Identifies(SignatureMatch m) =>
+        m.EntryStatus == "verified" && m.Kind is SignatureMatchKind.ExactHashMatch or SignatureMatchKind.VerifiedComponentMatch;
+
+    /// <summary>
+    /// One finding per database entry and object (or record outside objects), with the strongest kind of match;
+    /// then KNOWN_CLIENT_ACTIVITY where a verified identification meets activity from other sources.
+    /// </summary>
+    private IEnumerable<Finding> SignatureFindings(IReadOnlyList<EvidenceFacts> facts, IReadOnlyList<SignatureMatch> matches, List<CorrelatedObject> objects, Dictionary<Ulid, List<(EvidenceFacts Fact, LinkKind Link)>> objectFacts)
+    {
+        if (matches.Count == 0)
+        {
+            yield break;
+        }
+
+        var byId = facts.ToDictionary(f => f.Id);
+        var objectOf = new Dictionary<Ulid, CorrelatedObject>();
+        foreach (var o in objects)
+        {
+            foreach (var m in o.Members)
+            {
+                objectOf[m.EvidenceId] = o;
+            }
+        }
+
+        foreach (var g in matches.Where(m => byId.ContainsKey(m.EvidenceId))
+                     .GroupBy(m => (m.ClientId, Key: objectOf.TryGetValue(m.EvidenceId, out var o) ? o.ObjectId : m.EvidenceId)))
+        {
+            var best = g.MaxBy(m => Strength(m.Kind))!;
+            var basis = g.Select(m => byId[m.EvidenceId]).DistinctBy(f => f.Id).ToList();
+            var o = objectOf.GetValueOrDefault(best.EvidenceId);
+            var confidence = best.Kind switch
+            {
+                SignatureMatchKind.ExactHashMatch or SignatureMatchKind.VerifiedComponentMatch when best.EntryStatus == "verified" => Confidence.Medium,
+                SignatureMatchKind.NameMatch when best.ClientKind is not ("launcher" or "generic") => Confidence.Low,
+                _ => Confidence.Informational,
+            };
+            var status = best.EntryStatus switch
+            {
+                "verified" => "запись проверена по собственному источнику проекта",
+                "candidate" => "кандидат, ещё не проверен по источникам",
+                _ => "запись из списка заказчика, ещё не проверена по источникам",
+            };
+            var finding = Make("SIGNATURE_MATCH", confidence, o, basis, [],
+                $"{KindText(best.Kind)}: {best.ClientName}",
+                $"{best.Detail} {best.ClientName} — {ClientKindText(best.ClientKind)}; {status}." + (g.Count() > 1 ? $" Совпадений по этому объекту: {g.Count()}." : string.Empty),
+                confidence switch
+                {
+                    Confidence.Medium => "Прямое опознание одного объекта: точный SHA-256 файла из указанного источника или компонент (идентификатор мода, пакет, класс запуска), подтверждённый исходным кодом проекта. Само по себе — не вывод о нарушении: файл мог лежать без использования, а некоторые проекты легальны в одиночной игре.",
+                    Confidence.Low => "Совпадение по имени: файл можно переименовать, а безобидный файл — назвать так же. Это повод проверить объект, а не доказательство.",
+                    _ => best.ClientKind is "launcher" or "generic"
+                        ? "Название лаунчера или общий термин само по себе нарушением не считается."
+                        : "Возможное совпадение: общеупотребительное слово или непроверенная запись; учтено только в связи с Minecraft.",
+                },
+                directIdentification: Identifies(best));
+            yield return finding with { MatchKind = best.Kind, ClientId = best.ClientId, VerifiedIdentification = Identifies(best) };
+        }
+
+        // KNOWN_CLIENT_ACTIVITY: a verified identification and, on the same object, activity from other sources.
+        foreach (var o in objects)
+        {
+            var members = objectFacts[o.ObjectId].Select(m => m.Fact).ToList();
+            var ids = members.Select(f => f.Id).ToHashSet();
+            var identification = matches.Where(m => ids.Contains(m.EvidenceId) && Identifies(m)).OrderByDescending(m => Strength(m.Kind)).FirstOrDefault();
+            if (identification is null)
+            {
+                continue;
+            }
+
+            var identified = byId[identification.EvidenceId];
+            var activity = members.Where(f => f.Id != identified.Id && Family(f) != Family(identified)
+                                             && (IsExecution(f) || f.Type is EvidenceEventType.Deleted or EvidenceEventType.Renamed or EvidenceEventType.Moved || f.Attr("Jvm.Flag") is not null))
+                .ToList();
+            if (activity.Count == 0)
+            {
+                continue;
+            }
+
+            var families = activity.Select(Family).Append(Family(identified)).Distinct(StringComparer.Ordinal).Count();
+            var confidence = families >= Finding.MinFamiliesForHigh ? Confidence.High : Confidence.Medium;
+            var what = string.Join(", ", activity.Select(f => IsExecution(f) ? "запуск или загрузка" : f.Type == EvidenceEventType.Deleted ? "удаление" : f.Attr("Jvm.Flag") is not null ? "подключение через параметр JVM" : "переименование").Distinct());
+            var finding = Make("KNOWN_CLIENT_ACTIVITY", confidence, o, [identified, .. activity.Take(MaxContext)], [],
+                $"Опознанный {ClientKindText(identification.ClientKind)} {identification.ClientName}: следы использования",
+                $"{o.DisplayPath ?? o.FileName} опознан как {identification.ClientName} ({KindText(identification.Kind)}: {identification.Matched}); по независимым источникам: {what} ({string.Join(", ", activity.Select(Family).Distinct())}).",
+                confidence == Confidence.High
+                    ? "Опознание по точному хешу или подтверждённому компоненту и следы использования минимум из двух других независимых источников. Это наиболее сильная форма вывода XIN SKAN, но решение о нарушении принимает человек: в одиночной игре и на некоторых серверах такие клиенты разрешены."
+                    : "Опознание по точному хешу или подтверждённому компоненту и след использования из одного независимого источника.");
+            yield return finding with { VerifiedIdentification = true, MatchKind = identification.Kind, ClientId = identification.ClientId };
+        }
+    }
+
+    private static int Strength(SignatureMatchKind k) => k switch
+    {
+        SignatureMatchKind.ExactHashMatch => 5,
+        SignatureMatchKind.VerifiedComponentMatch => 4,
+        SignatureMatchKind.MultipleFeatureMatch => 3,
+        SignatureMatchKind.NameMatch => 2,
+        SignatureMatchKind.PossibleMatch => 1,
+        _ => 0,
+    };
+
+    private static string KindText(SignatureMatchKind k) => k switch
+    {
+        SignatureMatchKind.ExactHashMatch => "Exact Hash Match — точный хеш",
+        SignatureMatchKind.VerifiedComponentMatch => "Verified Component Match — подтверждённый компонент",
+        SignatureMatchKind.MultipleFeatureMatch => "Multiple Feature Match — несколько признаков функций",
+        SignatureMatchKind.NameMatch => "Name Match — совпадение имени",
+        SignatureMatchKind.PossibleMatch => "Possible Match — возможное совпадение",
+        _ => "Unknown",
+    };
+
+    private static string ClientKindText(string kind) => kind switch
+    {
+        "client" => "клиент",
+        "utility" => "утилита автоматизации",
+        "dll" => "внедряемая библиотека",
+        "launcher" => "лаунчер",
+        "loader" => "загрузчик",
+        "tool" => "сторонний инструмент",
+        "feature" => "название функции",
+        _ => "общий термин",
+    };
+
     // ----- Rules across objects -----
 
     /// <summary>EXCLUDED_AND_RAN: Defender was told not to scan a folder from which something ran.</summary>
@@ -473,15 +602,20 @@ public sealed class CorrelationEngine(Ulid investigationId, DateTimeOffset inves
         }
     }
 
-    private Finding Make(string rule, Confidence confidence, CorrelatedObject? o, IReadOnlyList<EvidenceFacts> basis, IReadOnlyList<EvidenceFacts> context, string title, string description, string rationale)
+    private Finding Make(string rule, Confidence confidence, CorrelatedObject? o, IReadOnlyList<EvidenceFacts> basis, IReadOnlyList<EvidenceFacts> context, string title, string description, string rationale, bool directIdentification = false)
     {
         var times = basis.Concat(context).Where(f => f.Time is not null).Select(f => f.Time!.Value).ToList();
         var families = basis.Select(Family).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToList();
 
         // The policy, applied once: without two independent families a rule cannot go above Low.
-        if (confidence > Confidence.Low && families.Count < Finding.MinFamiliesForMedium)
+        if (confidence > Confidence.Low && families.Count < Finding.MinFamiliesForMedium && !directIdentification)
         {
             confidence = Confidence.Low;
+        }
+
+        if (confidence == Confidence.High && families.Count < Finding.MinFamiliesForHigh)
+        {
+            confidence = Confidence.Medium;
         }
 
         var members = basis.Select(f => new FindingMember(f.Id, "basis"))

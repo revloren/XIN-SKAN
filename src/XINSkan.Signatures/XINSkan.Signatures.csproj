@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>XINSkan.Signatures</RootNamespace>
+    <Description>Signature database of known clients and tools: loading, validation, signed updates and matching.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XINSkan.Models\XINSkan.Models.csproj" />
+    <ProjectReference Include="..\XINSkan.Core\XINSkan.Core.csproj" />
+    <ProjectReference Include="..\XINSkan.Correlation\XINSkan.Correlation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The database shipped with the application: protected by the application's own integrity, updated by signed bundles. -->
+    <EmbeddedResource Include="..\..\database\manifest.json" LogicalName="database/manifest.json" />
+    <EmbeddedResource Include="..\..\database\clients.json" LogicalName="database/clients.json" />
+    <EmbeddedResource Include="..\..\database\aliases.json" LogicalName="database/aliases.json" />
+    <EmbeddedResource Include="..\..\database\hashes.json" LogicalName="database/hashes.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="XINSkan.SignaturesTests" />
+    <InternalsVisibleTo Include="XINSkan.UnitTests" />
+  </ItemGroup>
+</Project>

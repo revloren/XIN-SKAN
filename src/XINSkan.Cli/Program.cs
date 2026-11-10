@@ -41,6 +41,8 @@ internal static class Program
         {
             ["investigate", .. var rest] => await InvestigateAsync(rest).ConfigureAwait(false),
             ["verify", var folder] => Verify(folder),
+            ["signatures"] => Signatures(null),
+            ["signatures", var update] => Signatures(update),
             _ => PrintUsage(),
         };
     }
@@ -53,6 +55,8 @@ internal static class Program
                   Новая проверка. Результаты записываются в новую подпапку <папка>; исследуемые данные не изменяются.
               xinskan verify <папка проверки>
                   Проверяет манифест, цепочку журнала аудита и базу сохранённой проверки.
+              xinskan signatures [<папка обновления>]
+                  Показывает базу сигнатур, которая будет использована, и проверяет подписанное обновление.
             """);
         return Usage;
     }
@@ -147,6 +151,10 @@ internal static class Program
         }
 
         Console.WriteLine($"  Корреляция:   объектов {outcome.Correlation.Objects.Count.ToString("N0", Ru)}, находок {outcome.Correlation.Findings.Count.ToString("N0", Ru)}");
+        if (outcome.Correlation.Database is { } usedDb)
+        {
+            Console.WriteLine($"  База сигнатур: {usedDb.Version} ({usedDb.Origin}); {string.Join(" ", usedDb.Problems)}");
+        }
         PrintFindings(outcome.Correlation.Findings);
 
         foreach (var c in outcome.Permissions.Capabilities.Where(c => !c.Available).OrderBy(c => c.Capability))
@@ -208,6 +216,11 @@ internal static class Program
             }
 
             PrintSummary(reader.ReadEvidence().ToList());
+            if (reader.ReadSignatureDatabase() is { } sigdb)
+            {
+                Console.WriteLine($"  База сигнатур: {sigdb.Version} ({sigdb.Origin}), записей {sigdb.Clients}, проверенных {sigdb.VerifiedClients}, хешей {sigdb.Hashes}.");
+            }
+
             if (reader.ReadCorrelationRun() is { } run)
             {
                 Console.WriteLine($"  Корреляция: прочитано записей {run.EvidenceRead.ToString("N0", Ru)}, объектов {run.Objects.ToString("N0", Ru)}, находок {run.Findings.ToString("N0", Ru)}.");
@@ -273,6 +286,40 @@ internal static class Program
         {
             Console.WriteLine($"    {g.Count(),6}  {g.Key}");
         }
+    }
+
+    [SupportedOSPlatform("windows")]
+    private static int Signatures(string? update)
+    {
+        var folder = update ?? Path.Combine(AppContext.BaseDirectory, "signatures");
+        var loaded = XINSkan.Signatures.DatabaseLoader.Load(folder, path =>
+        {
+            try
+            {
+                using var f = WindowsFileSource.Instance.Open(path);
+                var b = new byte[f.Content.Length];
+                return f.Content.ReadAtLeast(b, b.Length, throwOnEndOfStream: false) == b.Length ? b : null;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                return null;
+            }
+        }, XINSkan.Signatures.TrustedKeys.Default);
+        var db = loaded.Database;
+        Console.WriteLine($"База сигнатур {db.Manifest.Version} ({(db.Origin == "embedded" ? "встроенная" : db.Origin)}), SHA-256 манифеста {db.ManifestSha256}");
+        Console.WriteLine($"  Записей {db.Clients.Count}: проверено по источникам {db.Clients.Count(c => c.Status == "verified")}, из списка заказчика {db.Clients.Count(c => c.Status == "user-list")}, кандидатов {db.Clients.Count(c => c.Status == "candidate")}; хешей {db.Hashes.Count}.");
+        Console.WriteLine($"  Доверенных ключей для обновлений: {XINSkan.Signatures.TrustedKeys.Default.Count}.");
+        foreach (var n in loaded.Notes.Concat(db.Problems))
+        {
+            Console.WriteLine("  " + n);
+        }
+
+        foreach (var c in db.Manifest.Changelog.TakeLast(3))
+        {
+            Console.WriteLine($"  {c.Version} ({c.Date}): {string.Join(" ", c.Changes)}");
+        }
+
+        return update is not null && db.Origin == "embedded" && loaded.Notes.Count > 0 ? Failed : Ok;
     }
 
     private static void PrintFindings(IReadOnlyList<Finding> findings)

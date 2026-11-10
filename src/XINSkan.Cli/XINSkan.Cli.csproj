@@ -14,5 +14,6 @@
     <ProjectReference Include="..\XINSkan.Storage\XINSkan.Storage.csproj" />
     <ProjectReference Include="..\XINSkan.Analyzers.FileHunter\XINSkan.Analyzers.FileHunter.csproj" />
     <ProjectReference Include="..\XINSkan.Investigation\XINSkan.Investigation.csproj" />
+    <ProjectReference Include="..\XINSkan.Signatures\XINSkan.Signatures.csproj" />
   </ItemGroup>
 </Project>

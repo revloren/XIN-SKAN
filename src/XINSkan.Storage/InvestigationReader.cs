@@ -194,6 +194,22 @@ public sealed class InvestigationReader : IDisposable
         return r.Read() ? (Rows.FromTicks(r.GetInt64(0)), r.GetInt64(1), r.GetInt64(2), r.GetInt64(3), Rows.Limitations(r.GetString(4))) : null;
     }
 
+    /// <summary>The signature database the investigation used; null before schema 3 or when none was recorded.</summary>
+    public SignatureDatabaseInfo? ReadSignatureDatabase()
+    {
+        if (SchemaVersion() < 3)
+        {
+            return null;
+        }
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "SELECT Version, Origin, ManifestSha256, KeyId, Clients, VerifiedClients, Hashes, Problems FROM SignatureDatabases ORDER BY Id DESC LIMIT 1;";
+        using var r = cmd.ExecuteReader();
+        return r.Read()
+            ? new SignatureDatabaseInfo(r.GetString(0), r.GetString(1), r.GetString(2), Str(r, 3), (int)r.GetInt64(4), (int)r.GetInt64(5), (int)r.GetInt64(6), Rows.Strings(r.GetString(7)))
+            : null;
+    }
+
     /// <summary>Correlated objects with their members; empty for schema 1.</summary>
     public IReadOnlyList<CorrelatedObject> ReadObjects()
     {
@@ -274,10 +290,11 @@ public sealed class InvestigationReader : IDisposable
             }
         }
 
+        var v3 = SchemaVersion() >= 3;
         using var cmd = _connection.CreateCommand();
-        cmd.CommandText = """
+        cmd.CommandText = $"""
             SELECT FindingId, InvestigationId, RuleId, Confidence, Title, Description, Rationale, Limitations,
-                   FirstUtcTicks, LastUtcTicks, ObjectId, IndependentFamilies, VerifiedIdentification
+                   FirstUtcTicks, LastUtcTicks, ObjectId, IndependentFamilies, VerifiedIdentification{(v3 ? ", MatchKind, ClientId" : string.Empty)}
             FROM Findings ORDER BY FindingId;
             """;
         using var f = cmd.ExecuteReader();
@@ -299,6 +316,8 @@ public sealed class InvestigationReader : IDisposable
                 ObjectId = f.IsDBNull(10) ? null : Ulid.Parse(f.GetString(10)),
                 IndependentFamilies = Rows.Strings(f.GetString(11)),
                 VerifiedIdentification = f.GetInt64(12) != 0,
+                MatchKind = v3 && !f.IsDBNull(13) ? Enum.Parse<SignatureMatchKind>(f.GetString(13)) : null,
+                ClientId = v3 ? Str(f, 14) : null,
                 Members = members.GetValueOrDefault(f.GetString(0)) ?? [],
             });
         }

@@ -237,8 +237,8 @@ public sealed class InvestigationStore : IInvestigationSink, ICorrelationSink, I
                 cmd.Transaction = tx;
                 cmd.CommandText = """
                     INSERT INTO Findings (FindingId, InvestigationId, RuleId, Confidence, Title, Description, Rationale, Limitations,
-                        FirstUtcTicks, LastUtcTicks, ObjectId, IndependentFamilies, VerifiedIdentification)
-                    VALUES ($id, $inv, $rule, $conf, $title, $desc, $why, $lim, $first, $last, $obj, $families, $verified);
+                        FirstUtcTicks, LastUtcTicks, ObjectId, IndependentFamilies, VerifiedIdentification, MatchKind, ClientId)
+                    VALUES ($id, $inv, $rule, $conf, $title, $desc, $why, $lim, $first, $last, $obj, $families, $verified, $match, $client);
                     """;
                 cmd.Parameters.AddWithValue("$id", f.FindingId.Value);
                 cmd.Parameters.AddWithValue("$inv", f.InvestigationId.Value);
@@ -253,6 +253,8 @@ public sealed class InvestigationStore : IInvestigationSink, ICorrelationSink, I
                 cmd.Parameters.AddWithValue("$obj", (object?)f.ObjectId?.Value ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("$families", Rows.Strings(f.IndependentFamilies));
                 cmd.Parameters.AddWithValue("$verified", f.VerifiedIdentification ? 1 : 0);
+                cmd.Parameters.AddWithValue("$match", (object?)f.MatchKind?.ToString() ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$client", (object?)f.ClientId ?? DBNull.Value);
                 cmd.ExecuteNonQuery();
 
                 foreach (var m in f.Members)
@@ -265,6 +267,26 @@ public sealed class InvestigationStore : IInvestigationSink, ICorrelationSink, I
                     member.Parameters.AddWithValue("$r", m.Role);
                     member.ExecuteNonQuery();
                 }
+            }
+
+            if (result.Database is { } d)
+            {
+                using var cmd = _connection.CreateCommand();
+                cmd.Transaction = tx;
+                cmd.CommandText = """
+                    INSERT INTO SignatureDatabases (InvestigationId, Version, Origin, ManifestSha256, KeyId, Clients, VerifiedClients, Hashes, Problems)
+                    VALUES ($inv, $ver, $origin, $sha, $key, $clients, $verified, $hashes, $problems);
+                    """;
+                cmd.Parameters.AddWithValue("$inv", Info.InvestigationId.Value);
+                cmd.Parameters.AddWithValue("$ver", d.Version);
+                cmd.Parameters.AddWithValue("$origin", d.Origin);
+                cmd.Parameters.AddWithValue("$sha", d.ManifestSha256);
+                cmd.Parameters.AddWithValue("$key", (object?)d.KeyId ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$clients", d.Clients);
+                cmd.Parameters.AddWithValue("$verified", d.VerifiedClients);
+                cmd.Parameters.AddWithValue("$hashes", d.Hashes);
+                cmd.Parameters.AddWithValue("$problems", Rows.Strings(d.Problems));
+                cmd.ExecuteNonQuery();
             }
 
             using (var run = _connection.CreateCommand())

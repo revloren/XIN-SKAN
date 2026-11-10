@@ -6,12 +6,13 @@ namespace XINSkan.Storage;
 /// </summary>
 /// <remarks>
 /// The specification's FileEvents and ExecutionEvents tables are views over Evidence filtered by event type,
-/// so each fact is stored once. Version 2 (stage 7) adds the correlation tables; network, signature and report
-/// tables are added by the stages that produce them (see docs/STORAGE.md).
+/// so each fact is stored once. Version 2 (stage 7) adds the correlation tables, version 3 (stage 9) the signature
+/// match columns of Findings and the SignatureDatabases table; network and report tables are added by the stages
+/// that produce them (see docs/STORAGE.md).
 /// </remarks>
 internal static class Schema
 {
-    public const int Version = 2;
+    public const int Version = 3;
 
     public const string Create = """
         PRAGMA foreign_keys = ON;
@@ -155,7 +156,22 @@ internal static class Schema
             LastUtcTicks    INTEGER,
             ObjectId        TEXT REFERENCES CorrelatedObjects(ObjectId),
             IndependentFamilies TEXT NOT NULL,
-            VerifiedIdentification INTEGER NOT NULL
+            VerifiedIdentification INTEGER NOT NULL,
+            MatchKind       TEXT,
+            ClientId        TEXT
+        );
+
+        CREATE TABLE SignatureDatabases (
+            Id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            InvestigationId TEXT NOT NULL REFERENCES Investigations(InvestigationId),
+            Version         TEXT NOT NULL,
+            Origin          TEXT NOT NULL,
+            ManifestSha256  TEXT NOT NULL,
+            KeyId           TEXT,
+            Clients         INTEGER NOT NULL,
+            VerifiedClients INTEGER NOT NULL,
+            Hashes          INTEGER NOT NULL,
+            Problems        TEXT NOT NULL
         );
 
         CREATE TABLE FindingMembers (
@@ -212,6 +228,10 @@ internal static class Schema
         CREATE TRIGGER FindingMembers_NoUpdate BEFORE UPDATE ON FindingMembers
             BEGIN SELECT RAISE(ABORT, 'Correlation is immutable'); END;
         CREATE TRIGGER FindingMembers_NoDelete BEFORE DELETE ON FindingMembers
+            BEGIN SELECT RAISE(ABORT, 'Correlation is immutable'); END;
+        CREATE TRIGGER SignatureDatabases_NoUpdate BEFORE UPDATE ON SignatureDatabases
+            BEGIN SELECT RAISE(ABORT, 'Correlation is immutable'); END;
+        CREATE TRIGGER SignatureDatabases_NoDelete BEFORE DELETE ON SignatureDatabases
             BEGIN SELECT RAISE(ABORT, 'Correlation is immutable'); END;
         CREATE TRIGGER Investigations_NoUpdate BEFORE UPDATE ON Investigations
             BEGIN SELECT RAISE(ABORT, 'Investigation header is immutable'); END;

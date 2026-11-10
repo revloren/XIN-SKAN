@@ -14,6 +14,7 @@
     <ProjectReference Include="..\XINSkan.Analyzers.History\XINSkan.Analyzers.History.csproj" />
     <ProjectReference Include="..\XINSkan.Analyzers.Execution\XINSkan.Analyzers.Execution.csproj" />
     <ProjectReference Include="..\XINSkan.Correlation\XINSkan.Correlation.csproj" />
+    <ProjectReference Include="..\XINSkan.Signatures\XINSkan.Signatures.csproj" />
     <ProjectReference Include="..\XINSkan.Analyzers.Minecraft\XINSkan.Analyzers.Minecraft.csproj" />
   </ItemGroup>
 </Project>

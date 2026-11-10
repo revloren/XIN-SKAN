@@ -6,6 +6,7 @@ using XINSkan.Analyzers.Execution;
 using XINSkan.Analyzers.History;
 using XINSkan.Analyzers.Minecraft;
 using XINSkan.Correlation;
+using XINSkan.Signatures;
 using XINSkan.Ntfs;
 using XINSkan.Core.IO;
 using XINSkan.Core.Permissions;
@@ -86,6 +87,12 @@ public sealed record InvestigationRequest
 
     /// <summary>Consents given by the owner for this investigation. None are assumed.</summary>
     public IReadOnlyList<(Consent Consent, string GrantedBy, string Statement)> Consents { get; init; } = [];
+
+    /// <summary>
+    /// Folder of a signed signature-database update (manifest.json, manifest.sig, data files); null — the
+    /// "signatures" folder next to the application. Without a valid update the built-in database is used.
+    /// </summary>
+    public string? SignatureUpdateFolder { get; init; }
 }
 
 /// <summary>Result of one investigation, as written to its folder.</summary>
@@ -201,7 +208,7 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
                 written = counting.Evidence;
 
                 // Correlation reads only what the analyzers wrote; a cancelled run is correlated as far as it got.
-                correlation = await CorrelateAsync(id, started, store, counting, audit, progress, run.Cancelled).ConfigureAwait(false);
+                correlation = await CorrelateAsync(id, started, store, counting, audit, progress, run.Cancelled, request.SignatureUpdateFolder ?? Path.Combine(AppContext.BaseDirectory, "signatures"), files).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -231,7 +238,7 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
         return new InvestigationOutcome(id, output.Root, run, written, manifest, selfCheck, location, permissions) { Correlation = correlation };
     }
 
-    private async Task<CorrelationResult> CorrelateAsync(Ulid id, DateTimeOffset started, IInvestigationSink store, CountingSink counting, AuditLogger audit, IProgress<ModuleProgress>? progress, bool cancelled)
+    private async Task<CorrelationResult> CorrelateAsync(Ulid id, DateTimeOffset started, IInvestigationSink store, CountingSink counting, AuditLogger audit, IProgress<ModuleProgress>? progress, bool cancelled, string updateFolder, IFileSource files)
     {
         var facts = counting.Facts;
         progress?.Report(new ModuleProgress("correlation", ModuleState.Running, $"Корреляция {facts.Count:N0} записей…"));
@@ -239,7 +246,12 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
         CorrelationResult result;
         try
         {
-            result = new CorrelationEngine(id, started, time).Run(facts);
+            var loaded = DatabaseLoader.Load(updateFolder, path => ReadSmall(files, path), TrustedKeys.Default);
+            var db = loaded.Database;
+            audit.Record("signature-database", db.Origin, "read-only", "ok",
+                $"version {db.Manifest.Version}; clients {db.Clients.Count} (verified {db.Clients.Count(c => c.Status == "verified")}); hashes {db.Hashes.Count}; {string.Join(" ", loaded.Notes)}");
+            var matches = new Matcher(db).Match(facts);
+            result = new CorrelationEngine(id, started, time).Run(facts, matches) with { Database = db.Info() with { Problems = [.. db.Problems, .. loaded.Notes] } };
         }
 #pragma warning disable CA1031 // A defect in a rule must not lose the collected evidence: it is recorded and correlation is skipped.
         catch (Exception ex)
@@ -264,6 +276,26 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
         progress?.Report(new ModuleProgress("correlation", ModuleState.Completed,
             $"Объектов {result.Objects.Count:N0}, находок {result.Findings.Count:N0} ({clock.Elapsed.TotalSeconds:F1} с)."));
         return result;
+    }
+
+    /// <summary>Reads a signature-database file (at most 64 MB) through the audited read-only source; null when absent.</summary>
+    private static byte[]? ReadSmall(IFileSource files, string path)
+    {
+        try
+        {
+            using var f = files.Open(path);
+            if (f.Content.Length > 64L * 1024 * 1024)
+            {
+                return null;
+            }
+
+            var b = new byte[f.Content.Length];
+            return f.Content.ReadAtLeast(b, b.Length, throwOnEndOfStream: false) == b.Length ? b : null;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
 
     /// <summary>Volumes the analyzers read from, so the output policy can warn when results land on one of them.</summary>

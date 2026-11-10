@@ -46,7 +46,7 @@ public static class ModuleCatalog
         new("Execution Engine", "Prefetch, BAM, Amcache, UserAssist, журналы событий. Ещё нет: SRUM", ModuleReadiness.Partial, 6),
         new("Корреляция", "Связь записей одного файла по номеру MFT и пути, девять опубликованных правил, находки Low/Medium. Ещё нет: связь по содержимому (SHA-1 Amcache), отчёт-хронология", ModuleReadiness.Partial, 7),
         new("Minecraft Integrity", "Лаунчеры и экземпляры, версии и загрузчики, параметры JVM, сверка клиента и библиотек с хешами из файлов версий. Ещё нет: сверка с хешами Mojang (этап 9), Modrinth app.db, настройки Lunar/Badlion/Feather", ModuleReadiness.Partial, 8),
-        new("База клиентов и признаков", "Известные клиенты, псевдонимы, функции, проверенные хеши", ModuleReadiness.Planned, 9),
+        new("База клиентов и признаков", "Список заказчика и кандидаты; 9 проектов проверены по исходному коду; совпадения по хешу, компонентам и именам; подписанные обновления. Ещё нет: хеши релизов, признаки функций (этап 10)", ModuleReadiness.Partial, 9),
         new("Network Monitor", "Соединения и трафик по процессам — только с согласия", ModuleReadiness.Planned, 10),
         new("Cloud Trace", "Загрузки браузеров и Telegram — только с согласия", ModuleReadiness.Planned, 11),
         new("Отчёты", "Для администрации и для эксперта: PDF, HTML, JSON", ModuleReadiness.Planned, 12),

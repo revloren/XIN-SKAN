@@ -1,0 +1,665 @@
+{
+  "schema": 1,
+  "aliases": [
+    {
+      "original": "Baritone",
+      "normalized": "baritone",
+      "id": "baritone",
+      "list": "9.1"
+    },
+    {
+      "original": "Cabaletta",
+      "normalized": "cabaletta",
+      "id": "baritone",
+      "list": "9.1"
+    },
+    {
+      "original": "Jigsaw",
+      "normalized": "jigsaw",
+      "id": "jigsaw",
+      "list": "9.1"
+    },
+    {
+      "original": "LiquidBounce",
+      "normalized": "liquidbounce",
+      "id": "liquidbounce",
+      "list": "9.1"
+    },
+    {
+      "original": "Wurst",
+      "normalized": "wurst",
+      "id": "wurst",
+      "list": "9.1"
+    },
+    {
+      "original": "GishCode",
+      "normalized": "gishcode",
+      "id": "gishcode",
+      "list": "9.1"
+    },
+    {
+      "original": "Inertia",
+      "normalized": "inertia",
+      "id": "inertia",
+      "list": "9.1"
+    },
+    {
+      "original": "Impact",
+      "normalized": "impact",
+      "id": "impact",
+      "list": "9.1"
+    },
+    {
+      "original": "rename_me_please.dll",
+      "normalized": "renamemeplease",
+      "id": "renamemeplease",
+      "list": "9.1"
+    },
+    {
+      "original": "Future",
+      "normalized": "future",
+      "id": "future",
+      "list": "9.1"
+    },
+    {
+      "original": "RusherHack",
+      "normalized": "rusherhack",
+      "id": "rusherhack",
+      "list": "9.1"
+    },
+    {
+      "original": "Pyro",
+      "normalized": "pyro",
+      "id": "pyro",
+      "list": "9.1"
+    },
+    {
+      "original": "Zamorozka",
+      "normalized": "zamorozka",
+      "id": "zamorozka",
+      "list": "9.1"
+    },
+    {
+      "original": "Konas",
+      "normalized": "konas",
+      "id": "konas",
+      "list": "9.1"
+    },
+    {
+      "original": "WintWare",
+      "normalized": "wintware",
+      "id": "wintware",
+      "list": "9.1"
+    },
+    {
+      "original": "Nursultan",
+      "normalized": "nursultan",
+      "id": "nursultan",
+      "list": "9.1"
+    },
+    {
+      "original": "Norules",
+      "normalized": "norules",
+      "id": "norules",
+      "list": "9.1"
+    },
+    {
+      "original": "Akrien",
+      "normalized": "akrien",
+      "id": "akrien",
+      "list": "9.1"
+    },
+    {
+      "original": "Sigma",
+      "normalized": "sigma",
+      "id": "sigma",
+      "list": "9.1"
+    },
+    {
+      "original": "DeadCode",
+      "normalized": "deadcode",
+      "id": "deadcode",
+      "list": "9.1"
+    },
+    {
+      "original": "Eternity",
+      "normalized": "eternity",
+      "id": "eternity",
+      "list": "9.1"
+    },
+    {
+      "original": "WEXSIDE",
+      "normalized": "wexside",
+      "id": "wexside",
+      "list": "9.1"
+    },
+    {
+      "original": "Rich",
+      "normalized": "rich",
+      "id": "rich",
+      "list": "9.1"
+    },
+    {
+      "original": "RichPremium",
+      "normalized": "richpremium",
+      "id": "richpremium",
+      "list": "9.1"
+    },
+    {
+      "original": "EdItMe.dll",
+      "normalized": "editme",
+      "id": "editme",
+      "list": "9.1"
+    },
+    {
+      "original": "mc100.dll",
+      "normalized": "mc100",
+      "id": "mc100",
+      "list": "9.1"
+    },
+    {
+      "original": "Matix",
+      "normalized": "matix",
+      "id": "matix",
+      "list": "9.1"
+    },
+    {
+      "original": "R3D",
+      "normalized": "r3d",
+      "id": "r3d",
+      "list": "9.1"
+    },
+    {
+      "original": "Celestial",
+      "normalized": "celestial",
+      "id": "celestial",
+      "list": "9.1"
+    },
+    {
+      "original": "Wild",
+      "normalized": "wild",
+      "id": "wild",
+      "list": "9.1"
+    },
+    {
+      "original": "Destroy",
+      "normalized": "destroy",
+      "id": "destroy",
+      "list": "9.1"
+    },
+    {
+      "original": "ArchWare",
+      "normalized": "archware",
+      "id": "archware",
+      "list": "9.1"
+    },
+    {
+      "original": "NightMare",
+      "normalized": "nightmare",
+      "id": "nightmare",
+      "list": "9.1"
+    },
+    {
+      "original": "BoberWare",
+      "normalized": "boberware",
+      "id": "boberware",
+      "list": "9.1"
+    },
+    {
+      "original": "FLauncher",
+      "normalized": "flauncher",
+      "id": "flauncher",
+      "list": "9.1"
+    },
+    {
+      "original": "ExLoader",
+      "normalized": "exloader",
+      "id": "exloader",
+      "list": "9.1"
+    },
+    {
+      "original": "MrLauncher",
+      "normalized": "mrlauncher",
+      "id": "mrlauncher",
+      "list": "9.1"
+    },
+    {
+      "original": "R-launcher",
+      "normalized": "rlauncher",
+      "id": "rlauncher",
+      "list": "9.1"
+    },
+    {
+      "original": "McLauncher",
+      "normalized": "mclauncher",
+      "id": "mclauncher",
+      "list": "9.1"
+    },
+    {
+      "original": "CheatEngine",
+      "normalized": "cheatengine",
+      "id": "cheatengine",
+      "list": "9.1"
+    },
+    {
+      "original": "WWE",
+      "normalized": "wwe",
+      "id": "wwe",
+      "list": "9.1"
+    },
+    {
+      "original": "Grey",
+      "normalized": "grey",
+      "id": "grey",
+      "list": "9.1"
+    },
+    {
+      "original": "Jessica",
+      "normalized": "jessica",
+      "id": "jessica",
+      "list": "9.1"
+    },
+    {
+      "original": "SkillClient",
+      "normalized": "skillclient",
+      "id": "skillclient",
+      "list": "9.1"
+    },
+    {
+      "original": "SkSkyClient",
+      "normalized": "skskyclient",
+      "id": "skskyclient",
+      "list": "9.1"
+    },
+    {
+      "original": "Wolfram",
+      "normalized": "wolfram",
+      "id": "wolfram",
+      "list": "9.1"
+    },
+    {
+      "original": "Huzuni",
+      "normalized": "huzuni",
+      "id": "huzuni",
+      "list": "9.1"
+    },
+    {
+      "original": "Squad",
+      "normalized": "squad",
+      "id": "squad",
+      "list": "9.1"
+    },
+    {
+      "original": "tools.jar",
+      "normalized": "tools",
+      "id": "tools",
+      "list": "9.1"
+    },
+    {
+      "original": "kyprak",
+      "normalized": "kyprak",
+      "id": "kyprak",
+      "list": "9.1"
+    },
+    {
+      "original": "Aristois",
+      "normalized": "aristois",
+      "id": "aristois",
+      "list": "9.1"
+    },
+    {
+      "original": "OYMINE",
+      "normalized": "oymine",
+      "id": "oymine",
+      "list": "9.1"
+    },
+    {
+      "original": "HCL",
+      "normalized": "hcl",
+      "id": "hcl",
+      "list": "9.1"
+    },
+    {
+      "original": "Advanced",
+      "normalized": "advanced",
+      "id": "advanced",
+      "list": "9.1"
+    },
+    {
+      "original": "Xray",
+      "normalized": "xray",
+      "id": "xray",
+      "list": "9.1"
+    },
+    {
+      "original": "X-ray",
+      "normalized": "xray",
+      "id": "xray",
+      "list": "9.1"
+    },
+    {
+      "original": "hvii",
+      "normalized": "hvii",
+      "id": "hvii",
+      "list": "9.1"
+    },
+    {
+      "original": "ErbaevHacks",
+      "normalized": "erbaevhacks",
+      "id": "erbaevhacks",
+      "list": "9.1"
+    },
+    {
+      "original": "NeverHook",
+      "normalized": "neverhook",
+      "id": "neverhook",
+      "list": "9.1"
+    },
+    {
+      "original": "Vape",
+      "normalized": "vape",
+      "id": "vape",
+      "list": "9.1"
+    },
+    {
+      "original": "Lite",
+      "normalized": "lite",
+      "id": "lite",
+      "list": "9.1"
+    },
+    {
+      "original": "Cortex",
+      "normalized": "cortex",
+      "id": "cortex",
+      "list": "9.1"
+    },
+    {
+      "original": "Autoclicker",
+      "normalized": "autoclicker",
+      "id": "autoclicker",
+      "list": "9.1"
+    },
+    {
+      "original": "Auto-clicker",
+      "normalized": "autoclicker",
+      "id": "autoclicker",
+      "list": "9.1"
+    },
+    {
+      "original": "Nathox",
+      "normalized": "nathox",
+      "id": "nathox",
+      "list": "9.1"
+    },
+    {
+      "original": "Reverse",
+      "normalized": "reverse",
+      "id": "reverse",
+      "list": "9.1"
+    },
+    {
+      "original": "Never",
+      "normalized": "never",
+      "id": "never",
+      "list": "9.1"
+    },
+    {
+      "original": "Rage",
+      "normalized": "rage",
+      "id": "rage",
+      "list": "9.1"
+    },
+    {
+      "original": "R9",
+      "normalized": "r9",
+      "id": "r9",
+      "list": "9.1"
+    },
+    {
+      "original": "Bypass",
+      "normalized": "bypass",
+      "id": "bypass",
+      "list": "9.1"
+    },
+    {
+      "original": "Matrix",
+      "normalized": "matrix",
+      "id": "matrix",
+      "list": "9.1"
+    },
+    {
+      "original": "Trash",
+      "normalized": "trash",
+      "id": "trash",
+      "list": "9.1"
+    },
+    {
+      "original": "Undetectable",
+      "normalized": "undetectable",
+      "id": "undetectable",
+      "list": "9.1"
+    },
+    {
+      "original": "EditMe",
+      "normalized": "editme",
+      "id": "editme",
+      "list": "9.1"
+    },
+    {
+      "original": "Freecam",
+      "normalized": "freecam",
+      "id": "freecam",
+      "list": "9.1"
+    },
+    {
+      "original": "Infinity",
+      "normalized": "infinity",
+      "id": "infinity",
+      "list": "9.1"
+    },
+    {
+      "original": "ForceWare",
+      "normalized": "forceware",
+      "id": "forceware",
+      "list": "9.1"
+    },
+    {
+      "original": "Groza",
+      "normalized": "groza",
+      "id": "groza",
+      "list": "9.1"
+    },
+    {
+      "original": "GrozaClient",
+      "normalized": "grozaclient",
+      "id": "groza",
+      "list": "9.1"
+    },
+    {
+      "original": "ZenWare",
+      "normalized": "zenware",
+      "id": "zenware",
+      "list": "9.1"
+    },
+    {
+      "original": "Ghost",
+      "normalized": "ghost",
+      "id": "ghost",
+      "list": "9.1"
+    },
+    {
+      "original": "WaterClient",
+      "normalized": "waterclient",
+      "id": "waterclient",
+      "list": "9.1"
+    },
+    {
+      "original": "External",
+      "normalized": "external",
+      "id": "external",
+      "list": "9.1"
+    },
+    {
+      "original": "Stress Client",
+      "normalized": "stressclient",
+      "id": "stressclient",
+      "list": "9.1"
+    },
+    {
+      "original": "R8",
+      "normalized": "r8",
+      "id": "r8",
+      "list": "9.1"
+    },
+    {
+      "original": "ExtremeHack",
+      "normalized": "extremehack",
+      "id": "extremehack",
+      "list": "9.1"
+    },
+    {
+      "original": "Ares",
+      "normalized": "ares",
+      "id": "ares",
+      "list": "9.1"
+    },
+    {
+      "original": "SalHack",
+      "normalized": "salhack",
+      "id": "salhack",
+      "list": "9.1"
+    },
+    {
+      "original": "Kami",
+      "normalized": "kami",
+      "id": "kami",
+      "list": "9.1"
+    },
+    {
+      "original": "Blue",
+      "normalized": "blue",
+      "id": "blue",
+      "list": "9.1"
+    },
+    {
+      "original": "Heracles",
+      "normalized": "heracles",
+      "id": "heracles",
+      "list": "9.1"
+    },
+    {
+      "original": "Summer",
+      "normalized": "summer",
+      "id": "summer",
+      "list": "9.1"
+    },
+    {
+      "original": "Summit",
+      "normalized": "summit",
+      "id": "summit",
+      "list": "9.1"
+    },
+    {
+      "original": "Xulu",
+      "normalized": "xulu",
+      "id": "xulu",
+      "list": "9.1"
+    },
+    {
+      "original": "EaZy",
+      "normalized": "eazy",
+      "id": "eazy",
+      "list": "9.1"
+    },
+    {
+      "original": "Sky",
+      "normalized": "sky",
+      "id": "sky",
+      "list": "9.1"
+    },
+    {
+      "original": "Kompl",
+      "normalized": "kompl",
+      "id": "kompl",
+      "list": "9.1"
+    },
+    {
+      "original": "Vane",
+      "normalized": "vane",
+      "id": "vane",
+      "list": "9.1"
+    },
+    {
+      "original": "Shit",
+      "normalized": "shit",
+      "id": "shit",
+      "list": "9.1"
+    },
+    {
+      "original": "Nemezida",
+      "normalized": "nemezida",
+      "id": "nemezida",
+      "list": "9.1"
+    },
+    {
+      "original": "Haruka",
+      "normalized": "haruka",
+      "id": "haruka",
+      "list": "9.1"
+    },
+    {
+      "original": "Nix",
+      "normalized": "nix",
+      "id": "nix",
+      "list": "9.1"
+    },
+    {
+      "original": "NightDLC",
+      "normalized": "nightdlc",
+      "id": "nightdlc",
+      "list": "9.1"
+    },
+    {
+      "original": "Meteor Client",
+      "normalized": "meteorclient",
+      "id": "meteor",
+      "list": "9.2"
+    },
+    {
+      "original": "Raven",
+      "normalized": "raven",
+      "id": "raven",
+      "list": "9.2"
+    },
+    {
+      "original": "Raven XD",
+      "normalized": "ravenxd",
+      "id": "ravenxd",
+      "list": "9.2"
+    },
+    {
+      "original": "Boze",
+      "normalized": "boze",
+      "id": "boze",
+      "list": "9.2"
+    },
+    {
+      "original": "Doomsday",
+      "normalized": "doomsday",
+      "id": "doomsday",
+      "list": "9.2"
+    },
+    {
+      "original": "BleachHack",
+      "normalized": "bleachhack",
+      "id": "bleachhack",
+      "list": "9.2"
+    },
+    {
+      "original": "Phobos",
+      "normalized": "phobos",
+      "id": "phobos",
+      "list": "9.2"
+    }
+  ]
+}

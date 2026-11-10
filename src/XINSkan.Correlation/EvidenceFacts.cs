@@ -30,7 +30,12 @@ public sealed record EvidenceFacts(
         "Defender.Threat", "Defender.ExclusionType", "Defender.Change",
         "EventLog.EventId", "EventLog.Channel", "EventLog.ClearedChannel",
         "Volume.Serial", "Lnk.DriveSerial", "Lnk.DriveType", "Lnk.VolumeLabel", "MinecraftRoot",
-        "Jvm.Flag", "Jvm.Where", "Sha1.Actual", "Version.Id",
+        "Jvm.Flag", "Jvm.Where", "Sha1.Actual", "Version.Id", "Instance.Name",
+
+        // Signature matching (stage 9): mod descriptors, JAR structure, PE version info, mods in game logs.
+        "Mod.Id", "Mod2.Id", "Mod3.Id", "Mod4.Id", "Mod5.Id", "Mod.Name", "Jar.NestedMods", "Jar.TopPackages",
+        "Manifest.Main-Class", "Manifest.Premain-Class", "Manifest.Agent-Class",
+        "Pe.ProductName", "Pe.OriginalFilename", "Pe.InternalName", "Pe.FileDescription", "Game.Mods", "Game.NestedMods",
     ];
 
     public string? Attr(string name) => Attributes.TryGetValue(name, out var v) && v.Length > 0 ? v : null;

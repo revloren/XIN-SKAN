@@ -1,0 +1,2380 @@
+{
+  "schema": 1,
+  "entries": [
+    {
+      "id": "baritone",
+      "name": "Baritone",
+      "kind": "utility",
+      "status": "verified",
+      "ambiguous": false,
+      "variants": [
+        "Baritone",
+        "Cabaletta"
+      ],
+      "identifiers": {
+        "modIds": [
+          "baritone",
+          "baritoe"
+        ],
+        "packages": [
+          "baritone"
+        ]
+      },
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        },
+        {
+          "title": "Исходный код Baritone: fabric/src/main/resources/fabric.mod.json (id \"baritone\"), forge/src/main/resources/META-INF/mods.toml (modId \"baritoe\" — так в исходнике), пакет baritone",
+          "url": "https://github.com/cabaletta/baritone",
+          "commit": "3ddc8652adaae1500e920d82e26026707a921566",
+          "checked": "2026-11-10"
+        }
+      ],
+      "note": "Бот поиска пути и автоматизации; на большинстве серверов запрещён, в одиночной игре — обычный мод.",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "jigsaw",
+      "name": "Jigsaw",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Jigsaw"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "liquidbounce",
+      "name": "LiquidBounce",
+      "kind": "client",
+      "status": "verified",
+      "ambiguous": false,
+      "variants": [
+        "LiquidBounce"
+      ],
+      "identifiers": {
+        "modIds": [
+          "liquidbounce"
+        ],
+        "packages": [
+          "net.ccbluex.liquidbounce"
+        ]
+      },
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        },
+        {
+          "title": "Исходный код LiquidBounce: src/main/resources/fabric.mod.json (id \"liquidbounce\"), пакет net.ccbluex.liquidbounce",
+          "url": "https://github.com/CCBlueX/LiquidBounce",
+          "commit": "48c4d482205ab973bbb3aea1945e597becbfc8f7",
+          "checked": "2026-11-10"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "wurst",
+      "name": "Wurst",
+      "kind": "client",
+      "status": "verified",
+      "ambiguous": false,
+      "variants": [
+        "Wurst Client",
+        "Wurst"
+      ],
+      "identifiers": {
+        "modIds": [
+          "wurst"
+        ],
+        "packages": [
+          "net.wurstclient"
+        ],
+        "entrypoints": [
+          "net.wurstclient.WurstInitializer"
+        ]
+      },
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        },
+        {
+          "title": "Исходный код Wurst7: src/main/resources/fabric.mod.json (id \"wurst\", name \"Wurst Client\"), пакет net.wurstclient",
+          "url": "https://github.com/Wurst-Imperium/Wurst7",
+          "commit": "ec0e22d2c5a472faacaa389f02dcc1e3c9a383d0",
+          "checked": "2026-11-10"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "gishcode",
+      "name": "GishCode",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "GishCode"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "inertia",
+      "name": "Inertia",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Inertia"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Inertia"
+      ]
+    },
+    {
+      "id": "impact",
+      "name": "Impact",
+      "kind": "client",
+      "status": "verified",
+      "ambiguous": true,
+      "variants": [
+        "Impact"
+      ],
+      "identifiers": {
+        "libraries": [
+          "com.github.ImpactDevelopment:Impact"
+        ]
+      },
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        },
+        {
+          "title": "Исходный код установщика Impact: координата библиотеки com.github.ImpactDevelopment:Impact и версии с именем Impact",
+          "url": "https://github.com/ImpactDevelopment/Installer",
+          "commit": "acda0df9f296c59d1959380a1fc4d7f44e3ee323",
+          "checked": "2026-11-10"
+        }
+      ],
+      "note": "Установщик Impact добавляет библиотеку com.github.ImpactDevelopment:Impact в файл версии.",
+      "ambiguousVariants": [
+        "Impact"
+      ]
+    },
+    {
+      "id": "renamemeplease",
+      "name": "rename_me_please.dll",
+      "kind": "dll",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "rename_me_please.dll"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "future",
+      "name": "Future",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Future"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Future"
+      ]
+    },
+    {
+      "id": "rusherhack",
+      "name": "RusherHack",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "RusherHack"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "pyro",
+      "name": "Pyro",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Pyro"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Pyro"
+      ]
+    },
+    {
+      "id": "zamorozka",
+      "name": "Zamorozka",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Zamorozka"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "konas",
+      "name": "Konas",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Konas"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "wintware",
+      "name": "WintWare",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "WintWare"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "nursultan",
+      "name": "Nursultan",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Nursultan"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "norules",
+      "name": "Norules",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Norules"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "akrien",
+      "name": "Akrien",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Akrien"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "sigma",
+      "name": "Sigma",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Sigma"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Sigma"
+      ]
+    },
+    {
+      "id": "deadcode",
+      "name": "DeadCode",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "DeadCode"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "DeadCode"
+      ]
+    },
+    {
+      "id": "eternity",
+      "name": "Eternity",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Eternity"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Eternity"
+      ]
+    },
+    {
+      "id": "wexside",
+      "name": "WEXSIDE",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "WEXSIDE"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "rich",
+      "name": "Rich",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Rich"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Rich"
+      ]
+    },
+    {
+      "id": "richpremium",
+      "name": "RichPremium",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "RichPremium"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "editme",
+      "name": "EdItMe.dll",
+      "kind": "dll",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "EdItMe.dll",
+        "EditMe"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "mc100",
+      "name": "mc100.dll",
+      "kind": "dll",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "mc100.dll"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "matix",
+      "name": "Matix",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Matix"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "r3d",
+      "name": "R3D",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "R3D"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "R3D"
+      ]
+    },
+    {
+      "id": "celestial",
+      "name": "Celestial",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Celestial"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Celestial"
+      ]
+    },
+    {
+      "id": "wild",
+      "name": "Wild",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Wild"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Wild"
+      ]
+    },
+    {
+      "id": "destroy",
+      "name": "Destroy",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Destroy"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Destroy"
+      ]
+    },
+    {
+      "id": "archware",
+      "name": "ArchWare",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "ArchWare"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "nightmare",
+      "name": "NightMare",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "NightMare"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "NightMare"
+      ]
+    },
+    {
+      "id": "boberware",
+      "name": "BoberWare",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "BoberWare"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "flauncher",
+      "name": "FLauncher",
+      "kind": "launcher",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "FLauncher"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "exloader",
+      "name": "ExLoader",
+      "kind": "loader",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "ExLoader"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "mrlauncher",
+      "name": "MrLauncher",
+      "kind": "launcher",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "MrLauncher"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "rlauncher",
+      "name": "R-launcher",
+      "kind": "launcher",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "R-launcher"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "mclauncher",
+      "name": "McLauncher",
+      "kind": "launcher",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "McLauncher"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "cheatengine",
+      "name": "CheatEngine",
+      "kind": "tool",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "CheatEngine"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "Универсальный редактор памяти, не только для Minecraft.",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "wwe",
+      "name": "WWE",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "WWE"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "WWE"
+      ]
+    },
+    {
+      "id": "grey",
+      "name": "Grey",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Grey"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Grey"
+      ]
+    },
+    {
+      "id": "jessica",
+      "name": "Jessica",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Jessica"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Jessica"
+      ]
+    },
+    {
+      "id": "skillclient",
+      "name": "SkillClient",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "SkillClient"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "skskyclient",
+      "name": "SkSkyClient",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "SkSkyClient"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "wolfram",
+      "name": "Wolfram",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Wolfram"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "Совпадает с Wolfram Mathematica / Wolfram Research.",
+      "ambiguousVariants": [
+        "Wolfram"
+      ]
+    },
+    {
+      "id": "huzuni",
+      "name": "Huzuni",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Huzuni"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "squad",
+      "name": "Squad",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Squad"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Squad"
+      ]
+    },
+    {
+      "id": "tools",
+      "name": "tools.jar",
+      "kind": "generic",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "tools.jar"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "Так называется файл JDK (lib/tools.jar до Java 9): само имя ничего не значит.",
+      "ambiguousVariants": [
+        "tools.jar"
+      ]
+    },
+    {
+      "id": "kyprak",
+      "name": "kyprak",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "kyprak"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "aristois",
+      "name": "Aristois",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Aristois"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "oymine",
+      "name": "OYMINE",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "OYMINE"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "hcl",
+      "name": "HCL",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "HCL"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "HCL"
+      ]
+    },
+    {
+      "id": "advanced",
+      "name": "Advanced",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Advanced"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Advanced"
+      ]
+    },
+    {
+      "id": "xray",
+      "name": "Xray",
+      "kind": "feature",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Xray",
+        "X-ray"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "X-ray — функция (видеть руды сквозь блоки); есть и легальные моды для одиночной игры, и ресурспаки.",
+      "ambiguousVariants": [
+        "Xray",
+        "X-ray"
+      ]
+    },
+    {
+      "id": "hvii",
+      "name": "hvii",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "hvii"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "erbaevhacks",
+      "name": "ErbaevHacks",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "ErbaevHacks"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "neverhook",
+      "name": "NeverHook",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "NeverHook"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "vape",
+      "name": "Vape",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Vape"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "Название закрытого клиента; слово само по себе общеупотребительное.",
+      "ambiguousVariants": [
+        "Vape"
+      ]
+    },
+    {
+      "id": "lite",
+      "name": "Lite",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Lite"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Lite"
+      ]
+    },
+    {
+      "id": "cortex",
+      "name": "Cortex",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Cortex"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Cortex"
+      ]
+    },
+    {
+      "id": "autoclicker",
+      "name": "Autoclicker",
+      "kind": "tool",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Autoclicker",
+        "Auto-clicker"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "Программы-автокликеры есть и среди средств доступности.",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "nathox",
+      "name": "Nathox",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Nathox"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "reverse",
+      "name": "Reverse",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Reverse"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Reverse"
+      ]
+    },
+    {
+      "id": "never",
+      "name": "Never",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Never"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Never"
+      ]
+    },
+    {
+      "id": "rage",
+      "name": "Rage",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Rage"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Rage"
+      ]
+    },
+    {
+      "id": "r9",
+      "name": "R9",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "R9"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "R9"
+      ]
+    },
+    {
+      "id": "bypass",
+      "name": "Bypass",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Bypass"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Bypass"
+      ]
+    },
+    {
+      "id": "matrix",
+      "name": "Matrix",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Matrix"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "Так же называется античит Matrix.",
+      "ambiguousVariants": [
+        "Matrix"
+      ]
+    },
+    {
+      "id": "trash",
+      "name": "Trash",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Trash"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Trash"
+      ]
+    },
+    {
+      "id": "undetectable",
+      "name": "Undetectable",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Undetectable"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Undetectable"
+      ]
+    },
+    {
+      "id": "freecam",
+      "name": "Freecam",
+      "kind": "feature",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Freecam"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "Есть легальные моды Freecam; на многих серверах это нарушение, но не всегда.",
+      "ambiguousVariants": [
+        "Freecam"
+      ]
+    },
+    {
+      "id": "infinity",
+      "name": "Infinity",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Infinity"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Infinity"
+      ]
+    },
+    {
+      "id": "forceware",
+      "name": "ForceWare",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "ForceWare"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "Так назывались драйверы NVIDIA: имя без контекста Minecraft ничего не значит.",
+      "ambiguousVariants": [
+        "ForceWare"
+      ]
+    },
+    {
+      "id": "groza",
+      "name": "Groza",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Groza",
+        "GrozaClient"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Groza"
+      ]
+    },
+    {
+      "id": "zenware",
+      "name": "ZenWare",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "ZenWare"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "ghost",
+      "name": "Ghost",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Ghost"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Ghost"
+      ]
+    },
+    {
+      "id": "waterclient",
+      "name": "WaterClient",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "WaterClient"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "external",
+      "name": "External",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "External"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "External"
+      ]
+    },
+    {
+      "id": "stressclient",
+      "name": "Stress Client",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Stress Client"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "r8",
+      "name": "R8",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "R8"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "R8"
+      ]
+    },
+    {
+      "id": "extremehack",
+      "name": "ExtremeHack",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "ExtremeHack"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "ares",
+      "name": "Ares",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Ares"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Ares"
+      ]
+    },
+    {
+      "id": "salhack",
+      "name": "SalHack",
+      "kind": "client",
+      "status": "verified",
+      "ambiguous": false,
+      "variants": [
+        "SalHack"
+      ],
+      "identifiers": {
+        "modIds": [
+          "salhack"
+        ],
+        "packages": [
+          "me.ionar.salhack"
+        ]
+      },
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        },
+        {
+          "title": "Исходный код SalHack: src/main/resources/mcmod.info (modid \"salhack\"), пакет me.ionar.salhack",
+          "url": "https://github.com/ionar2/salhack",
+          "commit": "71540547486c11985d6533df45c71a6ad5b22841",
+          "checked": "2026-11-10"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "kami",
+      "name": "Kami",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Kami"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "KAMI и KAMI Blue — разные проекты; см. запись kami-blue.",
+      "ambiguousVariants": [
+        "Kami"
+      ]
+    },
+    {
+      "id": "blue",
+      "name": "Blue",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Blue"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Blue"
+      ]
+    },
+    {
+      "id": "heracles",
+      "name": "Heracles",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Heracles"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Heracles"
+      ]
+    },
+    {
+      "id": "summer",
+      "name": "Summer",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Summer"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Summer"
+      ]
+    },
+    {
+      "id": "summit",
+      "name": "Summit",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Summit"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Summit"
+      ]
+    },
+    {
+      "id": "xulu",
+      "name": "Xulu",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Xulu"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "eazy",
+      "name": "EaZy",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "EaZy"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "EaZy"
+      ]
+    },
+    {
+      "id": "sky",
+      "name": "Sky",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Sky"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Sky"
+      ]
+    },
+    {
+      "id": "kompl",
+      "name": "Kompl",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Kompl"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "vane",
+      "name": "Vane",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Vane"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Vane"
+      ]
+    },
+    {
+      "id": "shit",
+      "name": "Shit",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Shit"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Shit"
+      ]
+    },
+    {
+      "id": "nemezida",
+      "name": "Nemezida",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "Nemezida"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "haruka",
+      "name": "Haruka",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Haruka"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Haruka"
+      ]
+    },
+    {
+      "id": "nix",
+      "name": "Nix",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": true,
+      "variants": [
+        "Nix"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Nix"
+      ]
+    },
+    {
+      "id": "nightdlc",
+      "name": "NightDLC",
+      "kind": "client",
+      "status": "user-list",
+      "ambiguous": false,
+      "variants": [
+        "NightDLC"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Список заказчика: ТЗ XIN SKAN 1.0, раздел 9.1",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "meteor",
+      "name": "Meteor Client",
+      "kind": "client",
+      "status": "verified",
+      "ambiguous": false,
+      "variants": [
+        "Meteor Client"
+      ],
+      "identifiers": {
+        "modIds": [
+          "meteor-client"
+        ],
+        "packages": [
+          "meteordevelopment.meteorclient"
+        ],
+        "entrypoints": [
+          "meteordevelopment.meteorclient.MeteorClient"
+        ]
+      },
+      "sources": [
+        {
+          "title": "Кандидаты заказчика: ТЗ XIN SKAN 1.0, раздел 9.2",
+          "url": null,
+          "checked": "2026-11-08"
+        },
+        {
+          "title": "Исходный код Meteor Client: src/main/resources/fabric.mod.json (id \"meteor-client\"), пакет meteordevelopment.meteorclient",
+          "url": "https://github.com/MeteorDevelopment/meteor-client",
+          "commit": "81448b4b2e3b1bae83df60e836c13109ab2d8a1d",
+          "checked": "2026-11-10"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "raven",
+      "name": "Raven",
+      "kind": "client",
+      "status": "candidate",
+      "ambiguous": true,
+      "variants": [
+        "Raven"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Кандидаты заказчика: ТЗ XIN SKAN 1.0, раздел 9.2",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Raven"
+      ]
+    },
+    {
+      "id": "ravenxd",
+      "name": "Raven XD",
+      "kind": "client",
+      "status": "candidate",
+      "ambiguous": false,
+      "variants": [
+        "Raven XD"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Кандидаты заказчика: ТЗ XIN SKAN 1.0, раздел 9.2",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "boze",
+      "name": "Boze",
+      "kind": "client",
+      "status": "candidate",
+      "ambiguous": true,
+      "variants": [
+        "Boze"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Кандидаты заказчика: ТЗ XIN SKAN 1.0, раздел 9.2",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Boze"
+      ]
+    },
+    {
+      "id": "doomsday",
+      "name": "Doomsday",
+      "kind": "client",
+      "status": "candidate",
+      "ambiguous": true,
+      "variants": [
+        "Doomsday"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Кандидаты заказчика: ТЗ XIN SKAN 1.0, раздел 9.2",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Doomsday"
+      ]
+    },
+    {
+      "id": "bleachhack",
+      "name": "BleachHack",
+      "kind": "client",
+      "status": "verified",
+      "ambiguous": false,
+      "variants": [
+        "BleachHack"
+      ],
+      "identifiers": {
+        "modIds": [
+          "bleachhack"
+        ],
+        "packages": [
+          "org.bleachhack"
+        ],
+        "entrypoints": [
+          "org.bleachhack.BleachHack"
+        ]
+      },
+      "sources": [
+        {
+          "title": "Кандидаты заказчика: ТЗ XIN SKAN 1.0, раздел 9.2",
+          "url": null,
+          "checked": "2026-11-08"
+        },
+        {
+          "title": "Исходный код BleachHack: src/main/resources/fabric.mod.json (id \"bleachhack\"), пакет org.bleachhack",
+          "url": "https://github.com/BleachDev/BleachHack",
+          "commit": "2a30d34be73aa62484bb1ede97a7f657044fe333",
+          "checked": "2026-11-10"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "phobos",
+      "name": "Phobos",
+      "kind": "client",
+      "status": "candidate",
+      "ambiguous": true,
+      "variants": [
+        "Phobos"
+      ],
+      "identifiers": {},
+      "sources": [
+        {
+          "title": "Кандидаты заказчика: ТЗ XIN SKAN 1.0, раздел 9.2",
+          "url": null,
+          "checked": "2026-11-08"
+        }
+      ],
+      "note": "",
+      "ambiguousVariants": [
+        "Phobos"
+      ]
+    },
+    {
+      "id": "kami-blue",
+      "name": "KAMI Blue",
+      "kind": "client",
+      "status": "verified",
+      "ambiguous": false,
+      "variants": [
+        "KAMI Blue",
+        "kamiblue"
+      ],
+      "identifiers": {
+        "modIds": [
+          "kamiblue"
+        ],
+        "packages": [
+          "org.kamiblue.client"
+        ]
+      },
+      "sources": [
+        {
+          "title": "Исходный код KAMI Blue: src/main/resources/mcmod.info (modid \"kamiblue\"), пакет org.kamiblue.client",
+          "url": "https://github.com/kami-blue/client",
+          "commit": "5a9e51a124cf18ec2e73b63a8dc2e2fbb0d3a43a",
+          "checked": "2026-11-10"
+        }
+      ],
+      "note": "Найден при проверке записи Kami; отдельный проект (форк KAMI).",
+      "ambiguousVariants": []
+    },
+    {
+      "id": "3arthh4ck",
+      "name": "3arthh4ck",
+      "kind": "client",
+      "status": "verified",
+      "ambiguous": false,
+      "variants": [
+        "3arthh4ck",
+        "earthhack"
+      ],
+      "identifiers": {
+        "modIds": [
+          "earthhack"
+        ],
+        "packages": [
+          "me.earth.earthhack"
+        ]
+      },
+      "sources": [
+        {
+          "title": "Исходный код 3arthh4ck: src/main/resources/mcmod.info (modid \"earthhack\"), пакет me.earth.earthhack",
+          "url": "https://github.com/3arthqu4ke/3arthh4ck",
+          "commit": "211660641696fbd43edadc37471cdcb21dfa392d",
+          "checked": "2026-11-10"
+        }
+      ],
+      "note": "Найден при проверке открытых клиентов; не путать с Phobos.",
+      "ambiguousVariants": []
+    }
+  ]
+}
