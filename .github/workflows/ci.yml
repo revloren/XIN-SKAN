@@ -228,3 +228,16 @@ jobs:
               echo "HASH	$repo	$tag	${published%%T*}	$name	$size	$sha	$url	$page"
             done
           done
+
+  mojang-clients:
+    # Informational: the official client JAR (SHA-1, size) of every Minecraft version, from Mojang's version files,
+    # each checked against the version manifest. The maintainer copies the output into database/mojang.json.
+    name: Official Minecraft client hashes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read every version file Mojang publishes
+        run: python3 tools/ci/mojang_clients.py
+
