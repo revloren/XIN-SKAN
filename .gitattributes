@@ -1,0 +1,3 @@
+# The signature database is checked byte for byte against the SHA-256 in its manifest (and the manifest against
+# its signature): git must never convert its line endings.
+database/** -text

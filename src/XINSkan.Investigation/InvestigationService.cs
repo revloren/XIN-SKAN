@@ -243,15 +243,31 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
         var facts = counting.Facts;
         progress?.Report(new ModuleProgress("correlation", ModuleState.Running, $"Корреляция {facts.Count:N0} записей…"));
         var clock = System.Diagnostics.Stopwatch.StartNew();
-        CorrelationResult result;
+        // The signature database is loaded on its own: if it cannot be read, correlation still runs without it.
+        IReadOnlyList<SignatureMatch> matches = [];
+        SignatureDatabaseInfo? dbInfo = null;
+        Limitation? dbLimitation = null;
         try
         {
             var loaded = DatabaseLoader.Load(updateFolder, path => ReadSmall(files, path), TrustedKeys.Default);
             var db = loaded.Database;
             audit.Record("signature-database", db.Origin, "read-only", "ok",
                 $"version {db.Manifest.Version}; clients {db.Clients.Count} (verified {db.Clients.Count(c => c.Status == "verified")}); hashes {db.Hashes.Count}; {string.Join(" ", loaded.Notes)}");
-            var matches = new Matcher(db).Match(facts);
-            result = new CorrelationEngine(id, started, time).Run(facts, matches) with { Database = db.Info() with { Problems = [.. db.Problems, .. loaded.Notes] } };
+            matches = new Matcher(db).Match(facts);
+            dbInfo = db.Info() with { Problems = [.. db.Problems, .. loaded.Notes] };
+        }
+#pragma warning disable CA1031 // A broken database must not cost the correlation of the collected evidence.
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            audit.Record("signature-database", "embedded", "read-only", "error", $"{ex.GetType().Name}: {ex.Message}");
+            dbLimitation = new Limitation("SIG.UNAVAILABLE", $"База клиентов не загружена ({ex.Message}): совпадений с ней нет, уровень High невозможен.");
+        }
+
+        CorrelationResult result;
+        try
+        {
+            result = new CorrelationEngine(id, started, time).Run(facts, matches) with { Database = dbInfo };
         }
 #pragma warning disable CA1031 // A defect in a rule must not lose the collected evidence: it is recorded and correlation is skipped.
         catch (Exception ex)
@@ -259,6 +275,11 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
         {
             audit.Record("correlation-failed", "evidence", "read-only", "error", $"{ex.GetType().Name}: {ex.Message}");
             result = new CorrelationResult([], [], [new Limitation("CORR.FAILED", $"Корреляция не выполнена из-за ошибки: {ex.Message}. Собранные записи сохранены.")]);
+        }
+
+        if (dbLimitation is not null)
+        {
+            result = result with { Limitations = [.. result.Limitations, dbLimitation] };
         }
 
         if (cancelled)
