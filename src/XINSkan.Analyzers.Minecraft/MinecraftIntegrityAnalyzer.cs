@@ -19,6 +19,9 @@ public sealed record MinecraftOptions
 
     /// <summary>How many bytes of game and library files may be hashed in one investigation.</summary>
     public long HashBudgetBytes { get; init; } = 4L * 1024 * 1024 * 1024;
+
+    /// <summary>Official client JARs by version id (from the signature database); empty — only local version files are used.</summary>
+    public IReadOnlyDictionary<string, OfficialClient> OfficialClients { get; init; } = new Dictionary<string, OfficialClient>(StringComparer.Ordinal);
 }
 
 /// <summary>
@@ -45,7 +48,7 @@ public sealed class MinecraftIntegrityAnalyzer(MinecraftOptions options, IDirect
     {
         ArgumentNullException.ThrowIfNull(context);
         var reader = new Reader(lister, files);
-        var integrity = new VersionIntegrity(reader, options.HashBudgetBytes);
+        var integrity = new VersionIntegrity(reader, options.HashBudgetBytes, options.OfficialClients);
         var limitations = new List<Limitation>
         {
             new("MC.LOCAL_HASHES", "Файлы сверяются с хешами из локальных файлов версий. Их тоже можно изменить; сверка с хешами, опубликованными Mojang, — задача проверенной базы (этап 9)."),
@@ -265,6 +268,7 @@ public sealed class MinecraftIntegrityAnalyzer(MinecraftOptions options, IDirect
         Put(attrs, "Version.InheritsFrom", r.InheritsFrom);
         Put(attrs, "Version.MainClass", r.MainClass);
         Put(attrs, "Version.Client", r.Client?.Status.ToString());
+        Put(attrs, "Version.ClientOfficial", r.Client?.IsOfficial switch { true => "Mojang", false => "differs", null => null });
         var problems = r.Problems.ToList();
         if (notRead > 0)
         {
@@ -276,7 +280,15 @@ public sealed class MinecraftIntegrityAnalyzer(MinecraftOptions options, IDirect
             $"Версия {r.Id}: клиент — {ClientText(r.Client)}; библиотек {libs.Count}, совпало {matched}, отличается {mismatched.Count}, отсутствует {missing}.",
             attrs, problems);
 
-        if (r.Client is { Status: HashStatus.Mismatch } c)
+        if (r.Client is { Status: HashStatus.Mismatch, IsOfficial: true } edited)
+        {
+            // The JAR is Mojang's own; it is the version file's hash that is not.
+            yield return Make(context, r.JsonPath, r.JsonPath, r.Id, EvidenceEventType.Observed, null, Confidence.Low,
+                "В файле версии хеш клиента не тот, что публикует Mojang, хотя сам JAR официальный: файл версии правили. Безобидная причина — сторонний лаунчер, который пишет свои файлы версий.",
+                $"Файл версии {r.Id} указывает SHA-1 клиента {edited.ExpectedSha1}, у Mojang {edited.OfficialSha1}; JAR на диске — официальный.",
+                OfficialJar(edited, r.Id, launcher, root), []);
+        }
+        else if (r.Client is { Status: HashStatus.Mismatch } c)
         {
             yield return Make(context, r.JsonPath, c.Path, Path.GetFileName(c.Path.Replace('\\', '/')), EvidenceEventType.Observed, null,
                 r.ClientFromMojang ? Confidence.Medium : Confidence.Low,
@@ -285,6 +297,20 @@ public sealed class MinecraftIntegrityAnalyzer(MinecraftOptions options, IDirect
                     : "JAR клиента не совпадает с хешем из файла версии стороннего лаунчера или сборки. Это может быть и изменённый клиент, и собственная сборка лаунчера.",
                 $"JAR клиента версии {r.Id} отличается от указанного в файле версии: SHA-1 {c.ActualSha1} вместо {c.ExpectedSha1}.",
                 Hashes(c, r.Id, launcher, root), [], c.ActualSize);
+        }
+        else if (r.Client is { IsOfficial: false } o)
+        {
+            // The version file is satisfied (or gives no hash), but the JAR is not what Mojang publishes for this id.
+            var declared = o.DeclaresOfficial switch
+            {
+                false => $"Хеш в самом файле версии ({o.ExpectedSha1}) тоже не Mojang: файл версии изменён вместе с JAR.",
+                null => "Файл версии хеша клиента не указывает.",
+                true => string.Empty,
+            };
+            yield return Make(context, r.JsonPath, o.Path, Path.GetFileName(o.Path.Replace('\\', '/')), EvidenceEventType.Observed, null, Confidence.Medium,
+                "Версия называется как официальная, но её JAR клиента не совпадает с клиентом, который Mojang публикует для этой версии (SHA-1 из файлов версий Mojang, встроены в базу). Так выглядит изменённый клиент под видом обычной версии. Безобидные причины: моды, встроенные прямо в JAR (версии до 1.6), сборки некоторых лаунчеров, повреждение файла.",
+                $"JAR клиента версии {r.Id} не официальный: SHA-1 {o.ActualSha1}, у Mojang {o.OfficialSha1}. {declared}".TrimEnd(),
+                Hashes(o, r.Id, launcher, root), [], o.ActualSize);
         }
 
         foreach (var lib in mismatched.Take(MaxLibraryRecords))
@@ -319,6 +345,14 @@ public sealed class MinecraftIntegrityAnalyzer(MinecraftOptions options, IDirect
         _ => "не прочитан",
     };
 
+    /// <summary>Hashes of a version file whose JAR is official: no "Sha1.Actual", because nothing on disk is modified.</summary>
+    private static Dictionary<string, string> OfficialJar(CheckedFile f, string version, string launcher, string root)
+    {
+        var d = Hashes(f, version, launcher, root);
+        d.Remove("Sha1.Actual");
+        return d;
+    }
+
     private static Dictionary<string, string> Hashes(CheckedFile f, string version, string launcher, string root)
     {
         var d = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -328,6 +362,7 @@ public sealed class MinecraftIntegrityAnalyzer(MinecraftOptions options, IDirect
             ["MinecraftRoot"] = root,
             ["Sha1.Expected"] = f.ExpectedSha1 ?? string.Empty,
             ["Sha1.Actual"] = f.ActualSha1 ?? string.Empty,
+            ["Sha1.Official"] = f.OfficialSha1 ?? string.Empty,
         };
         Put(d, "Download.Url", f.Url);
         return d;

@@ -1,12 +1,13 @@
 {
   "format": 1,
-  "version": "2026.11.10.3",
+  "version": "2026.11.10.4",
   "created": "2026-11-10",
   "files": {
     "clients.json": "1f48dcbf4368709229937dbac4e76e61e337878bf84ad191cca8b02b85e16978",
     "aliases.json": "6c3ae08b94b09be2b94ac34ec07db02177273b3288ea10067a4a24a5bbbd85d5",
     "hashes.json": "288adc2b00a9417593ded2d105f91a33535ae3f5efc6c1dc12dfdde99ac2b710",
-    "features.json": "18d454ee102faee496b1c95a7d1c5f22b969e8b8a520ddc53591ccad37e2d224"
+    "features.json": "18d454ee102faee496b1c95a7d1c5f22b969e8b8a520ddc53591ccad37e2d224",
+    "mojang.json": "cacc8fae8bf6b2e5d3dd7f5156ccdd34a251df2b73eadd2785992c135f47b537"
   },
   "changelog": [
     {
@@ -32,6 +33,13 @@
       "changes": [
         "Каталог функций (ТЗ, раздел 10): 79 функций из списка заказчика и 18 найденных в исходном коде проверенных проектов; у каждой — категория, написания, сила признака, проекты, где она есть (путь к исходнику и коммит), дата проверки. 5 функций из списка в проверенных проектах не найдены и остаются непроверенными: FastBow, BHop, Regen, ArrayList, CustomKeybinds.",
         "Файлы данных, которые создают сами клиенты в папке игры (по исходному коду): Wurst, Meteor Client, LiquidBounce, BleachHack, KAMI Blue, SalHack, 3arthh4ck, Baritone."
+      ]
+    },
+    {
+      "version": "2026.11.10.4",
+      "date": "2026-11-10",
+      "changes": [
+        "Официальные клиенты Minecraft: SHA-1 и размер JAR клиента всех 922 версий (выпуски, снапшоты, старые beta и alpha) из файлов версий Mojang; каждый файл версии сверен с SHA-1 из манифеста версий (piston-meta.mojang.com). Minecraft Integrity сверяет с ними клиент без доступа к сети."
       ]
     }
   ]

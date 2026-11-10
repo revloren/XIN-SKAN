@@ -45,7 +45,7 @@ public static class ModuleCatalog
         new("History Engine", "MFT, USN Journal, Корзина, LNK, Jump Lists, ShellBags, логи Minecraft. Ещё нет: теневые копии (ждут решения владельца)", ModuleReadiness.Partial, 5),
         new("Execution Engine", "Prefetch, BAM, Amcache, UserAssist, журналы событий. Ещё нет: SRUM", ModuleReadiness.Partial, 6),
         new("Корреляция", "Связь записей одного файла по номеру MFT и пути, двенадцать опубликованных правил; High — только при проверенной идентификации и трёх независимых источниках. Ещё нет: связь по содержимому (SHA-1 Amcache), отчёт-хронология", ModuleReadiness.Partial, 7),
-        new("Minecraft Integrity", "Лаунчеры и экземпляры, версии и загрузчики, параметры JVM, сверка клиента и библиотек с хешами из файлов версий. Ещё нет: сверка с хешами Mojang (этап 9), Modrinth app.db, настройки Lunar/Badlion/Feather", ModuleReadiness.Partial, 8),
+        new("Minecraft Integrity", "Лаунчеры и экземпляры, версии и загрузчики, параметры JVM, сверка клиента и библиотек с хешами из файлов версий и клиента — с хешами всех 922 версий Mojang (встроены, без сети). Ещё нет: Modrinth app.db, настройки Lunar/Badlion/Feather", ModuleReadiness.Partial, 8),
         new("База клиентов и признаков", "Список заказчика и кандидаты; 9 проектов проверены по исходному коду; 57 хешей выпусков; файлы данных клиентов; каталог 97 функций и совпадение по набору функций; подписанные обновления. Ещё нет: хешей для проектов без файлов на GitHub", ModuleReadiness.Partial, 9),
         new("Network Monitor", "Соединения и трафик по процессам — только с согласия", ModuleReadiness.Planned, 10),
         new("Cloud Trace", "Загрузки браузеров и Telegram — только с согласия", ModuleReadiness.Planned, 11),

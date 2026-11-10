@@ -11,7 +11,7 @@ namespace XINSkan.SignaturesTests;
 /// <summary>Bundles built in memory: data files, a manifest with their hashes, a signature.</summary>
 internal static class Bundle
 {
-    public static Dictionary<string, byte[]> Make(string version, object clients, object? hashes = null, object? aliases = null, object? features = null)
+    public static Dictionary<string, byte[]> Make(string version, object clients, object? hashes = null, object? aliases = null, object? features = null, object? mojang = null)
     {
         var files = new Dictionary<string, byte[]>(StringComparer.Ordinal)
         {
@@ -19,6 +19,7 @@ internal static class Bundle
             ["aliases.json"] = JsonSerializer.SerializeToUtf8Bytes(aliases ?? new { schema = 1, aliases = Array.Empty<object>() }),
             ["hashes.json"] = JsonSerializer.SerializeToUtf8Bytes(new { schema = 1, entries = hashes ?? Array.Empty<object>() }),
             ["features.json"] = JsonSerializer.SerializeToUtf8Bytes(new { schema = 1, features = features ?? Array.Empty<object>() }),
+            ["mojang.json"] = JsonSerializer.SerializeToUtf8Bytes(mojang ?? new { schema = 1, versions = Array.Empty<object>() }),
         };
         files["manifest.json"] = JsonSerializer.SerializeToUtf8Bytes(new
         {
@@ -92,6 +93,12 @@ public sealed class SignatureDatabaseTests
             Assert.EndsWith("/" + h.FileName, h.Source.Url, StringComparison.Ordinal);
             Assert.True(h.Size > 0);
         });
+        // Mojang's own list: every version the manifest named, each version file checked against it.
+        Assert.Equal(922, db.MojangClients.Count);
+        Assert.Equal("0c3ec587af28e5a785c0b4a7b8a30f9a8f78f838", db.MojangClients["1.20.1"].ClientSha1); // the client CI downloaded in stage 8
+        Assert.StartsWith("https://piston-meta.mojang.com/", db.MojangSource!.Url, StringComparison.Ordinal);
+        Assert.Equal(new[] { "old_alpha", "old_beta", "release", "snapshot" }, db.MojangClients.Values.Select(v => v.Type).Distinct().Order());
+
         var baritone = db.Hashes.Single(h => h.FileName == "baritone-standalone-fabric-1.20.0.jar");
         Assert.Equal("baritone", baritone.ClientId);
         Assert.Equal("v1.20.0", baritone.Version);
@@ -102,6 +109,19 @@ public sealed class SignatureDatabaseTests
         Assert.Contains("JDK", db.Clients.Single(c => c.Id == Of("tools.jar")).Note, StringComparison.Ordinal);
         Assert.Equal("launcher", db.Clients.Single(c => c.Id == Of("FLauncher")).Kind);
         Assert.Contains(db.Manifest.Changelog, c => c.Version == db.Manifest.Version);
+    }
+
+    [Fact]
+    public void An_official_client_list_needs_mojangs_own_source()
+    {
+        var v = new { id = "1.20.1", type = "release", versionJsonSha1 = new string('a', 40), clientSha1 = new string('b', 40), clientSize = 10 };
+        var good = Bundle.Load(Bundle.Make("1", Array.Empty<object>(), mojang: new { schema = 1, source = new { title = "m", url = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json", @checked = "2026-11-10" }, versions = new object[] { v, v, new { id = "x", type = "release", versionJsonSha1 = "zz", clientSha1 = "b", clientSize = 1 } } }));
+        Assert.Equal(new[] { "1.20.1" }, good.MojangClients.Keys);
+        Assert.Equal(2, good.Problems.Count(p => p.StartsWith("Версия Mojang", StringComparison.Ordinal)));
+
+        var mirror = Bundle.Load(Bundle.Make("1", Array.Empty<object>(), mojang: new { schema = 1, source = new { title = "m", url = "https://mirror.example/manifest.json", @checked = "2026-11-10" }, versions = new[] { v } }));
+        Assert.Empty(mirror.MojangClients);
+        Assert.Contains(mirror.Problems, p => p.Contains("piston-meta", StringComparison.Ordinal));
     }
 
     [Fact]

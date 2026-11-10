@@ -203,7 +203,13 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
                     new AmcacheAnalyzer(options, locked, platform.VolumeDirectory),
                     new UserAssistAnalyzer(options, new AuditingRegistryView(platform.CurrentUser, audit, "HKCU"), userHives, platform.VolumeDirectory),
                     new MinecraftIntegrityAnalyzer(
-                        new MinecraftOptions { UsersRoot = hunter.UsersRoot, CurrentProfile = hunter.CurrentProfile, ExtraRoots = hunter.ExtraRoots },
+                        new MinecraftOptions
+                        {
+                            UsersRoot = hunter.UsersRoot,
+                            CurrentProfile = hunter.CurrentProfile,
+                            ExtraRoots = hunter.ExtraRoots,
+                            OfficialClients = OfficialClients(signatures.Database),
+                        },
                         lister,
                         files),
                     new EventLogAnalyzer(HistoryOptions.From(hunter), new AuditingEventLogSource(platform.EventLogs, audit), platform.VolumeDirectory),
@@ -243,6 +249,14 @@ public sealed class InvestigationService(PlatformServices platform, StoreFactory
         var selfCheck = IntegrityManifest.Verify(output.Root);
         return new InvestigationOutcome(id, output.Root, run, written, manifest, selfCheck, location, permissions) { Correlation = correlation };
     }
+
+    /// <summary>Mojang's official client JARs from the signature database, for Minecraft Integrity.</summary>
+    private static Dictionary<string, OfficialClient> OfficialClients(SignatureDatabase? db) =>
+        db is null ? new(StringComparer.Ordinal)
+            : db.MojangClients.Values.ToDictionary(
+                v => v.Id,
+                v => new OfficialClient(v.ClientSha1, v.ClientSize, $"{db.MojangSource?.Url} ({db.MojangSource?.Checked})"),
+                StringComparer.Ordinal);
 
     private sealed record LoadedSignatures(SignatureDatabase? Database, SignatureDatabaseInfo? Info, Limitation? Limitation);
 

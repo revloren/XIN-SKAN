@@ -49,6 +49,24 @@ public sealed record FeatureProject
     public required string Path { get; init; }
 }
 
+/// <summary>The official client JAR of one Minecraft version, as Mojang's version file states it.</summary>
+public sealed record MojangVersion
+{
+    public required string Id { get; init; }
+
+    /// <summary>release, snapshot, old_beta, old_alpha.</summary>
+    public required string Type { get; init; }
+
+    public string? ReleaseTime { get; init; }
+
+    /// <summary>SHA-1 of the version file, as the version manifest gives it.</summary>
+    public required string VersionJsonSha1 { get; init; }
+
+    public required string ClientSha1 { get; init; }
+
+    public long ClientSize { get; init; }
+}
+
 /// <summary>A function of cheat clients (TZ section 10). Its names are search terms, never evidence on their own.</summary>
 public sealed record FeatureEntry
 {
@@ -171,7 +189,7 @@ public sealed record ManifestSignature
 /// <summary>A loaded, validated database.</summary>
 public sealed class SignatureDatabase
 {
-    public static readonly string[] DataFiles = ["clients.json", "aliases.json", "hashes.json", "features.json"];
+    public static readonly string[] DataFiles = ["clients.json", "aliases.json", "hashes.json", "features.json", "mojang.json"];
 
     internal static readonly JsonSerializerOptions Json = new()
     {
@@ -184,8 +202,10 @@ public sealed class SignatureDatabase
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
-    private SignatureDatabase(Manifest manifest, string manifestSha256, string origin, string? keyId, List<ClientEntry> clients, List<AliasEntry> aliases, List<HashEntry> hashes, List<FeatureEntry> features, List<string> problems)
+    private SignatureDatabase(Manifest manifest, string manifestSha256, string origin, string? keyId, List<ClientEntry> clients, List<AliasEntry> aliases, List<HashEntry> hashes, List<FeatureEntry> features, (SourceRecord? Source, List<MojangVersion> Versions) mojang, List<string> problems)
     {
+        MojangSource = mojang.Source;
+        MojangClients = mojang.Versions.ToDictionary(v => v.Id, StringComparer.Ordinal);
         Features = features;
         FeatureVocabulary = features.SelectMany(f => f.Variants.Append(f.Name)).Select(XINSkan.Core.Paths.ClassNames.Key).Where(k => k.Length >= 3).ToHashSet(StringComparer.Ordinal);
         Manifest = manifest;
@@ -223,6 +243,12 @@ public sealed class SignatureDatabase
     /// <summary>Keys of every feature spelling, for the archive reader to keep matching class names.</summary>
     public IReadOnlySet<string> FeatureVocabulary { get; }
 
+    /// <summary>Official client JARs by version id (mojang.json); empty when the file lists none.</summary>
+    public IReadOnlyDictionary<string, MojangVersion> MojangClients { get; }
+
+    /// <summary>Where and when the official client list was read.</summary>
+    public SourceRecord? MojangSource { get; }
+
     public Models.SignatureDatabaseInfo Info() => new(
         Manifest.Version, Origin, ManifestSha256, KeyId, Clients.Count, Clients.Count(c => c.Status == "verified"), Hashes.Count, Problems);
 
@@ -233,6 +259,8 @@ public sealed class SignatureDatabase
     private sealed record HashesFile(int Schema, List<HashEntry> Entries);
 
     private sealed record FeaturesFile(int Schema, List<FeatureEntry> Features);
+
+    private sealed record MojangFile(int Schema, SourceRecord? Source, List<MojangVersion> Versions);
 
     /// <summary>
     /// Builds a database from bundle bytes after checking every file against the manifest. Records that break the
@@ -278,7 +306,9 @@ public sealed class SignatureDatabase
             var problems = new List<string>();
             var valid = Validate(clients, aliases, hashes, problems);
             var goodFeatures = ValidateFeatures(features, valid.Clients, problems);
-            return new SignatureDatabase(manifest, Sha256(manifestBytes), origin, keyId, valid.Clients, valid.Aliases, valid.Hashes, goodFeatures, problems);
+            var mojang = JsonSerializer.Deserialize<MojangFile>(data["mojang.json"], Json);
+            var goodMojang = ValidateMojang(mojang?.Source, mojang?.Versions ?? [], problems);
+            return new SignatureDatabase(manifest, Sha256(manifestBytes), origin, keyId, valid.Clients, valid.Aliases, valid.Hashes, goodFeatures, (mojang?.Source, goodMojang), problems);
         }
         catch (JsonException ex)
         {
@@ -432,6 +462,42 @@ public sealed class SignatureDatabase
 
         return good;
     }
+
+    internal static List<MojangVersion> ValidateMojang(SourceRecord? source, List<MojangVersion> versions, List<string> problems)
+    {
+        if (versions.Count == 0)
+        {
+            return [];
+        }
+
+        if (source?.Url is not { } url || !url.StartsWith("https://piston-meta.mojang.com/", StringComparison.Ordinal) || !IsDate(source.Checked))
+        {
+            problems.Add("Список официальных клиентов без источника piston-meta.mojang.com и даты: не используется.");
+            return [];
+        }
+
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        var good = new List<MojangVersion>();
+        foreach (var v in versions)
+        {
+            if (string.IsNullOrWhiteSpace(v.Id) || !ids.Add(v.Id))
+            {
+                problems.Add($"Версия Mojang «{v.Id}»: повтор или пустой идентификатор.");
+            }
+            else if (!IsSha1(v.ClientSha1) || !IsSha1(v.VersionJsonSha1) || v.ClientSize <= 0)
+            {
+                problems.Add($"Версия Mojang {v.Id}: хеш не SHA-1 или нет размера.");
+            }
+            else
+            {
+                good.Add(v with { ClientSha1 = v.ClientSha1.ToLowerInvariant() });
+            }
+        }
+
+        return good;
+    }
+
+    private static bool IsSha1(string? s) => s is { Length: 40 } && s.All(Uri.IsHexDigit);
 
     private static bool HasIdentifiers(Identifiers i) => i.ModIds.Count + i.Packages.Count + i.Entrypoints.Count + i.Libraries.Count + i.DataPaths.Count > 0;
 

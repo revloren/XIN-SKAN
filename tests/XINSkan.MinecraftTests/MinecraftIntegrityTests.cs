@@ -163,6 +163,62 @@ public sealed class MinecraftIntegrityTests : IDisposable
     }
 
     [Fact]
+    public async Task Clients_of_official_versions_are_compared_with_what_Mojang_publishes()
+    {
+        var g = new GameFolders(_p.Player);
+        var official = Encoding.ASCII.GetBytes("PK the real 1.20.1 client");
+        var patched = Encoding.ASCII.GetBytes("PK 1.20.1 client with injected code");
+
+        // 1. Version file and JAR changed together: the local check passes, Mojang's list does not.
+        GameFolders.Vanilla(g.Official, "1.20.1", patched, patched);
+
+        // 2. A third-party version file with no client download, and a patched JAR.
+        GameFolders.Write(Path.Combine(g.Official, "versions", "1.19.4", "1.19.4.jar"), patched);
+        GameFolders.Json(Path.Combine(g.Official, "versions", "1.19.4", "1.19.4.json"), new { id = "1.19.4", mainClass = "net.minecraft.client.main.Main" });
+
+        // 3. The same, with the official JAR.
+        GameFolders.Write(Path.Combine(g.Official, "versions", "1.18.2", "1.18.2.jar"), official);
+        GameFolders.Json(Path.Combine(g.Official, "versions", "1.18.2", "1.18.2.json"), new { id = "1.18.2", mainClass = "net.minecraft.client.main.Main" });
+
+        // 4. A version file whose client hash was edited, next to the official JAR.
+        GameFolders.Vanilla(g.Official, "1.17.1", patched, official);
+
+        // 5. Not an official id: nothing to compare with.
+        GameFolders.Vanilla(g.Official, "1.20.1-pvp", patched, patched);
+
+        var mojang = new Dictionary<string, OfficialClient>(StringComparer.Ordinal)
+        {
+            ["1.20.1"] = new(GameFolders.Sha1(official), official.Length, "test"),
+            ["1.19.4"] = new(GameFolders.Sha1(official), official.Length, "test"),
+            ["1.18.2"] = new(GameFolders.Sha1(official), official.Length, "test"),
+            ["1.17.1"] = new(GameFolders.Sha1(official), official.Length, "test"),
+        };
+        var ev = (await RunAsync(new MinecraftIntegrityAnalyzer(Options with { OfficialClients = mojang }, SystemDirectoryLister.Instance, new TestFileSource()))).Evidence;
+        Evidence Summary(string id) => ev.Single(e => e.Attributes.GetValueOrDefault("Version.Id") == id && e.Attributes.ContainsKey("Version.Libraries"));
+
+        var edited = ev.Single(e => e.Target.FileName == "1.20.1.jar");
+        Assert.Equal(Confidence.Medium, edited.Confidence);
+        Assert.Equal(GameFolders.Sha1(official), edited.Attributes["Sha1.Official"]);
+        Assert.Contains("файл версии изменён вместе с JAR", edited.Description, StringComparison.Ordinal);
+        Assert.Equal("Match", Summary("1.20.1").Attributes["Version.Client"]); // the local check alone would pass
+        Assert.Equal("differs", Summary("1.20.1").Attributes["Version.ClientOfficial"]);
+
+        var noHash = ev.Single(e => e.Target.FileName == "1.19.4.jar");
+        Assert.Equal(Confidence.Medium, noHash.Confidence);
+        Assert.Contains("хеша клиента не указывает", noHash.Description, StringComparison.Ordinal);
+
+        Assert.Equal("Mojang", Summary("1.18.2").Attributes["Version.ClientOfficial"]);
+        Assert.DoesNotContain(ev, e => e.Target.FileName == "1.18.2.jar");
+
+        var json = ev.Single(e => e.Attributes.GetValueOrDefault("Version.Id") == "1.17.1" && e.Confidence == Confidence.Low);
+        Assert.Contains("файл версии правили", json.Rationale, StringComparison.Ordinal);
+        Assert.Equal("Mojang", Summary("1.17.1").Attributes["Version.ClientOfficial"]);
+
+        Assert.False(Summary("1.20.1-pvp").Attributes.ContainsKey("Version.ClientOfficial"));
+        Assert.DoesNotContain(ev, e => e.Target.FileName == "1.20.1-pvp.jar");
+    }
+
+    [Fact]
     public async Task Prism_curseforge_atlauncher_modrinth_and_unparsed_launchers_are_found()
     {
         var g = new GameFolders(_p.Player);
